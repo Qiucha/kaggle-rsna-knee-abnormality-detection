@@ -6,8 +6,14 @@ docs
 # Actual Dataset Related Folders
 !data/sample/
 !data/license.txt
+!data/sample/jpg/*.jpg
 
-# Data 
-*.jpg
+# Data
 *.dcm
 *.png
+
+# Learning Material
+learn
+
+# Tools
+convert_dcm.py
