@@ -1,0 +1,8 @@
+# AI related skills and files
+AGENTS.md
+CLAUDE.md
+
+# Actual Dataset
+!data/sample/
+data/sample/*.dcm
+!data/license.txt
