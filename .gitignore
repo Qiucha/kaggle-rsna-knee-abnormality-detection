@@ -1,8 +1,13 @@
-# AI related skills and files
+# AI Related Skills and Files
 AGENTS.md
 CLAUDE.md
+docs
 
-# Actual Dataset
+# Actual Dataset Related Folders
 !data/sample/
-data/sample/*.dcm
 !data/license.txt
+
+# Data 
+*.jpg
+*.dcm
+*.png
