@@ -1,7 +1,14 @@
+# VS Code Related Folders
+.vscode
+.code-workspace
+
 # AI Related Skills and Files
 AGENTS.md
 CLAUDE.md
+CONTEXT.md
 docs
+.scratch
+research
 
 # Actual Dataset Related Folders
 !data/sample/
@@ -16,4 +23,3 @@ docs
 learn
 
 # Tools
-convert_dcm.py
