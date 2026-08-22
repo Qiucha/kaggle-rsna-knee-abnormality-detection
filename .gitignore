@@ -1,8 +1,25 @@
-# AI related skills and files
+# VS Code Related Folders
+.vscode
+.code-workspace
+
+# AI Related Skills and Files
 AGENTS.md
 CLAUDE.md
+CONTEXT.md
+docs
+.scratch
+research
 
-# Actual Dataset
+# Actual Dataset Related Folders
 !data/sample/
-data/sample/*.dcm
 !data/license.txt
+!data/sample/jpg/*.jpg
+
+# Data
+*.dcm
+*.png
+
+# Learning Material
+learn
+
+# Tools
