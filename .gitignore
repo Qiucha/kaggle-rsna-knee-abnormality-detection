@@ -29,3 +29,4 @@ stubs/
 
 # Python
 __pycache__/
+venv/
