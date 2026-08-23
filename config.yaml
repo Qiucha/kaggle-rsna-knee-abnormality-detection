@@ -1,0 +1,6 @@
+data:
+  dir: data
+  train: train.csv
+  train_series: train_series.csv
+  lm_label:
+    dir: lm_label
