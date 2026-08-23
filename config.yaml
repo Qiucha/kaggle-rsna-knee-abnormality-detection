@@ -4,5 +4,6 @@ data:
   train_series: train_series.csv
   gold_label: gold_label.csv
   gold_unlabeled: gold_unlabeled.csv
+  gold_translated: gold_translated.csv
   lm_label:
     dir: lm_label

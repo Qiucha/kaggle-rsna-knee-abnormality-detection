@@ -30,3 +30,5 @@ stubs/
 # Python
 __pycache__/
 venv/
+.env
+secrets/
