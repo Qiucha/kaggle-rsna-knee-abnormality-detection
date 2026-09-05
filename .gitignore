@@ -18,8 +18,18 @@ research
 # Data
 *.dcm
 *.png
+data/processed/
 
 # Learning Material
 learn
 
 # Tools
+
+# Local Python environment and bytecode
+.venv/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+
+# Local training artifacts
+checkpoints/

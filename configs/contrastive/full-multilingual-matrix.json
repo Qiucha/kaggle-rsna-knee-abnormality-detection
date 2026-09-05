@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "requires_cuda": true,
+  "output_root": "checkpoints/contrastive/full-multilingual-v1",
+  "base_args": [
+    "--cohort-manifest",
+    "data/processed/contrastive-cohort.jsonl",
+    "--text-model",
+    "multilingual-e5",
+    "--text-model-revision",
+    "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "--text-pooling",
+    "mean",
+    "--text-prefix",
+    "query: ",
+    "--image-model",
+    "facebook/dinov2-small",
+    "--image-model-revision",
+    "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+    "--max-text-length",
+    "512",
+    "--image-unfreeze-last",
+    "0",
+    "--text-unfreeze-last",
+    "0",
+    "--epochs",
+    "20",
+    "--batch-size",
+    "32",
+    "--num-workers",
+    "4",
+    "--image-cache-dir",
+    "checkpoints/contrastive/full-multilingual-v1/image-cache",
+    "--image-memory-cache-size",
+    "16",
+    "--trainable-checkpoints"
+  ],
+  "experiments": [
+    {
+      "name": "00-projection-full-mean-512",
+      "purpose": "Primary projection-only multilingual baseline",
+      "args": []
+    },
+    {
+      "name": "01-projection-full-mean-256",
+      "purpose": "Measure the effect of stronger report truncation",
+      "args": [
+        "--max-text-length",
+        "256"
+      ]
+    },
+    {
+      "name": "02-projection-full-cls-512",
+      "purpose": "Compare CLS with the model-card-recommended masked mean pooling",
+      "args": [
+        "--text-pooling",
+        "cls"
+      ]
+    },
+    {
+      "name": "03-projection-impression-mean-512",
+      "purpose": "Compare conclusion/impression text with the full report",
+      "args": [
+        "--report-view",
+        "impression"
+      ]
+    },
+    {
+      "name": "04-projection-findings-impression-mean-512",
+      "purpose": "Compare findings plus conclusion/impression with the full report",
+      "args": [
+        "--report-view",
+        "findings_impression"
+      ]
+    },
+    {
+      "name": "05-image-block-1",
+      "purpose": "Unfreeze only the final image block",
+      "args": [
+        "--image-unfreeze-last",
+        "1"
+      ]
+    },
+    {
+      "name": "06-text-block-1",
+      "purpose": "Unfreeze only the final text block",
+      "args": [
+        "--text-unfreeze-last",
+        "1"
+      ]
+    },
+    {
+      "name": "07-both-block-1",
+      "purpose": "Unfreeze the final block in both towers after isolated comparisons",
+      "args": [
+        "--image-unfreeze-last",
+        "1",
+        "--text-unfreeze-last",
+        "1"
+      ]
+    }
+  ],
+  "experiment_version": "full-multilingual-v1",
+  "manifest_sha256": "54bd803e23acf3299daeb815d651a34249c736689e20d790f862fc71c0520b63",
+  "selection_policy": "mean_r@1 descending, validation_loss ascending, earliest epoch"
+}

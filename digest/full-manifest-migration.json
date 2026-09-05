@@ -1,0 +1,60 @@
+{
+  "checks": [
+    "source CSV hashes",
+    "report hashes",
+    "series directories",
+    "saved pixel QC",
+    "reader UID/group/split/integrity validation"
+  ],
+  "limitations": "Establishes integrity from migration onward; no historical checksum or fresh pixel decode. Patient independence remains unproven.",
+  "manifest_path": "data/processed/contrastive-cohort.jsonl",
+  "manifest_sha256_after": "54bd803e23acf3299daeb815d651a34249c736689e20d790f862fc71c0520b63",
+  "manifest_sha256_before": "54bd803e23acf3299daeb815d651a34249c736689e20d790f862fc71c0520b63",
+  "metadata_after_sha256": "199416bb6a4b401ab586ace7a5d980bb281f96883d3ce8d1af6e29dbe7adbbf6",
+  "metadata_before": {
+    "config": {
+      "crop_mm": 130.0,
+      "image_size": 224,
+      "language_column": "Original Language",
+      "output_path": "data/processed/contrastive-cohort.jsonl",
+      "overwrite": false,
+      "pixel_workers": 8,
+      "report_column": "Report",
+      "reports_csv": "data/sample/train.csv",
+      "seed": 2026,
+      "series_csv": "/mnt/d/train_series.csv",
+      "series_root": "/mnt/d/train_series",
+      "slice_band_high": 0.8,
+      "slice_band_low": 0.2,
+      "slices_per_plane": 3,
+      "text_policy": "multilingual_raw",
+      "train_fraction": 0.8,
+      "translated_report_column": "Translated Report",
+      "translations_csv": "data/gold_translated.csv",
+      "validate_pixels": true,
+      "validation_fraction": 0.1
+    },
+    "manifest_version": 1,
+    "preprocessing_version": "2026-09-04.1",
+    "seed": 2026,
+    "source_hashes": {
+      "reports_csv": "8ca2203c0e9d61c080c7a314c7cdb51c1b03a1d9eb4770819f7f34af53ef4e33",
+      "series_csv": "573c1d80772bf41211c91b149c95677385a1c22d63f485c347f1b46c0177aef3",
+      "translations_csv": "f111d544a9afea18c4db8dce0911c88003128284458a129a00458101c523890a"
+    },
+    "test_fraction": 0.09999999999999995,
+    "text_policy": "multilingual_raw",
+    "train_fraction": 0.8,
+    "validation_fraction": 0.1
+  },
+  "metadata_before_sha256": "40730e39def828ed94b6436ebb8970c68e20852007891ff9abdfd61aa69a8c90",
+  "migrated_at": "2026-09-05T10:25:36.518588+00:00",
+  "patient_groups": 4407,
+  "rows": 4407,
+  "schema_version": 1,
+  "split_counts": {
+    "test": 440,
+    "train": 3526,
+    "validation": 441
+  }
+}

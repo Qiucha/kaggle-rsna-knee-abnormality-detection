@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Novo Contrastive Learning — Project Digest</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #09111f;
+      --surface: #101b2d;
+      --surface-2: #16243a;
+      --line: #2a3d59;
+      --text: #e8eef8;
+      --muted: #9db0c9;
+      --green: #51d88a;
+      --green-bg: #123425;
+      --amber: #ffc857;
+      --amber-bg: #3b2d10;
+      --red: #ff7b7b;
+      --red-bg: #3e1d26;
+      --blue: #72b7ff;
+      --blue-bg: #132e4d;
+      --purple: #b9a4ff;
+      --radius: 16px;
+      --shadow: 0 18px 55px rgba(0, 0, 0, .28);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(63, 124, 190, .20), transparent 35rem),
+        radial-gradient(circle at 100% 15%, rgba(91, 70, 160, .16), transparent 32rem),
+        var(--bg);
+      color: var(--text);
+      font: 16px/1.62 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: var(--blue); }
+    code, pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+    code { color: #cae3ff; }
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 80px;
+    }
+    header {
+      padding: 38px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(19, 46, 77, .94), rgba(16, 27, 45, .94));
+      box-shadow: var(--shadow);
+    }
+    h1, h2, h3 { line-height: 1.18; margin-top: 0; }
+    h1 { margin-bottom: 12px; font-size: clamp(2rem, 5vw, 3.7rem); letter-spacing: -.045em; }
+    h2 { margin: 0 0 18px; font-size: clamp(1.45rem, 3vw, 2rem); letter-spacing: -.025em; }
+    h3 { margin-bottom: 8px; font-size: 1.06rem; }
+    p { margin: 0 0 14px; }
+    .eyebrow { color: var(--blue); font-size: .79rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    .lede { max-width: 850px; color: #cbd8e9; font-size: 1.13rem; }
+    .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .badge, .state {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(9, 17, 31, .55);
+      font-size: .82rem;
+      font-weight: 700;
+    }
+    .state::before { width: 8px; height: 8px; border-radius: 50%; content: ""; background: currentColor; }
+    .done { color: var(--green); background: var(--green-bg); border-color: #296d49; }
+    .active { color: var(--amber); background: var(--amber-bg); border-color: #6c5220; }
+    .blocked { color: var(--red); background: var(--red-bg); border-color: #76404b; }
+    .ready { color: var(--blue); background: var(--blue-bg); border-color: #285783; }
+    nav { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 0; }
+    nav a { padding: 7px 11px; border-radius: 9px; color: #cfe4ff; background: rgba(9, 17, 31, .5); text-decoration: none; }
+    nav a:hover { background: rgba(114, 183, 255, .15); }
+    section {
+      margin-top: 24px;
+      padding: 30px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(16, 27, 45, .93);
+      box-shadow: var(--shadow);
+    }
+    .callout { border-left: 4px solid var(--amber); padding: 15px 17px; border-radius: 9px; background: var(--amber-bg); }
+    .callout strong { color: var(--amber); }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+    .stat { grid-column: span 3; padding: 18px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); }
+    .stat b { display: block; font-size: 1.7rem; line-height: 1; margin-bottom: 8px; color: #fff; }
+    .stat span { color: var(--muted); font-size: .88rem; }
+    .flow { display: grid; gap: 10px; }
+    .flow-row { display: grid; grid-template-columns: 1fr 42px 1fr 42px 1fr; align-items: stretch; gap: 8px; }
+    .flow-row.two { grid-template-columns: 1fr 42px 1fr; max-width: 760px; margin: 0 auto; }
+    .node { min-height: 124px; padding: 16px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); }
+    .node small { display: block; color: var(--muted); }
+    .node.done-node { border-top: 3px solid var(--green); }
+    .node.active-node { border-top: 3px solid var(--amber); }
+    .node.ready-node { border-top: 3px solid var(--blue); }
+    .node.blocked-node { border-top: 3px solid var(--red); }
+    .arrow { display: grid; place-items: center; color: var(--muted); font-size: 1.45rem; }
+    .down { text-align: center; height: 34px; color: var(--muted); font-size: 1.5rem; }
+    .join { margin: 0 auto; width: min(720px, 100%); }
+    .timeline { position: relative; margin-left: 7px; }
+    .timeline::before { position: absolute; top: 8px; bottom: 8px; left: 12px; width: 2px; content: ""; background: var(--line); }
+    .step { position: relative; display: grid; grid-template-columns: 26px 1fr; gap: 14px; margin: 0 0 18px; }
+    .step:last-child { margin-bottom: 0; }
+    .dot { z-index: 1; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: var(--surface-2); border: 2px solid var(--line); font-size: .7rem; font-weight: 900; }
+    .step.done-step .dot { color: #062313; background: var(--green); border-color: var(--green); }
+    .step.active-step .dot { color: #2c2100; background: var(--amber); border-color: var(--amber); }
+    .step.ready-step .dot { color: #081a2e; background: var(--blue); border-color: var(--blue); }
+    .step.blocked-step .dot { color: #321016; background: var(--red); border-color: var(--red); }
+    .step-body { padding: 1px 0 4px; }
+    .step-body p { color: var(--muted); margin: 5px 0 0; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: #bdd1ea; font-size: .79rem; letter-spacing: .07em; text-transform: uppercase; }
+    td { color: #d4dfed; }
+    ul { margin: 8px 0 0; padding-left: 20px; }
+    li + li { margin-top: 6px; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    pre { overflow-x: auto; margin: 12px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 10px; color: #d8ebff; background: #07101d; font-size: .86rem; }
+    .muted { color: var(--muted); }
+    .warn { color: var(--amber); }
+    footer { margin-top: 22px; color: var(--muted); text-align: center; font-size: .85rem; }
+    @media (max-width: 850px) {
+      .stat { grid-column: span 6; }
+      .flow-row, .flow-row.two { grid-template-columns: 1fr; max-width: none; }
+      .flow-row .arrow { height: 28px; transform: rotate(90deg); }
+      .split { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 520px) {
+      .shell { width: min(100% - 20px, 1180px); padding-top: 16px; }
+      header, section { padding: 21px; }
+      .stat { grid-column: span 12; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="eyebrow">Novo project · engineering and research digest</div>
+      <h1>Contrastive learning pipeline</h1>
+      <p class="lede">A paired knee-MRI/report representation pipeline is now mechanically sound on the pilot cohort. The reproducible full-cohort experiment path is prepared, while full pixel QC is running and GPU training is blocked on this CPU-only host.</p>
+      <div class="meta">
+        <span class="state done">Core pipeline verified</span>
+        <span class="state active">Full manifest pixel QC running</span>
+        <span class="state blocked">Full training needs CUDA</span>
+        <span class="badge">Updated 2026-09-04 · Asia/Taipei</span>
+        <span class="badge">Local changes only · no commit or push</span>
+      </div>
+      <nav aria-label="Page sections">
+        <a href="#summary">Summary</a>
+        <a href="#flow">Pipeline flow</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#evidence">Evidence</a>
+        <a href="#risks">Open risks</a>
+        <a href="#handoff">Next commands</a>
+      </nav>
+    </header>
+
+    <section id="summary">
+      <h2>Current state at a glance</h2>
+      <div class="grid">
+        <div class="stat"><b>4,407</b><span>full-cohort study/report rows</span></div>
+        <div class="stat"><b>58 / 58</b><span>pilot studies passing three-plane pixel QC</span></div>
+        <div class="stat"><b>17 / 17</b><span>unit tests passing</span></div>
+        <div class="stat"><b>18 / 18</b><span>best checkpoints independently re-scored</span></div>
+        <div class="stat"><b>0</b><span>saved metrics changed by corrected evaluator</span></div>
+        <div class="stat"><b>0</b><span>tied queries in saved checkpoints</span></div>
+        <div class="stat"><b>9.6 MB</b><span>each new trainable-delta smoke checkpoint</span></div>
+        <div class="stat"><b>0 GPUs</b><span>CUDA devices on the current host</span></div>
+      </div>
+      <div class="callout" style="margin-top:18px">
+        <strong>Bottom line.</strong> The software can train, checkpoint, reload, and evaluate a paired image/report model. It has not yet produced credible full-cohort or clinical evidence. The next scientifically meaningful result is a projection-only baseline on the language-consistent 4,407-study manifest, run on a CUDA host after pixel QC completes.
+      </div>
+    </section>
+
+    <section id="flow">
+      <h2>End-to-end pipeline flow</h2>
+      <p class="muted">Green nodes are complete and verified, amber is currently running, blue is ready but not executed, and red is externally blocked.</p>
+      <div class="flow" role="img" aria-label="Flow chart of MRI and report inputs joining in contrastive training, evaluation, and downstream validation">
+        <div class="flow-row">
+          <div class="node done-node">
+            <span class="state done">Complete</span>
+            <h3>DICOM studies</h3>
+            <small>Select the largest fluid-sensitive sagittal, coronal, and axial series for each study.</small>
+          </div>
+          <div class="arrow">→</div>
+          <div class="node active-node">
+            <span class="state active">Running</span>
+            <h3>Manifest + pixel QC</h3>
+            <small>Patient grouping, immutable splits, series fingerprints, laterality, decode/finite/range checks.</small>
+          </div>
+          <div class="arrow">→</div>
+          <div class="node done-node">
+            <span class="state done">Implemented</span>
+            <h3>Lazy image dataset</h3>
+            <small>Three slices × three planes, 130 mm crop, normalization, left-knee orientation, bounded disk/LRU cache.</small>
+          </div>
+        </div>
+        <div class="down">↓</div>
+        <div class="flow-row">
+          <div class="node done-node">
+            <span class="state done">Complete</span>
+            <h3>Raw multilingual reports</h3>
+            <small>Source text and hashes are preserved; translated-English pilot remains available as a separate policy.</small>
+          </div>
+          <div class="arrow">→</div>
+          <div class="node done-node">
+            <span class="state done">Implemented</span>
+            <h3>Text policy + report view</h3>
+            <small>Full report, impression/conclusion, or findings + impression with deterministic fallback.</small>
+          </div>
+          <div class="arrow">→</div>
+          <div class="node done-node">
+            <span class="state done">Verified on pilot</span>
+            <h3>Tokenizer + collator</h3>
+            <small>Pinned multilingual E5, required <code>query: </code> prefix, masked padding, maximum 512 tokens.</small>
+          </div>
+        </div>
+        <div class="down">↓</div>
+        <div class="flow-row">
+          <div class="node done-node">
+            <span class="state done">Smoke-tested</span>
+            <h3>DINOv2 image tower</h3>
+            <small>Nine 2D slices → shared frozen backbone → CLS + mean patch features → learned plane attention.</small>
+          </div>
+          <div class="arrow">↘</div>
+          <div class="node ready-node">
+            <span class="state ready">Ready</span>
+            <h3>Shared embedding space</h3>
+            <small>Normalized 256-dimensional projections trained with learned-temperature symmetric InfoNCE.</small>
+          </div>
+          <div class="arrow">↖</div>
+          <div class="node done-node">
+            <span class="state done">Smoke-tested</span>
+            <h3>Multilingual E5 text tower</h3>
+            <small>Masked mean pooling → projection → normalized report embedding. Exact model revision is pinned.</small>
+          </div>
+        </div>
+        <div class="down">↓</div>
+        <div class="flow-row">
+          <div class="node blocked-node">
+            <span class="state blocked">Needs CUDA</span>
+            <h3>Full-cohort baseline</h3>
+            <small>Frozen towers, trainable plane fusion/projections, batch 32, 20 epochs, validation-only selection.</small>
+          </div>
+          <div class="arrow">→</div>
+          <div class="node ready-node">
+            <span class="state ready">Evaluator ready</span>
+            <h3>Retrieval evaluation</h3>
+            <small>Tie-aware R@1/5/10, mean/median rank, random baselines, bootstrap CI, per-query JSONL.</small>
+          </div>
+          <div class="arrow">→</div>
+          <div class="node ready-node">
+            <span class="state ready">Protocol ready</span>
+            <h3>Validation selection</h3>
+            <small>Select by validation mean R@1; validation loss breaks ties. Locked test is evaluated once.</small>
+          </div>
+        </div>
+        <div class="down">↓</div>
+        <div class="join node blocked-node">
+          <span class="state blocked">Not started</span>
+          <h3>Downstream and clinical validation</h3>
+          <small>Freeze the learned representation, run predefined pathology probes, subgroup/failure analysis, calibration, external-cohort validation, and clinical review. Retrieval alone does not establish diagnostic value.</small>
+        </div>
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <h2>Full path to complete contrastive learning</h2>
+      <div class="timeline">
+        <div class="step done-step">
+          <div class="dot">✓</div>
+          <div class="step-body"><h3>1. Audit pairing, preprocessing, reports, and historical runs</h3><p>Confirmed 4,407 unique study rows, a clean 58-study translated integration set, three-plane pilot decoding, and preliminary—not conclusive—historical signal.</p></div>
+        </div>
+        <div class="step done-step">
+          <div class="dot">✓</div>
+          <div class="step-body"><h3>2. Repair and independently validate retrieval metrics</h3><p>Collapsed embeddings now receive chance-level expected credit. All 18 current best checkpoints were re-scored; none contained ties and none changed.</p></div>
+        </div>
+        <div class="step done-step">
+          <div class="dot">✓</div>
+          <div class="step-body"><h3>3. Make the report language contract explicit</h3><p>The full experiment uses pinned multilingual E5 with mean pooling and prefixing. Tokenizer QC covers 4,407 reports, although semantic multilingual radiology validation remains open.</p></div>
+        </div>
+        <div class="step active-step">
+          <div class="dot">4</div>
+          <div class="step-body"><h3>4. Finish canonical full-cohort manifest and pixel QC</h3><p>The schema, hashes, patient-grouped splits, and translated pilot artifact are complete. Full three-plane decode/normalization QC is currently running on CPU.</p></div>
+        </div>
+        <div class="step done-step">
+          <div class="dot">✓</div>
+          <div class="step-body"><h3>5. Make experiments reproducible and resumable</h3><p>Protected outputs, exact resume state, model/source revision hashes, compact checkpoints, atomic bounded caching, and training-health diagnostics are implemented and tested.</p></div>
+        </div>
+        <div class="step blocked-step">
+          <div class="dot">6</div>
+          <div class="step-body"><h3>6. Train the projection-only full-cohort baseline</h3><p>Run <code>00-projection-full-mean-512</code> on a CUDA machine. Confirm improving validation loss/retrieval, positive-negative separation, stable variance, temperature, and gradients before doing ablations.</p></div>
+        </div>
+        <div class="step ready-step">
+          <div class="dot">7</div>
+          <div class="step-body"><h3>7. Run controlled representation ablations</h3><p>Compare 256 vs 512 tokens, CLS vs masked mean pooling, report sections, image-only unfreezing, text-only unfreezing, and both towers—one controlled change at a time.</p></div>
+        </div>
+        <div class="step ready-step">
+          <div class="dot">8</div>
+          <div class="step-body"><h3>8. Freeze the choice and evaluate the locked test once</h3><p>Choose the experiment from validation results, persist the immutable selection, then produce test metrics, bootstrap intervals, and per-query error examples once.</p></div>
+        </div>
+        <div class="step blocked-step">
+          <div class="dot">9</div>
+          <div class="step-body"><h3>9. Establish usefulness beyond retrieval</h3><p>Evaluate predefined downstream labels, external generalization, clinically meaningful subgroups, calibration, failure modes, and expert review before making performance claims.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="evidence">
+      <h2>Evidence and artifacts</h2>
+      <table>
+        <thead><tr><th>Area</th><th>Current evidence</th><th>Interpretation</th></tr></thead>
+        <tbody>
+          <tr><td>Unit and syntax checks</td><td>17 tests pass; source/scripts compile; patch whitespace check passes.</td><td>Core seams and known regression cases are covered, but this is not exhaustive model validation.</td></tr>
+          <tr><td>Pilot cohort</td><td>58 eligible; 46 train, 6 validation, 6 locked test; all pass three-plane pixel QC.</td><td>Strong integration fixture, far too small for choosing a final model.</td></tr>
+          <tr><td>Metric repair</td><td>Four collapsed embeddings produce R@1 = 0.25 and mean rank = 2.5.</td><td>The previous perfect score for tied outputs is fixed.</td></tr>
+          <tr><td>Checkpoint re-score</td><td>18/18 complete; zero tied queries and zero metric drift.</td><td>Historical pilot values remain unchanged, with new auditable rankings and uncertainty.</td></tr>
+          <tr><td>Text audit</td><td>4,407 tokenized; zero unknown tokens; 625 full reports exceed 512 tokens.</td><td>Encoding is mechanically supported; token coverage is not semantic or clinical validation.</td></tr>
+          <tr><td>CPU smoke run</td><td>Pinned DINOv2 + multilingual E5 trained, checkpointed, reloaded, and reproduced metrics.</td><td>The full mechanics work. Validation mean R@1 = 1/6, equal to chance, as expected from a tiny smoke test.</td></tr>
+          <tr><td>Full experiment</td><td>Eight-command matrix dry-runs; real launch fails fast with no CUDA.</td><td>Ready for a GPU host once the manifest is complete.</td></tr>
+        </tbody>
+      </table>
+      <div class="split" style="margin-top:20px">
+        <div>
+          <h3>Primary readable documents</h3>
+          <ul>
+            <li><a href="contrastive-learning-current-state.md">Original current-state audit</a></li>
+            <li><a href="contrastive-learning-implementation-status.md">Implementation status for items 2–7</a></li>
+            <li><a href="contrastive-checkpoint-rescore.json">Checkpoint re-score aggregate</a></li>
+            <li><a href="multilingual-text-qc.json">Multilingual tokenizer QC</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Important implementation entry points</h3>
+          <ul>
+            <li><code>scripts/build_contrastive_manifest.py</code></li>
+            <li><code>scripts/train_contrastive.py</code></li>
+            <li><code>scripts/evaluate_contrastive.py</code></li>
+            <li><code>scripts/run_contrastive_matrix.py</code></li>
+            <li><code>scripts/finalize_contrastive_matrix.py</code></li>
+            <li><code>configs/contrastive/full-multilingual-matrix.json</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="risks">
+      <h2>What is still missing or uncertain</h2>
+      <div class="split">
+        <div>
+          <h3 class="warn">Required before trusting a model result</h3>
+          <ul>
+            <li>Complete and inspect full-cohort pixel-QC counts.</li>
+            <li>Train the full projection baseline on an actual CUDA device.</li>
+            <li>Confirm that learning curves beat random ranking with healthy embeddings—not just a lucky selected epoch.</li>
+            <li>Review truncation and section extraction errors for long reports.</li>
+            <li>Keep the test split locked until validation-based selection is frozen.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="warn">Required before clinical claims</h3>
+          <ul>
+            <li>Validate multilingual medical semantics, not only tokenizer coverage.</li>
+            <li>Resolve whether unique anonymized PatientIDs truly represent unique patients.</li>
+            <li>Handle clinically similar/multi-positive studies that ordinary InfoNCE treats as negatives.</li>
+            <li>Assess the information lost by representing a 3D study with only nine slices.</li>
+            <li>Add downstream pathology probes, an external cohort, subgroup analysis, calibration, and expert error review.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="handoff">
+      <h2>Exact next execution sequence</h2>
+      <p>After the full manifest job reports success, verify its counts and run a preparation-only check. Then, on a CUDA host, launch only the primary baseline:</p>
+      <pre><code>.venv/bin/python scripts/train_contrastive.py \
+  --cohort-manifest data/processed/contrastive-cohort.jsonl \
+  --text-model multilingual-e5 \
+  --prepare-only
+
+.venv/bin/python scripts/run_contrastive_matrix.py \
+  --experiment 00-projection-full-mean-512</code></pre>
+      <p style="margin-top:16px">If baseline diagnostics are healthy, run the remaining declared experiments. After reviewing them and freezing the choice on validation:</p>
+      <pre><code>.venv/bin/python scripts/run_contrastive_matrix.py
+
+.venv/bin/python scripts/finalize_contrastive_matrix.py \
+  --evaluate-locked-test</code></pre>
+      <p class="muted" style="margin-top:14px">The full matrix command will protect existing run directories. The finalizer will not overwrite locked-test outputs. No current work has been committed or pushed.</p>
+    </section>
+
+    <footer>Static local digest · contains summaries and paths, not embedded report text or patient identifiers</footer>
+  </main>
+</body>
+</html>
