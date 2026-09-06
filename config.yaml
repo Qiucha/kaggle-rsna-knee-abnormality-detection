@@ -3,6 +3,7 @@ data:
   train: train.csv
   train_translated: train_translated.csv
   train_translated_clean: train_translated_clean.csv
+  claude_translations: claude_translations.csv
   train_series: train_series.csv
   gold_label: gold_label.csv
   gold_unlabeled: gold_unlabeled.csv
