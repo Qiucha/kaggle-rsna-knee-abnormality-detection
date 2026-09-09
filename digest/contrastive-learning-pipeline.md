@@ -8,7 +8,7 @@ Status: implemented and intentionally uncommitted
 
 ## Executive summary
 
-The pipeline learns a shared embedding space for one knee MRI study and its radiology report. It reads reports from `data/sample/train.csv`, locates the corresponding DICOM study under `/mnt/d/train_series`, encodes the study with DINOv2, encodes the report with a selectable medical language model, and optimizes symmetric image-to-text/text-to-image InfoNCE.
+The pipeline learns a shared embedding space for one knee MRI study and its radiology report. It reads reports from `data/sample/train.csv`, locates the corresponding DICOM study under `<data_root>/train_series`, encodes the study with DINOv2, encodes the report with a selectable medical language model, and optimizes symmetric image-to-text/text-to-image InfoNCE.
 
 The implementation keeps the image-reading behavior of `minimal-baseline:train.ipynb`. Its runnable defaults are:
 
@@ -28,8 +28,8 @@ The two modalities are deliberately loaded from different configured roots:
 | Modality | Default source | Join key |
 |---|---|---|
 | English report | `data/sample/train.csv`, column `Report` | `StudyInstanceUID` |
-| Series metadata | `/mnt/d/train_series.csv` | `StudyInstanceUID`, `SeriesInstanceUID` |
-| DICOM pixels | `/mnt/d/train_series/<StudyInstanceUID>/<SeriesInstanceUID>/*.dcm` | Directory names from the manifest |
+| Series metadata | `<data_root>/train_series.csv` | `StudyInstanceUID`, `SeriesInstanceUID` |
+| DICOM pixels | `<data_root>/train_series/<StudyInstanceUID>/<SeriesInstanceUID>/*.dcm` | Directory names from the manifest |
 
 A read-only inventory check found:
 
@@ -49,10 +49,13 @@ Only studies satisfying all of these conditions enter training:
 
 The UID split happens after filtering, so a study cannot occur in both train and validation. A patient-level identifier is not available in the supplied tables, so the code cannot guarantee patient-disjointness when one patient has multiple study UIDs.
 
+`<data_root>` is this machine's DICOM mount, assigned in `paths.json` rather than
+hard-coded; see `configs/paths.template.json`.
+
 ## End-to-end data flow
 
 ```text
-data/sample/train.csv                     /mnt/d/train_series.csv + DICOM tree
+data/sample/train.csv               <data_root>/train_series.csv + DICOM tree
           |                                             |
           +---------- inner join on Study UID ----------+
                                 |
@@ -197,8 +200,6 @@ Run the default baseline-compatible experiment:
 
 ```bash
 python scripts/train_contrastive.py \
-  --data-root /mnt/d \
-  --reports-csv data/sample/train.csv \
   --text-model radbert-va \
   --output-dir checkpoints/contrastive/radbert-va-dinov2-small
 ```

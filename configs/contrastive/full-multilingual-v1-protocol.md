@@ -12,8 +12,8 @@ and 440 locked test. Use raw multilingual reports with the exact pinned E5 and
 DINOv2 revisions in the matrix. No pathology labels enter contrastive training.
 Select checkpoints by maximum bidirectional mean validation Recall@1, then minimum
 validation loss, then earliest epoch. Across experiments, identical recall/loss
-uses declared matrix order. Validation loss is the implementation's average of
-batch contrastive losses; keep validation batch size/order fixed across comparisons.
+uses declared matrix order. Validation loss is symmetric contrastive loss over the complete validation
+embedding matrix; keep validation batch size/order fixed across comparisons.
 Training, resume, and finalization share this rule and verify saved checkpoint
 metrics. Tied retrieval similarities receive expected credit as implemented and tested.
 
@@ -26,8 +26,10 @@ Review both retrieval directions, loss curves, temperature, embedding standard
 deviation, paired/unpaired similarities, and per-query failures. For 441 validation
 candidates, random Recall@1/5/10 is 1/441, 5/441, 10/441 (approximately 0.227%,
 1.134%, 2.268%) and expected rank is 221. Report failures and negative results.
-A continue/revise decision requires a completed baseline and diagnostics; it is
-currently pending CUDA execution.
+A continue/revise decision requires a completed baseline and diagnostics. The baseline
+completed on 2026-09-05; retain it as the comparison anchor. The pre-tuning gate
+remains open: see `digest/full-projection-v1-data-review.md` for confirmed cross-split
+report duplicates, provisional report-error review and unresolved image/provenance checks.
 
 ## Leakage and label limitations
 

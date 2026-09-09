@@ -1,11 +1,96 @@
 # Knee MRI contrastive experiments
 
-The current experiment contract is [full-multilingual-v1](configs/contrastive/full-multilingual-matrix.json).
-Use [ROADMAP.md](ROADMAP.md) for milestones and the
-[frozen protocol](configs/contrastive/full-multilingual-v1-protocol.md) for selection and limitations.
-Older translated-English pilot instructions in `digest/` describe historical experiments.
+This project learns shared representations of knee MRI studies and their radiology
+reports, so that a study retrieves its own report and vice versa. Retrieval is the
+intermediate check; the working goal in [ROADMAP.md](ROADMAP.md) is whether those
+representations improve prediction of the dataset's pathology labels.
+
+Open the [interactive project digest](digest/project-state.html) for current results,
+the model architecture, and data limitations. It works offline; regenerate its
+artifact snapshot with `.venv/bin/python scripts/build_project_digest.py`.
+
+The current experiment contract is
+[full-multilingual-v1](configs/contrastive/full-multilingual-matrix.json); its
+selection rules and stated limitations are in the
+[frozen protocol](configs/contrastive/full-multilingual-v1-protocol.md).
+The [pipeline code guide](src/contrastive_learning/README.md) explains the modules
+and what each one hides. Older translated-English pilot notes in `digest/` describe
+historical experiments and are not current instructions.
+
+---
+
+## Contents
+
+- [What the code is](#what-the-code-is) — modules and scripts
+- [Setup](#setup) — CPU and GPU environments, restoring private artifacts
+- [Deploy a single training run](#deploy-a-single-training-run)
+- [Deploy the full experiment grid](#deploy-the-full-experiment-grid)
+- [Evaluating and reporting](#evaluating-and-reporting)
+- [Reproducibility rules](#reproducibility-rules)
+
+---
+
+## What the code is
+
+### Library — `src/contrastive_learning/`
+
+One package holds all pipeline logic; scripts are thin wrappers around it. Full
+detail is in the [pipeline code guide](src/contrastive_learning/README.md).
+
+| Module | Responsibility |
+| --- | --- |
+| `config.py` | `TrainConfig`: every setting of a run, its validation, saved-config loading |
+| `cli.py` | Training flags and their translation into a configuration |
+| `training.py` | Run lifecycle: optimizer groups, schedule, epoch loop, resume, checkpointing |
+| `inputs.py` | Cohort loading, split policy, and loaders shared by training and evaluation |
+| `data.py` | Study/report pairing, dataset, image caches, batch collation |
+| `manifest.py` | Building and reading frozen, patient-grouped cohorts |
+| `preprocessing.py` | DICOM ordering, cropping, normalization, orientation, augmentation |
+| `text.py` | Report views: full, impression, findings+impression, impression-first |
+| `model.py` | Image and text towers, plane attention pooling, contrastive loss |
+| `evaluation.py` | Tie-aware retrieval metrics and checkpoint evaluation reports |
+| `checkpoints.py` | Checkpoint format, best-epoch selection, run provenance, resume |
+| `experiments.py` | Matrix execution, immutable validation selection, checkpoint rescoring |
+| `artifacts.py` | Atomic artifact writes and SHA-256 content hashes |
+
+### Scripts — `scripts/`
+
+Every script is run from the repository root, so relative paths in matrices and
+configurations resolve consistently.
+
+| Script | What it does |
+| --- | --- |
+| `build_contrastive_manifest.py` | Freeze a cohort: pair reports with DICOM series, resolve the text policy, assign patient-grouped train/validation/test splits, and write the manifest with checksums. Run once per cohort version. |
+| `train_contrastive.py` | Train one run. The single training entry point; every flag is listed by `--help`. |
+| `run_measured_training.py` | Wrap `train_contrastive.py` unchanged and additionally record elapsed time and peak CUDA memory to a telemetry file. Requires CUDA. |
+| `run_contrastive_matrix.py` | Run a frozen experiment matrix, or (`--dry-run`) print the exact command for each experiment without executing it. |
+| `finalize_contrastive_matrix.py` | Verify every run's best epoch against its own history, write the immutable `validation-selection.json`, and optionally spend the locked test split. |
+| `evaluate_contrastive.py` | Score one saved checkpoint on a split; write its metrics report and per-query rankings. |
+| `rescore_contrastive_checkpoints.py` | Re-evaluate every saved `best.pt` under current metric definitions and summarize which checkpoints actually moved. |
+| `build_project_digest.py` | Rebuild `digest/project-state.html` from local experiment artifacts. Takes no arguments. |
+| `translate_reports_claude.py` | Prepare, run, and merge report translations used by the `translated_english` cohorts. Only `run --execute` calls out to Claude; everything else is offline. |
+| `templates/` | HTML template used by `build_project_digest.py`. |
+
+One-off audit scripts for completed experiments have been removed; their outputs
+remain in `digest/` (for example `digest/full-projection-v1-data-audit.json`,
+`digest/english-medical-text-results.json`, `digest/full-manifest-migration.json`).
+
+### Tests
+
+```bash
+.venv/bin/python -m pytest -q
+```
+
+Covers report views, the image cache, cohort manifest invariants, retrieval metrics
+and tie handling, checkpoint selection and the run lifecycle, image tower shapes and
+gradients, experiment matrix handling, and the translation runner. Tests requiring
+`pydicom` skip when it is unavailable.
+
+---
 
 ## Setup
+
+### CPU environment
 
 Use Python 3.13.12 and install `requirements-lock.txt` in a virtual environment:
 
@@ -15,40 +100,160 @@ python3.13 -m venv .venv
 .venv/bin/python -m pytest -q
 ```
 
-The lock records the local CPU environment. A GPU host needs compatible CUDA builds
-of the pinned PyTorch/torchvision versions and an NVIDIA driver. Record the actual
-GPU environment with `pip freeze`, driver version, and GPU model before training;
-the CPU lock alone does not establish a working CUDA environment.
+### GPU environment
 
-Restore private/local artifacts listed with SHA-256 hashes in
-[the artifact inventory](configs/contrastive/full-multilingual-v1-artifacts.json).
-The full cohort and metadata belong in `data/processed/`; DICOM series are under
-`/mnt/d/train_series`, and the original series CSV is `/mnt/d/train_series.csv`.
-The manifest contains absolute series paths: preserve this mount layout.
-Copy the two pinned Hugging Face snapshots (including referenced blob contents)
-into the training host's Hugging Face cache. Model revisions are pinned in the matrix;
-compact checkpoints require those exact frozen backbones at reload time.
-`data/gold_translated.csv` is an external input recorded in the inventory.
-
-The full manifest checksum was added by an audited migration; see
-[digest/full-manifest-migration.json](digest/full-manifest-migration.json).
-The reader now rejects missing or mismatched checksums. Do not recalculate checksums
-silently to accept changed data; changes require a new experiment version.
-
-## Run
+The isolated GPU environment is `.venv-cuda`, using the same PyTorch 2.13.0 and
+torchvision 0.28.0 releases with CUDA 12.6 wheels. The supported pairing is listed in
+[PyTorch's version instructions](https://pytorch.org/get-started/previous-versions/).
+Restore it from the separately captured `requirements-cuda-lock.txt`:
 
 ```bash
-.venv/bin/python -c 'import torch; assert torch.cuda.is_available(); print(torch.__version__, torch.cuda.get_device_name(0))'
+python3.13 -m venv .venv-cuda
+.venv-cuda/bin/python -m pip install --extra-index-url https://download.pytorch.org/whl/cu126 -r requirements-cuda-lock.txt
+.venv-cuda/bin/python -c 'import torch; assert torch.cuda.is_available(); print(torch.__version__, torch.cuda.get_device_name(0))'
+```
+
+Use `.venv-cuda/bin/python` for every GPU command below. On this WSL device CUDA is
+exposed through `/dev/dxg`; invoke `/usr/lib/wsl/lib/nvidia-smi` when it is absent
+from PATH. GPU commands must run with host device access — the agent sandbox can
+hide `/dev/dxg`. The installed Windows NVIDIA driver already supplies CUDA support
+to WSL; see [NVIDIA's WSL guide](https://docs.nvidia.com/cuda/wsl-user-guide/).
+
+### Machine directories
+
+No directory that differs between machines is written into the code. One JSON
+file assigns them:
+
+```bash
+cp configs/paths.template.json paths.json   # then edit data_root
+```
+
+`paths.json` is git-ignored and read from the repository root; set
+`CONTRASTIVE_PATHS_CONFIG` or pass `--paths-config` to keep it elsewhere. It may
+assign `data_root` (the DICOM mount, required by anything that reads DICOM data),
+`reports_csv`, `cohort_manifest`, `output_dir`, and `image_cache_dir`. Relative
+values resolve against the file's own directory, and a command-line flag always
+overrides the file, so a frozen experiment matrix runs unchanged on a new host.
+`run_contrastive_matrix.py` trains in subprocesses that inherit the environment, so
+`CONTRASTIVE_PATHS_CONFIG` reaches them without a flag of its own.
+
+To resume a run recorded before this change, `data_root` must resolve to the value
+in that run's `config.json`. A resume compares every immutable setting, so a
+different mount — including no mount where one was recorded — is rejected.
+
+### Private and local artifacts
+
+Restore the artifacts listed with SHA-256 hashes in
+[the artifact inventory](configs/contrastive/full-multilingual-v1-artifacts.json):
+
+- The cohort manifest and its `.meta.json` belong in `data/processed/`.
+- DICOM series live under `<data_root>/train_series`, with the series CSV at
+  `<data_root>/train_series.csv`, where `data_root` is whatever you assigned in
+  `paths.json` (see [Machine directories](#machine-directories); this project was
+  developed with `/mnt/d`). The manifest stores absolute series paths, so a cohort
+  built on one mount must be rebuilt if that mount moves.
+- Copy the two pinned Hugging Face snapshots, including referenced blob contents,
+  into the training host's Hugging Face cache. Revisions are pinned in the matrix,
+  and compact checkpoints require those exact frozen backbones at reload time.
+- `data/translation/gold_translated.csv` is an external input recorded in the inventory.
+
+Building a new cohort instead of restoring one:
+
+```bash
+.venv/bin/python scripts/build_contrastive_manifest.py \
+  --output data/processed/contrastive-cohort.jsonl \
+  --text-policy multilingual_raw \
+  --validate-pixels
+```
+
+The reports CSV and the series paths come from `paths.json`; pass `--reports-csv`,
+`--series-csv`, or `--series-root` to override any of them for one build.
+
+A new cohort has a new checksum, so it is a new experiment version: update the
+matrix's `manifest_sha256` rather than reusing an existing one.
+
+---
+
+## Deploy a single training run
+
+**1. Confirm the environment and inputs.** This indexes the cohort, prints its
+summary, and stops before building a model:
+
+```bash
+.venv-cuda/bin/python -c 'import torch; assert torch.cuda.is_available(); print(torch.cuda.get_device_name(0))'
+.venv-cuda/bin/python scripts/train_contrastive.py \
+  --cohort-manifest data/processed/contrastive-cohort.jsonl --prepare-only
+```
+
+**2. Train.** A run refuses to write into an existing `--output-dir`, so each run
+gets its own:
+
+```bash
+.venv-cuda/bin/python scripts/train_contrastive.py \
+  --cohort-manifest data/processed/contrastive-cohort.jsonl \
+  --text-model multilingual-e5 --text-pooling mean --text-prefix 'query: ' \
+  --text-model-revision d128750597153bb5987e10b1c3493a34e5a4502a \
+  --image-model facebook/dinov2-small \
+  --image-model-revision ed25f3a31f01632728cabb09d1542f84ab7b0056 \
+  --max-text-length 512 --image-unfreeze-last 0 --text-unfreeze-last 0 \
+  --epochs 20 --batch-size 32 --num-workers 4 \
+  --image-cache-dir checkpoints/contrastive/image-cache \
+  --image-memory-cache-size 16 --trainable-checkpoints --local-files-only \
+  --output-dir checkpoints/contrastive/my-run
+```
+
+Add `--local-files-only` whenever the host should not reach the network. Prefix with
+`scripts/run_measured_training.py --telemetry PATH --` to also record runtime and
+peak CUDA memory.
+
+**3. Read the output directory.** A completed run contains:
+
+| File | Contents |
+| --- | --- |
+| `config.json` | The resolved configuration, exactly as the run used it |
+| `run_manifest.json` | Run id, Git revision, source-tree hash, input hashes, dependency versions, resolved backbone revisions, resume events |
+| `metrics.jsonl` | One line per epoch: training loss and gradient norm, per-group learning rates, retrieval metrics, embedding diagnostics |
+| `last.pt` | The most recent epoch, fully resumable |
+| `best.pt` | The epoch selected by highest `mean_r@1`, then lower validation loss, then earlier epoch |
+
+**4. Resume an interrupted run.** Keep every flag identical except the epoch target,
+and point at the run's own `last.pt`:
+
+```bash
+.venv-cuda/bin/python scripts/train_contrastive.py <the same flags> --epochs 20 \
+  --resume checkpoints/contrastive/my-run/last.pt
+```
+
+Resume restores the optimizer, schedule, loss scaler, loader shuffle, and random
+states, and refuses to continue if the saved configuration differs on any field
+other than the epoch target, if the metrics history does not end at the checkpoint's
+epoch, or if `best.pt` disagrees with that history. Runs saved under a superseded
+selection rule must be audited separately, not silently finalized under the new one.
+
+---
+
+## Deploy the full experiment grid
+
+A grid is one JSON matrix — [`full-multilingual-matrix.json`](configs/contrastive/full-multilingual-matrix.json) —
+that fixes the cohort by checksum, the shared arguments, the per-experiment
+overrides, the output root, and the selection policy before anything runs. The
+current grid is eight experiments comparing text truncation, pooling, report view,
+and which final blocks are unfrozen.
+
+**1. Validate the grid without running it.** This performs every check — cohort
+checksum, selection policy, experiment names — and prints the exact command for each
+experiment. It works on a CPU-only host:
+
+```bash
 .venv/bin/python scripts/run_contrastive_matrix.py --dry-run
 ```
 
-Before the full run, perform the following short GPU smoke and resume check. It
-uses the same pinned models and preprocessing, a separate output directory, two
-training epochs in total, and at most 64 cohort rows. The full cohort's fixed splits
-are retained. It never evaluates the test split.
+**2. GPU smoke and resume check.** Same pinned models and preprocessing, a separate
+output directory, at most 64 cohort rows, two epochs total. It never touches the
+test split:
 
 ```bash
-.venv/bin/python - <<'PY'
+.venv-cuda/bin/python - <<'PY'
 import json, subprocess, sys
 from pathlib import Path
 import torch
@@ -56,24 +261,106 @@ assert torch.cuda.is_available()
 m = json.loads(Path('configs/contrastive/full-multilingual-matrix.json').read_text())
 out = 'checkpoints/contrastive/full-multilingual-v1-gpu-smoke'
 command = [sys.executable, 'scripts/train_contrastive.py', *m['base_args'],
-           '--output-dir', out, '--max-studies', '64', '--batch-size', '4',
+           '--output-dir', out, '--max-studies', '64', '--batch-size', '32',
            '--num-workers', '0', '--local-files-only']
 subprocess.run([*command, '--epochs', '1'], check=True)
 subprocess.run([*command, '--epochs', '2', '--resume', out + '/last.pt'], check=True)
 subprocess.run([sys.executable, 'scripts/evaluate_contrastive.py', out + '/best.pt',
                 '--split', 'validation', '--output', out + '/reload-validation.json'], check=True)
 PY
-.venv/bin/python scripts/run_contrastive_matrix.py --experiment 00-projection-full-mean-512
 ```
 
-For an interrupted full run, use the exact command printed by `--dry-run` and append
-`--resume checkpoints/contrastive/full-multilingual-v1/00-projection-full-mean-512/last.pt`.
-Keep the original target of 20 epochs and all other settings. Resume rejects a
-`best.pt` that disagrees with history; older runs with the former tie rule must be
-audited separately, not silently finalized under the new policy.
+**3. Run the first experiment and inspect its cost.** Record runtime, peak GPU
+memory, and the validation diagnostics before committing to the rest of the grid:
 
-Inspect `metrics.jsonl`, `run_manifest.json`, `best.pt`, and `last.pt` in the run
-output directory. Record runtime, peak GPU memory, and the validation diagnostics
-before deciding whether to run the remaining matrix. Batch size is 32 (31 in-batch
-negatives per query); the final incomplete training batch is dropped.
-Do not invoke `--evaluate-locked-test` during baseline development.
+```bash
+.venv-cuda/bin/python scripts/run_contrastive_matrix.py --experiment 00-projection-full-mean-512
+```
+
+**4. Run the remaining experiments.** Omit `--experiment` to run the whole matrix in
+order; each experiment trains in a fresh process, so GPU memory is released between
+them. Repeat `--experiment` to select a subset:
+
+```bash
+.venv-cuda/bin/python scripts/run_contrastive_matrix.py
+```
+
+If one experiment is interrupted, resume it with the exact command printed by
+`--dry-run` plus `--resume <that experiment's output dir>/last.pt`, keeping the
+original 20-epoch target.
+
+**5. Select on validation.** This verifies every run's `best.pt` against its own
+history and writes `validation-selection.json` under the matrix output root:
+
+```bash
+.venv-cuda/bin/python scripts/finalize_contrastive_matrix.py
+```
+
+The selection file is immutable: re-running with different results is an error, not
+an overwrite. Add `--allow-incomplete` only to inspect a partially finished grid.
+
+**6. The locked test split — once.** Only after the selection above exists, and only
+when the experiment is genuinely finished:
+
+```bash
+.venv-cuda/bin/python scripts/finalize_contrastive_matrix.py --evaluate-locked-test
+```
+
+Do not invoke `--evaluate-locked-test` during baseline development. Selection reads
+validation only, which is what `locked_test_was_used_for_selection: false` in the
+selection file records.
+
+---
+
+## Evaluating and reporting
+
+Score a saved checkpoint on any split:
+
+```bash
+.venv-cuda/bin/python scripts/evaluate_contrastive.py \
+  checkpoints/contrastive/my-run/best.pt --split validation \
+  --image-cache-dir checkpoints/contrastive/image-cache
+```
+
+The checkpoint's own saved configuration defines the model and cohort, so a report
+cannot describe a different setup than the one trained. It writes
+`evaluation-<split>-<checkpoint>.json` and `rankings-<split>-<checkpoint>.jsonl`
+beside the checkpoint, containing recall at 1/5/10 in both directions, mean and
+median rank, expected credit for tied candidates, embedding diagnostics, per-query
+rankings, bootstrap 95% intervals, the random-ranking baseline for the split size,
+and any difference from the metrics stored at training time. Existing reports are
+never replaced without `--overwrite`.
+
+Re-score every saved checkpoint after a metric definition changes:
+
+```bash
+.venv/bin/python scripts/rescore_contrastive_checkpoints.py \
+  --checkpoint-root checkpoints/contrastive --summary digest/contrastive-checkpoint-rescore.json
+```
+
+Rebuild the browsable project snapshot:
+
+```bash
+.venv/bin/python scripts/build_project_digest.py
+```
+
+---
+
+## Reproducibility rules
+
+- **A cohort's checksum is its identity.** The manifest reader rejects missing or
+  mismatched checksums. Never recompute a checksum to accept changed data; changed
+  data means a new experiment version. The full manifest's checksum was added by an
+  audited migration recorded in [digest/full-manifest-migration.json](digest/full-manifest-migration.json).
+- **Selection is one-way.** Validation selection is written before any test
+  evaluation and cannot be rewritten with different content.
+- **Runs record their own source.** Runs are routinely launched from an uncommitted
+  working tree, so `run_manifest.json` stores both the Git revision and a hash of the
+  actual source tree and configuration files.
+- **Frozen protocols are historical records.** Files under `configs/` and `digest/`
+  that pin `source_sha256` describe the code as it was when a completed experiment
+  ran. Later refactors do not invalidate those results, and those hashes are not
+  updated to match current code.
+- **Compact checkpoints need their backbones.** `--trainable-checkpoints` stores only
+  trained weights and therefore requires pinned image and text model revisions, which
+  must be present in the Hugging Face cache at reload time.

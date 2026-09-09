@@ -1,0 +1,184 @@
+{
+  "protocol_sha256": "42bb972dc1314411bd6f7b014c9f159fb7b415747596bc4618a44c42509ed152",
+  "source_and_baseline_config_verified": true,
+  "manifest_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+  "arms": [
+    {
+      "name": "multilingual-e5-baseline",
+      "config_differences": {},
+      "tokenizer_files_sha256": {},
+      "splits": {
+        "train": {
+          "studies": 3524,
+          "over_512": 464,
+          "token_quantiles": {
+            "min": 32.0,
+            "median": 269.0,
+            "p90": 587.7000000000003,
+            "p95": 690.6999999999998,
+            "max": 1241.0
+          },
+          "mean_retained_character_fraction": 0.9709758955342389,
+          "reports_with_summary_heading": 2091,
+          "last_summary_heading_not_fully_retained": 302,
+          "empty_reports": 0,
+          "invalid_token_outputs": 0
+        },
+        "validation": {
+          "studies": 441,
+          "over_512": 67,
+          "token_quantiles": {
+            "min": 26.0,
+            "median": 271.0,
+            "p90": 602.0,
+            "p95": 685.0,
+            "max": 1032.0
+          },
+          "mean_retained_character_fraction": 0.9684623223416073,
+          "reports_with_summary_heading": 264,
+          "last_summary_heading_not_fully_retained": 43,
+          "empty_reports": 0,
+          "invalid_token_outputs": 0
+        }
+      }
+    },
+    {
+      "name": "e5-base-v2",
+      "config_differences": {
+        "output_dir": [
+          "checkpoints/contrastive/claude-translated-dfd07db-q2-v1/00-full-seed2026",
+          "checkpoints/contrastive/english-medical-text-v1/e5-base-v2-seed2026"
+        ],
+        "text_model": [
+          "intfloat/multilingual-e5-base",
+          "intfloat/e5-base-v2"
+        ],
+        "text_model_revision": [
+          "d128750597153bb5987e10b1c3493a34e5a4502a",
+          "f52bf8ec8c7124536f0efb74aca902b2995e5bcd"
+        ]
+      },
+      "tokenizer_files_sha256": {
+        "checkpoints/contrastive/english-medical-text-v1-models/e5-base-v2/1_Pooling/config.json": "f586ab6c734af7b8d14d898bfa7faa886f23b46f86dd1730514309893af13d75",
+        "checkpoints/contrastive/english-medical-text-v1-models/e5-base-v2/README.md": "127d92b493963c5e7f74fcad5190546e19e404e5ff5b5c0c606dbcda57ca530e",
+        "checkpoints/contrastive/english-medical-text-v1-models/e5-base-v2/config.json": "01cc39aa39538a8179aa131c8a16adc03b506c92009f091502e4eb0c702f5f78",
+        "checkpoints/contrastive/english-medical-text-v1-models/e5-base-v2/hub-model-metadata.json": "0ccc05bb7972fd6b0a823dce1a97b6bac33a0a6e446789ebe410934ef1d8772b",
+        "checkpoints/contrastive/english-medical-text-v1-models/e5-base-v2/modules.json": "c6e29747481e8b5dd2b58401966aeac910de39092f90cda9a704b1545f902b04",
+        "checkpoints/contrastive/english-medical-text-v1-models/e5-base-v2/sentence_bert_config.json": "948201d8329907aae938fa62f9ceeed53f5694dacc2b87b9f3b78b37ee986529",
+        "checkpoints/contrastive/english-medical-text-v1-models/e5-base-v2/special_tokens_map.json": "b6d346be366a7d1d48332dbc9fdf3bf8960b5d879522b7799ddba59e76237ee3",
+        "checkpoints/contrastive/english-medical-text-v1-models/e5-base-v2/tokenizer.json": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66",
+        "checkpoints/contrastive/english-medical-text-v1-models/e5-base-v2/tokenizer_config.json": "ae83fa6ca0333117ff12606020af925d648667ef70d92ff7f27d781ba0ca4544",
+        "checkpoints/contrastive/english-medical-text-v1-models/e5-base-v2/vocab.txt": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3"
+      },
+      "splits": {
+        "train": {
+          "studies": 3524,
+          "over_512": 343,
+          "token_quantiles": {
+            "min": 21.0,
+            "median": 241.0,
+            "p90": 508.0,
+            "p95": 586.8499999999999,
+            "max": 1080.0
+          },
+          "mean_retained_character_fraction": 0.9860014606386515,
+          "reports_with_summary_heading": 2091,
+          "last_summary_heading_not_fully_retained": 180,
+          "empty_reports": 0,
+          "invalid_token_outputs": 0
+        },
+        "validation": {
+          "studies": 441,
+          "over_512": 45,
+          "token_quantiles": {
+            "min": 19.0,
+            "median": 247.0,
+            "p90": 513.0,
+            "p95": 565.0,
+            "max": 887.0
+          },
+          "mean_retained_character_fraction": 0.9865792490958705,
+          "reports_with_summary_heading": 264,
+          "last_summary_heading_not_fully_retained": 22,
+          "empty_reports": 0,
+          "invalid_token_outputs": 0
+        }
+      }
+    },
+    {
+      "name": "pubmedbert-base-embeddings",
+      "config_differences": {
+        "output_dir": [
+          "checkpoints/contrastive/claude-translated-dfd07db-q2-v1/00-full-seed2026",
+          "checkpoints/contrastive/english-medical-text-v1/pubmedbert-base-embeddings-seed2026"
+        ],
+        "text_model": [
+          "intfloat/multilingual-e5-base",
+          "NeuML/pubmedbert-base-embeddings"
+        ],
+        "text_model_revision": [
+          "d128750597153bb5987e10b1c3493a34e5a4502a",
+          "b79526d6ef3645e0df4530322e266f24c829f5ef"
+        ],
+        "text_prefix": [
+          "query: ",
+          ""
+        ]
+      },
+      "tokenizer_files_sha256": {
+        "checkpoints/contrastive/english-medical-text-v1-models/pubmedbert-base-embeddings/1_Pooling/config.json": "a37f83ada23e7887be6b88f4998927dbeac0038af301553c7cd5461413bf1a56",
+        "checkpoints/contrastive/english-medical-text-v1-models/pubmedbert-base-embeddings/README.md": "01170158a61b4497c10fb3f7c69815ccc3636f26550524b13ce0fa550cb1d826",
+        "checkpoints/contrastive/english-medical-text-v1-models/pubmedbert-base-embeddings/added_tokens.json": "691a5ce0135045c12b8410af8d472ff8de864094df40ac9af418d6c644c7588d",
+        "checkpoints/contrastive/english-medical-text-v1-models/pubmedbert-base-embeddings/config.json": "d384b4ca85c7c1eb07767aa69479b722d255f8a40e4a484c6428982b8f18baca",
+        "checkpoints/contrastive/english-medical-text-v1-models/pubmedbert-base-embeddings/config_sentence_transformers.json": "9d715ae136f4582dfa3a1c475e93bddb316124fe25b247b2180c556ba00793f4",
+        "checkpoints/contrastive/english-medical-text-v1-models/pubmedbert-base-embeddings/hub-model-metadata.json": "ff6c1d1bbbeddfa4139a67117ab7c733d81829e7c8b9b005714acbe9e61fc19c",
+        "checkpoints/contrastive/english-medical-text-v1-models/pubmedbert-base-embeddings/modules.json": "8f4b264b80206c830bebbdcae377e137925650a433b689343a63bdc9b3145460",
+        "checkpoints/contrastive/english-medical-text-v1-models/pubmedbert-base-embeddings/sentence_bert_config.json": "ec8e29d6dcb61b611b7d3fdd2982c4524e6ad985959fa7194eacfb655a8d0d51",
+        "checkpoints/contrastive/english-medical-text-v1-models/pubmedbert-base-embeddings/special_tokens_map.json": "b6d346be366a7d1d48332dbc9fdf3bf8960b5d879522b7799ddba59e76237ee3",
+        "checkpoints/contrastive/english-medical-text-v1-models/pubmedbert-base-embeddings/tokenizer.json": "6e046044df8a2fcedb10607075dca187cae61d806c0d80a96c5b81017edc90c9",
+        "checkpoints/contrastive/english-medical-text-v1-models/pubmedbert-base-embeddings/tokenizer_config.json": "fb83ce924ed390dcdbc47883682193d233c782cd19d9610946c3e4e3c2e5ef38",
+        "checkpoints/contrastive/english-medical-text-v1-models/pubmedbert-base-embeddings/vocab.txt": "79489a52be45e6fa033521e8ce8e4f62aedc0a742ee2aa6fc04667e5b0b1454d"
+      },
+      "splits": {
+        "train": {
+          "studies": 3524,
+          "over_512": 141,
+          "token_quantiles": {
+            "min": 17.0,
+            "median": 196.0,
+            "p90": 425.0,
+            "p95": 493.0,
+            "max": 927.0
+          },
+          "mean_retained_character_fraction": 0.9959056128803873,
+          "reports_with_summary_heading": 2091,
+          "last_summary_heading_not_fully_retained": 34,
+          "empty_reports": 0,
+          "invalid_token_outputs": 0
+        },
+        "validation": {
+          "studies": 441,
+          "over_512": 19,
+          "token_quantiles": {
+            "min": 17.0,
+            "median": 200.0,
+            "p90": 432.0,
+            "p95": 477.0,
+            "max": 739.0
+          },
+          "mean_retained_character_fraction": 0.9958366470486374,
+          "reports_with_summary_heading": 264,
+          "last_summary_heading_not_fully_retained": 4,
+          "empty_reports": 0,
+          "invalid_token_outputs": 0
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "No model weights loaded; finite embedding outputs, measured GPU memory and compact reload remain pending.",
+    "Heading visibility is a lexical heuristic, not clinical summary completeness.",
+    "Character retention is approximate tokenizer offset coverage; equal caps do not imply equal retained words.",
+    "No locked-test tokenization or score inspection."
+  ]
+}

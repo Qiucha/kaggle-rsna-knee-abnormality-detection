@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "manifest_sha256": "54bd803e23acf3299daeb815d651a34249c736689e20d790f862fc71c0520b63",
+  "rankings_sha256": "9ed5018e3fb1f3eaccb7b6507cef57ec1cd05a99d58fa6638b73c4a7f60bb317",
+  "script_sha256": "b9b2a8ce1b5f09243881ae032b84204bf0afad1c3686359b9cb6724fca616e66",
+  "split_counts": {
+    "train": 3526,
+    "test": 440,
+    "validation": 441
+  },
+  "identity_checks": {
+    "study_uid": {
+      "duplicate_groups": 0,
+      "studies_in_duplicate_groups": 0,
+      "cross_split_groups": 0,
+      "cross_split_studies": 0,
+      "cross_split_patterns": {}
+    },
+    "patient_group_id": {
+      "duplicate_groups": 0,
+      "studies_in_duplicate_groups": 0,
+      "cross_split_groups": 0,
+      "cross_split_studies": 0,
+      "cross_split_patterns": {}
+    },
+    "report_sha256": {
+      "duplicate_groups": 49,
+      "studies_in_duplicate_groups": 183,
+      "cross_split_groups": 22,
+      "cross_split_studies": 118,
+      "cross_split_patterns": {
+        "test+train+validation": 5,
+        "test+train": 7,
+        "train+validation": 9,
+        "test+validation": 1
+      }
+    },
+    "source_report_sha256": {
+      "duplicate_groups": 49,
+      "studies_in_duplicate_groups": 183,
+      "cross_split_groups": 22,
+      "cross_split_studies": 118,
+      "cross_split_patterns": {
+        "test+train+validation": 5,
+        "test+train": 7,
+        "train+validation": 9,
+        "test+validation": 1
+      }
+    },
+    "normalized_report": {
+      "duplicate_groups": 54,
+      "studies_in_duplicate_groups": 204,
+      "cross_split_groups": 23,
+      "cross_split_studies": 125,
+      "cross_split_patterns": {
+        "test+train+validation": 7,
+        "test+train": 6,
+        "train+validation": 9,
+        "test+validation": 1
+      }
+    },
+    "series_path": {
+      "duplicate_groups": 0,
+      "studies_in_duplicate_groups": 0,
+      "cross_split_groups": 0,
+      "cross_split_studies": 0,
+      "cross_split_patterns": {}
+    },
+    "series_metadata_fingerprint": {
+      "duplicate_groups": 0,
+      "studies_in_duplicate_groups": 0,
+      "cross_split_groups": 0,
+      "cross_split_studies": 0,
+      "cross_split_patterns": {}
+    }
+  },
+  "train_validation_label_support": {
+    "train": {
+      "studies_with_any_label": 48,
+      "value_counts": {
+        "ACL": {
+          "": 3478,
+          "0": 28,
+          "1": 20
+        },
+        "Baker's": {
+          "": 3478,
+          "0": 39,
+          "1": 9
+        },
+        "Contusion": {
+          "": 3478,
+          "0": 32,
+          "1": 16
+        },
+        "Effusion": {
+          "": 3478,
+          "1": 27,
+          "0": 21
+        },
+        "Fracture": {
+          "": 3478,
+          "0": 33,
+          "1": 15
+        },
+        "Lateral Meniscus": {
+          "": 3478,
+          "0": 30,
+          "1": 18
+        },
+        "Lateral OA": {
+          "": 3478,
+          "0": 41,
+          "1": 7
+        },
+        "MCL": {
+          "": 3478,
+          "0": 40,
+          "1": 8
+        },
+        "Medial Meniscus": {
+          "": 3478,
+          "0": 24,
+          "1": 24
+        },
+        "Medial OA": {
+          "": 3478,
+          "0": 36,
+          "1": 12
+        },
+        "PF OA": {
+          "": 3478,
+          "1": 17,
+          "0": 31
+        },
+        "Synovitis": {
+          "": 3478,
+          "0": 25,
+          "1": 23
+        }
+      }
+    },
+    "validation": {
+      "studies_with_any_label": 8,
+      "value_counts": {
+        "ACL": {
+          "": 433,
+          "1": 3,
+          "0": 5
+        },
+        "Baker's": {
+          "": 433,
+          "0": 5,
+          "1": 3
+        },
+        "Contusion": {
+          "": 433,
+          "0": 5,
+          "1": 3
+        },
+        "Effusion": {
+          "": 433,
+          "1": 6,
+          "0": 2
+        },
+        "Fracture": {
+          "": 433,
+          "0": 6,
+          "1": 2
+        },
+        "Lateral Meniscus": {
+          "": 433,
+          "1": 4,
+          "0": 4
+        },
+        "Lateral OA": {
+          "": 433,
+          "1": 4,
+          "0": 4
+        },
+        "MCL": {
+          "": 433,
+          "0": 8
+        },
+        "Medial Meniscus": {
+          "": 433,
+          "0": 6,
+          "1": 2
+        },
+        "Medial OA": {
+          "": 433,
+          "0": 6,
+          "1": 2
+        },
+        "PF OA": {
+          "": 433,
+          "0": 5,
+          "1": 3
+        },
+        "Synovitis": {
+          "": 433,
+          "0": 5,
+          "1": 3
+        }
+      }
+    }
+  },
+  "label_files": {
+    "data/cleaned.csv": {
+      "sha256": "f4c2798f3207f27a867d086a19ffc56b2ea80d789d102cab7fc53aac6d8f9262",
+      "rows": 58,
+      "unique_ids": 58,
+      "ids_outside_cohort": 0
+    },
+    "data/lm_label/gemini3.1_pro_high.csv": {
+      "sha256": "d334d3e224906afeb0d5917991211ae92666d58f400c0f1d011fd0e302b10b44",
+      "rows": 58,
+      "unique_ids": 58,
+      "ids_outside_cohort": 0
+    },
+    "data/lm_label/gemini3.7_flash_high.csv": {
+      "sha256": "312fa85236b55cd87532fe6cdedb935b749406552cd2d4c5012f1af56abfa6c1",
+      "rows": 58,
+      "unique_ids": 58,
+      "ids_outside_cohort": 0
+    },
+    "data/lm_label/gpt5.6_sol_high.csv": {
+      "sha256": "7ad7c00c600b9f4212a90e49ff91904ffab97878aeebbc3fbccc2c27e9e5d331",
+      "rows": 58,
+      "unique_ids": 58,
+      "ids_outside_cohort": 0
+    },
+    "data/lm_label/gpt5.6_sol_medium.csv": {
+      "sha256": "b5c1552d3650077d64c0cf3b7ad0c725f64c16a25e48a78a2df28397cd5a1b92",
+      "rows": 58,
+      "unique_ids": 58,
+      "ids_outside_cohort": 0
+    }
+  },
+  "worst_pair_count": 20,
+  "worst_pairs_with_equal_normalized_reports": 0,
+  "limitations": [
+    "Metadata fingerprints are not pixel hashes.",
+    "Unique observed patient groups do not prove independent patients.",
+    "Report equality does not establish image or clinical equivalence.",
+    "Test used only for identity/hash checks; no test evaluation or label support inspection.",
+    "Near-duplicate image/report review and independent label provenance remain open."
+  ],
+  "validation_tokenizer": {
+    "revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "queries": 441,
+    "over_512": 70,
+    "identical_model_input_groups": {
+      "duplicate_groups": 2,
+      "studies_in_duplicate_groups": 5,
+      "cross_split_groups": 0,
+      "cross_split_studies": 0,
+      "cross_split_patterns": {}
+    },
+    "worst_pairs_query_over_512": 7
+  }
+}

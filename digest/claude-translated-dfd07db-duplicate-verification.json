@@ -1,0 +1,80 @@
+[
+  {
+    "uid": "study-b65cfd4f5265d33b",
+    "split": "train",
+    "planes": {
+      "Sagittal": {
+        "slices": 30,
+        "ordered_decoded_pixel_sha256": "e99c34965267a3101de9b9c9f5fc250945a76156ff45c8b44ad34b7f6adc3b15",
+        "laterality_tags": [
+          [
+            "R",
+            ""
+          ]
+        ]
+      },
+      "Coronal": {
+        "slices": 27,
+        "ordered_decoded_pixel_sha256": "491b12e45eca1ba583b6f721ac86058ac02af3e2c23b4b6df9558785f9b2ec5f",
+        "laterality_tags": [
+          [
+            "R",
+            ""
+          ]
+        ]
+      },
+      "Axial": {
+        "slices": 30,
+        "ordered_decoded_pixel_sha256": "cb1c20adfa0477502fb826fcc4cd84d44946eeeedef2f24da7a1639d9eeb7f60",
+        "laterality_tags": [
+          [
+            "R",
+            ""
+          ]
+        ]
+      }
+    },
+    "fresh_matches_cache": true,
+    "fresh_tensor_sha256": "942df19b1ef76357d7a6446f5d8c9a779b25fea223090e3bb9f07e6349f3fefb",
+    "report_sha256": "2f90d8a955552b7ade9d7f7f85731d8a4b222beb1afa0e221abdc257cc0f6e9d"
+  },
+  {
+    "uid": "study-7bbbc0e80da5e8ac",
+    "split": "train",
+    "planes": {
+      "Sagittal": {
+        "slices": 30,
+        "ordered_decoded_pixel_sha256": "e99c34965267a3101de9b9c9f5fc250945a76156ff45c8b44ad34b7f6adc3b15",
+        "laterality_tags": [
+          [
+            "R",
+            ""
+          ]
+        ]
+      },
+      "Coronal": {
+        "slices": 27,
+        "ordered_decoded_pixel_sha256": "491b12e45eca1ba583b6f721ac86058ac02af3e2c23b4b6df9558785f9b2ec5f",
+        "laterality_tags": [
+          [
+            "R",
+            ""
+          ]
+        ]
+      },
+      "Axial": {
+        "slices": 30,
+        "ordered_decoded_pixel_sha256": "cb1c20adfa0477502fb826fcc4cd84d44946eeeedef2f24da7a1639d9eeb7f60",
+        "laterality_tags": [
+          [
+            "R",
+            ""
+          ]
+        ]
+      }
+    },
+    "fresh_matches_cache": true,
+    "fresh_tensor_sha256": "942df19b1ef76357d7a6446f5d8c9a779b25fea223090e3bb9f07e6349f3fefb",
+    "report_sha256": "63b7b6faf84e149c1f4cb6bdd0f6ebe56e8c22d6d000b11e56bd72a68b145f81"
+  }
+]

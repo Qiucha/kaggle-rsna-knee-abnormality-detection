@@ -1,0 +1,65 @@
+{
+  "branch_revision": "8e3bd6899d7a7c9e56a8d27110a57f0b711a0a59",
+  "input_sha256": "0f2e182a8560a0aa3c36455f41fd1dc0d90f3ec3b0942b5d046be27dddc24f4f",
+  "rows": 4407,
+  "source_reports_matching_manifest": 4407,
+  "languages": {
+    "es": 680,
+    "nl": 153,
+    "en": 1736,
+    "fr": 81,
+    "bg": 220,
+    "tr": 546,
+    "el": 321,
+    "hr": 402,
+    "de": 262,
+    "pt": 1,
+    "bs": 4,
+    "gn": 1
+  },
+  "columns": {
+    "Report": {
+      "empty": 0,
+      "zero_width_space_rows": 0,
+      "word_trunk_rows": 0,
+      "word_neat_rows": 0,
+      "duplicate_groups": 49,
+      "studies_in_duplicate_groups": 183,
+      "validation_count": 441,
+      "validation_over_512": 70
+    },
+    "Translated Report": {
+      "empty": 0,
+      "zero_width_space_rows": 392,
+      "word_trunk_rows": 31,
+      "word_neat_rows": 94,
+      "duplicate_groups": 49,
+      "studies_in_duplicate_groups": 198,
+      "validation_count": 441,
+      "validation_over_512": 66
+    },
+    "Cleaned Translations": {
+      "empty": 0,
+      "zero_width_space_rows": 0,
+      "word_trunk_rows": 31,
+      "word_neat_rows": 94,
+      "duplicate_groups": 49,
+      "studies_in_duplicate_groups": 198,
+      "validation_count": 441,
+      "validation_over_512": 66
+    }
+  },
+  "cleaned_export_english_rows_changed": 0,
+  "suspicious_detection_train_validation": [
+    {
+      "row_index": 1201,
+      "study_uid": "study-2144f6cb22ee26fb",
+      "detected": "pt"
+    },
+    {
+      "row_index": 2419,
+      "study_uid": "study-4a6d064184914588",
+      "detected": "gn"
+    }
+  ]
+}

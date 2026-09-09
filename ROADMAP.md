@@ -1,6 +1,6 @@
 # Project roadmap and milestones
 
-Last reviewed: 2026-09-05 (Asia/Taipei)
+Last reviewed: 2026-09-07 (Asia/Taipei)
 
 ## Working goal
 
@@ -26,9 +26,9 @@ The project is between pilot feasibility and full-cohort experimentation.
 | Contrastive pipeline | Two towers, plane fusion, preprocessing, multilingual text handling, evaluation CLI, bounded cache, resume support, and compact checkpoints exist | Full-scale validation and stronger integration coverage |
 | Pilot experiments | Saved 58-study experiments and a multilingual CPU smoke run exist; the implementation note records 18 checkpoint re-scores with no metric changes | Pilot results do not establish a winning architecture or downstream utility |
 | Full cohort | Manifest reader accepts 4,407 eligible rows; all record pixel QC `passed`; splits are 3,526 train / 441 validation / 440 test | Checksum audited and enforced; see `digest/full-manifest-migration.json` |
-| Experiment plan | Eight experiments in [the matrix](configs/contrastive/full-multilingual-matrix.json); all eight commands dry-run successfully | No `full-multilingual-v1` output directory exists |
-| Hardware | Installed PyTorch is `2.13.0+cpu`; CUDA is unavailable | A working CUDA training environment |
-| Verification | `pytest`: 25 passed; `git diff --check`: passed | Passing unit tests do not cover all orchestration behavior |
+| Experiment plan | Eight experiments in [the matrix](configs/contrastive/full-multilingual-matrix.json); all eight commands dry-run successfully | Full baseline completed and compact validation reload verified |
+| Hardware | Host check found RTX 3070 8 GB through WSL `/dev/dxg`; driver CUDA initialization passes. The sandbox hid the device. | CUDA environment and smoke/baseline validated; see results |
+| Verification | `pytest`: 27 passed with CUDA; `git diff --check`: passed | Passing unit tests do not cover all orchestration behavior |
 | Versioning | Experiment setup frozen as `full-multilingual-v1`; see README, protocol, and artifact inventory | GPU environment and completed baseline artifacts |
 
 Pixel QC above is the saved manifest result, not a fresh DICOM decode sweep.
@@ -79,18 +79,22 @@ against the selected history row; mismatched legacy checkpoints fail explicitly.
 The protocol records label limitations and intended metrics; independent label
 provenance and duplicate/leakage auditing remain open before further tuning.
 
-### M2 — Full-cohort projection baseline: blocked on M1 and CUDA
+### M2 — Full-cohort projection baseline: complete (2026-09-05)
 
-- [ ] Provision/verify CUDA, pinned model access, dataset paths, storage, and the dependency environment on the training host.
-- [ ] Run a short GPU smoke check including compact-checkpoint reload and resume.
-- [ ] Run `00-projection-full-mean-512` on the frozen full-cohort manifest.
-- [ ] Review learning curves, validation loss, temperature, embedding variance, similarity distributions, and per-query errors against random retrieval baselines.
-- [ ] Record runtime, memory, batch size/negative count, source revision, manifest hash, and artifact paths.
+- [x] Provision/verify CUDA, pinned model access, dataset paths, storage, and the dependency environment on the training host.
+- [x] Run a short GPU smoke check including compact-checkpoint reload and resume.
+- [x] Run `00-projection-full-mean-512` on the frozen full-cohort manifest.
+- [x] Review learning curves, validation loss, temperature, embedding variance, similarity distributions, and per-query errors against random retrieval baselines.
+- [x] Record runtime, memory, batch size/negative count, source revision, manifest hash, and artifact paths.
+
+Evidence: [completed baseline results](digest/full-projection-v1-results.md),
+[learning curves](digest/full-projection-v1-curves.html), verified epoch-20 checkpoint
+and local execution artifacts. Continue to controlled comparisons after leakage/error review.
 
 Acceptance: a complete, reloadable baseline with validation diagnostics and a written
 continue/revise decision. A completed run is not by itself evidence of useful learning.
 
-### M3 — Controlled representation selection: planned; depends on M2
+### M3 — Controlled representation selection: in progress
 
 - [ ] Run the declared 256/512-token, CLS/mean, and report-section comparisons.
 - [ ] Compare image-only, text-only, and both-tower last-block adaptation.
@@ -136,22 +140,12 @@ gate beyond the core research deliverable; no deployment commitment is assumed.
 
 ## Immediate next steps, in order
 
-1. Close the M1 manifest-integrity and checkpoint-selection gaps, with focused regression tests.
-2. Freeze/version the experiment inputs and protocol; prepare the CUDA handoff.
-3. Run and review the full projection baseline before launching the rest of the matrix.
+1. Retain full text after the completed [impression-first comparison](digest/claude-translated-dfd07db-comparison-results.md): 10.6576% versus 9.6372% mean validation R@1. The negative seed-2026 difference did not trigger repeats. Both reloads and provenance passed; candidate errors and long-report behavior were reviewed.
+2. Review the completed English/medical text screens on the Claude-translated quarantined cohort. English E5 reached 8.8435% and NeuML PubMedBERT Embeddings 9.4104%, versus the matched frozen multilingual baseline at 10.6576%. Both completed 20 epochs and exact reloads; fresh artifact verification passed. Neither triggered repeat seeds, and no follow-up training is queued. Read [verified results](digest/english-medical-text-results.md) and all twenty pairs per candidate in the [error-review packet](digest/english-medical-text-error-review-packet.md); write the pending qualitative review before selecting a new bounded experiment. The [image-adaptation error review](digest/claude-translated-dfd07db-image-block-error-review.md) is already complete. Both single-seed paired intervals include zero; keep final selection open. See the [handoff notes](digest/handoff/) on the machine that ran it.
+3. Preserve exact-pair retrieval and original source reports. Two confirmed conflicting duplicate-image training entries are quarantined; broader duplication and patient independence remain unresolved. The competition has no reliable cross-study patient ID. The user identifies 58 ground-truth cases; other labels remain weak supervision, with only eight labeled validation cases and zero positive MCL. Keep test locked and downstream fitting separate.
 
-From the repository root, preview the planned commands:
-
-```bash
-.venv/bin/python scripts/run_contrastive_matrix.py --dry-run
-```
-
-After M1 and the GPU checks are complete, start the baseline:
-
-```bash
-.venv/bin/python scripts/run_contrastive_matrix.py \
-  --experiment 00-projection-full-mean-512
-```
+The original eight-run matrix is historical, not an unattended launch queue.
+Current evidence supersedes older pending status in the progress log below.
 
 ## Progress log and maintenance
 
@@ -165,3 +159,21 @@ is adopted. Do not infer completion from code presence alone.
 | 2026-09-05 | Created project-wide roadmap; verified full manifest inventory and reader, 17 passing tests, CPU-only hardware, and eight matrix dry-run commands. Identified missing full-manifest checksum and selection-policy mismatch. | Current source, local manifest metadata, and checks described above |
 
 | 2026-09-05 | Migrated missing full-manifest checksum without changing cohort bytes/splits; unified selection and resume; froze protocol, resolved baseline config, model/data hashes, and CPU dependency closure. 25 tests and eight dry-run commands pass. Baseline launch attempted and stopped by CUDA guard; GPU smoke and full run remain pending. | `digest/full-manifest-migration.json`, `configs/contrastive/full-multilingual-v1-*`, `README.md` |
+
+| 2026-09-05 | Corrected hardware diagnosis: WSL host exposes an RTX 3070 8 GB and working driver; sandbox/PATH checks had missed it. User authorized local CUDA setup and explicitly prohibited commits/pushes without permission. Installing isolated `.venv-cuda`; CPU environment retained. | Host `/usr/lib/wsl/lib/nvidia-smi`, successful `cuInit(0)` |
+
+| 2026-09-05 | CUDA 12.6 environment installed with torch 2.13.0 / torchvision 0.28.0; 27 GPU-enabled tests pass. Fixed CPU/CUDA validation scalar mismatch and smoke reload subset handling. Batch-32 smoke, resume, and compact reload agree; full baseline launched. No commits or pushes. | `checkpoints/contrastive/cuda-execution-20260905/`, `requirements-cuda-lock.txt` |
+
+| 2026-09-05 | M2 complete: 20 epochs, selected epoch 20, mean validation R@1 10.66% vs 0.227% chance; compact reload has zero metric deltas. Runtime 116.71 minutes, peak allocated GPU 1.808 GiB. Quantitative error/curve review complete; semantic/leakage review remains before tuning. No locked-test evaluation or new commits/pushes. | `digest/full-projection-v1-results.md`, `digest/handoff/` (local) |
+
+| 2026-09-05 | Continued pre-tuning audit: 22 exact-report groups span splits (118 studies); read 20 worst validation pairs, found report disagreements and one internal inconsistency; 70/441 validation reports exceed 512 tokens. Label support is 48 train / 8 validation, with no positive validation MCL. Gate remains open for pixel/near-duplicate checks and provenance. | `digest/full-projection-v1-data-review.md`, `digest/full-projection-v1-data-audit.json` |
+
+| 2026-09-07 | Updated baseline 10.2041%; quarantined full-text baseline 10.6576%; impression-first 9.6372%. Exact reloads, snapshot hashes, paired differences and candidate report review verified. Retain full text; repeat rule not triggered. Image-only final-block adaptation selected, not launched. | `digest/claude-translated-dfd07db-comparison-results.md`, `digest/claude-translated-dfd07db-comparison-audit.json` |
+
+| 2026-09-07 | Image-only adaptation completed at three matched seeds; mean gain +1.2094 pp (sample SD 0.6643), all reloads/provenance verified. Interactive HTML digest added. Candidate error/subgroup review remains before text-only adaptation. | `digest/project-state.html`, `digest/claude-translated-dfd07db-image-block-audit.json` |
+
+| 2026-09-07 | User redirected next research toward English and/or medical English text-encoder swaps on Claude translations. Handoff rewritten with model-contract research, matched baseline design and operational context; no new training launched. | `digest/handoff/` (local) |
+
+| 2026-09-07 | Completed primary-source English/medical sentence-encoder shortlist, pinned metadata/tokenizers, frozen matched configs and bounded repeat protocol. Reverified previous artifacts and source compatibility. No candidate weights or training launched; image-adaptation error review and GPU preflight remain. | `digest/english-medical-text-encoder-research.md`, `digest/english-medical-text-protocol.md`, `digest/english-medical-text-preflight.json` |
+
+| 2026-09-07 | English/medical queue completed: E5 8.8435%, PubMedBERT 9.4104%, matched baseline 10.6576%. Both screens verified; neither triggered repeats. Text qualitative error review remains. Refreshed digest and next-session handoff; no new training or test evaluation. | `digest/english-medical-text-results.md`, `digest/handoff/` (local) |

@@ -1,0 +1,31 @@
+{
+  "rows": 4407,
+  "complete_translations": 4407,
+  "source_alignment": "exact after outer whitespace trimming",
+  "split_counts": {
+    "train": 3526,
+    "test": 440,
+    "validation": 441
+  },
+  "text_provenance": {
+    "translated_english": 2671,
+    "source_english": 1736
+  },
+  "manifest_sha256": "beadc96ba92145c54680d1a0fb0dc6d32dd20e251ddb353a09f32944cb93b6b9",
+  "translation_csv_sha256": "4890397c336fe1781c2bcd0e9a02598959c6dfa000ba93e87bc93558e29e8027",
+  "unchanged_nontext_fields": true,
+  "derivation": {
+    "base_manifest": "data/processed/contrastive-cohort.jsonl",
+    "base_manifest_sha256": "54bd803e23acf3299daeb815d651a34249c736689e20d790f862fc71c0520b63",
+    "translation_commit": "9bec1bd2becef05cc898f30c34e0ad5bd2f99ba5",
+    "translation_column": "LLM Translation",
+    "policy": "Retain source English; replace non-English reports with Claude translation. Preserve all image QC, eligibility, groups and splits.",
+    "allowed_changed_fields": [
+      "report",
+      "report_language",
+      "report_provenance",
+      "report_sha256"
+    ],
+    "clinical_translation_review": "Not comprehensively adjudicated; three train/validation spot checks only."
+  }
+}
