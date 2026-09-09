@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "requires_cuda": true,
+  "output_root": "checkpoints/contrastive/claude-translated-dfd07db-v1",
+  "base_args": [
+    "--cohort-manifest",
+    "data/processed/contrastive-cohort-claude-dfd07db-v1.jsonl",
+    "--text-model",
+    "multilingual-e5",
+    "--text-model-revision",
+    "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "--text-pooling",
+    "mean",
+    "--text-prefix",
+    "query: ",
+    "--image-model",
+    "facebook/dinov2-small",
+    "--image-model-revision",
+    "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+    "--max-text-length",
+    "512",
+    "--image-unfreeze-last",
+    "0",
+    "--text-unfreeze-last",
+    "0",
+    "--epochs",
+    "20",
+    "--batch-size",
+    "32",
+    "--num-workers",
+    "4",
+    "--image-cache-dir",
+    "checkpoints/contrastive/full-multilingual-v1/image-cache",
+    "--image-memory-cache-size",
+    "16",
+    "--trainable-checkpoints",
+    "--local-files-only"
+  ],
+  "experiments": [
+    {
+      "name": "00-projection-full-mean-512",
+      "purpose": "Updated Claude-translated baseline; otherwise unchanged multilingual baseline settings",
+      "args": []
+    }
+  ],
+  "experiment_version": "claude-translated-dfd07db-v1",
+  "manifest_sha256": "7479e2194d1ab3f3c219dc8137ce5e0a9cb40d8658f20b27e56d57866749a21c",
+  "selection_policy": "mean_r@1 descending, validation_loss ascending, earliest epoch"
+}
