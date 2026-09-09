@@ -1,11 +1,24 @@
+"""Pair MRI studies with reports, and turn a pair into a training batch.
+
+The unit of data in this project is a *study*: three fluid-sensitive series, one
+per anatomical plane, plus the radiology report written for them. This module owns
+how a study is discovered (from CSVs, when no frozen cohort manifest is used), how
+it becomes a tensor, and how a list of them becomes a batch.
+
+The dataset deliberately produces raw preprocessed pixels, not augmented ones.
+That separation is what makes the two caches sound: the disk cache is keyed by a
+fingerprint of the exact DICOM bytes and preprocessing settings, so a cached
+tensor can never correspond to different inputs, and the memory cache holds the
+same deterministic tensor. Augmentation is applied later, per batch, in training.
+"""
+
 from __future__ import annotations
 
 import csv
-import hashlib
 import json
 import random
 import uuid
-from collections import defaultdict
+from collections import OrderedDict, defaultdict
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
@@ -14,7 +27,7 @@ from typing import Any, Iterable, Sequence
 import torch
 from torch.utils.data import Dataset
 
-from contrastive_learning.cache import TensorMemoryCache
+from contrastive_learning.artifacts import sha256_text
 from contrastive_learning.preprocessing import (
     PLANES,
     PREPROCESSING_VERSION,
@@ -27,8 +40,18 @@ from contrastive_learning.preprocessing import (
 from contrastive_learning.text import select_report_view
 
 
+CACHE_FORMAT_VERSION = 1
+
+
 @dataclass(frozen=True)
 class StudyRecord:
+    """One trainable example: three plane series, its report, and its provenance.
+
+    ``split`` and the report language/provenance fields are populated from a cohort
+    manifest and left at their defaults on the legacy CSV path, which has no
+    concept of a fixed split.
+    """
+
     study_uid: str
     report: str
     slots: dict[str, Path]
@@ -41,6 +64,8 @@ class StudyRecord:
 
 @dataclass(frozen=True)
 class DataSummary:
+    """Why studies were kept or dropped while pairing reports with series."""
+
     report_rows: int
     reports_with_text: int
     studies_scanned: int
@@ -49,8 +74,49 @@ class DataSummary:
     decode_failed: int
 
 
+class TensorMemoryCache:
+    """A bounded least-recently-used cache for preprocessed study tensors.
+
+    One instance lives per loader worker process, so the effective footprint is
+    the capacity multiplied by the worker count. Capacity ``0`` disables caching
+    entirely, which is the default because study tensors are large.
+    """
+
+    def __init__(self, capacity: int = 0):
+        if capacity < 0:
+            raise ValueError("cache capacity cannot be negative")
+        self.capacity = capacity
+        self._values: OrderedDict[str, torch.Tensor] = OrderedDict()
+
+    def __len__(self) -> int:
+        return len(self._values)
+
+    def get(self, key: str) -> torch.Tensor | None:
+        value = self._values.get(key)
+        if value is not None:
+            self._values.move_to_end(key)
+        return value
+
+    def put(self, key: str, value: torch.Tensor) -> None:
+        if self.capacity == 0:
+            return
+        self._values[key] = value
+        self._values.move_to_end(key)
+        while len(self._values) > self.capacity:
+            self._values.popitem(last=False)
+
+
+# --------------------------------------------------------------------------- #
+# Discovering studies from CSVs
+# --------------------------------------------------------------------------- #
+
+
 def read_reports(path: Path, report_column: str = "Report") -> dict[str, str]:
-    """Read one English report per study; language is trusted as configured by the caller."""
+    """Read one nonempty report per study, rejecting duplicate study identifiers.
+
+    A duplicate is an error rather than a last-wins overwrite: it would put the
+    same anatomy in the candidate pool twice and quietly change retrieval metrics.
+    """
     reports: dict[str, str] = {}
     with Path(path).open(newline="", encoding="utf-8-sig") as handle:
         reader = csv.DictReader(handle)
@@ -68,6 +134,7 @@ def read_reports(path: Path, report_column: str = "Report") -> dict[str, str]:
 
 
 def read_series_manifest(path: Path) -> dict[str, list[dict[str, str]]]:
+    """Group the series inventory by study, preserving each study's row order."""
     by_study: dict[str, list[dict[str, str]]] = defaultdict(list)
     with Path(path).open(newline="", encoding="utf-8-sig") as handle:
         reader = csv.DictReader(handle)
@@ -84,28 +151,29 @@ def pick_study_slots(
     series_rows: Sequence[dict[str, str]],
     series_root: Path,
 ) -> dict[str, Path] | None:
-    """Choose the largest fluid-sensitive series in every baseline plane."""
+    """Choose one series per plane, or ``None`` when any plane is unusable.
+
+    Preference order matches the baseline notebook exactly: fluid-sensitive series
+    if any exist for the plane, then the largest slice count, then the earliest
+    manifest row. All-or-nothing selection keeps every study three-plane, so the
+    image tower's input shape never varies.
+    """
     selected: dict[str, Path] = {}
     for plane in PLANES:
         candidates = [row for row in series_rows if row["Anatomical_Plane"] == plane]
         if not candidates:
             return None
         fluid = [row for row in candidates if str(row["Fluid_Sensitive"]).strip() == "1"]
-        pool = fluid or candidates
         best_count, best_path = -1, None
-        for row in pool:
+        for row in fluid or candidates:
             path = Path(series_root) / study_uid / row["SeriesInstanceUID"]
             count = count_dicoms(path)
-            if count > best_count:  # First manifest row wins a slice-count tie, as in the notebook.
+            if count > best_count:  # Strict '>' lets the first row win a tie.
                 best_count, best_path = count, path
         if best_path is None or best_count <= 0:
             return None
         selected[plane] = best_path
     return selected
-
-
-def _all_slots_decode(slots: dict[str, Path], image_kwargs: dict[str, Any]) -> bool:
-    return all(read_slot(slots[plane], **image_kwargs) is not None for plane in PLANES)
 
 
 def build_study_records(
@@ -118,18 +186,24 @@ def build_study_records(
     image_kwargs: dict[str, Any],
     max_studies: int | None = None,
 ) -> tuple[list[StudyRecord], DataSummary]:
+    """Pair reports with three-plane series, reporting why studies were dropped.
+
+    With ``validate_pixels`` every plane is decoded now, so a study that would fail
+    mid-epoch is excluded up front; the cost is a full decode pass over the cohort.
+    """
     reports = read_reports(reports_csv, report_column)
-    manifest = read_series_manifest(series_csv)
+    series_by_study = read_series_manifest(series_csv)
     records: list[StudyRecord] = []
-    missing_plane = decode_failed = 0
-    studies_scanned = 0
+    missing_plane = decode_failed = studies_scanned = 0
     for uid, report in reports.items():
         studies_scanned += 1
-        slots = pick_study_slots(uid, manifest.get(uid, []), series_root)
+        slots = pick_study_slots(uid, series_by_study.get(uid, []), series_root)
         if slots is None:
             missing_plane += 1
             continue
-        if validate_pixels and not _all_slots_decode(slots, image_kwargs):
+        if validate_pixels and any(
+            read_slot(slots[plane], **image_kwargs) is None for plane in PLANES
+        ):
             decode_failed += 1
             continue
         records.append(StudyRecord(uid, report, slots, resolve_laterality(slots)))
@@ -146,9 +220,15 @@ def build_study_records(
     return records, summary
 
 
+# --------------------------------------------------------------------------- #
+# Splitting (legacy CSV path only; a cohort manifest carries its own splits)
+# --------------------------------------------------------------------------- #
+
+
 def split_records(
     records: Sequence[StudyRecord], val_fraction: float, seed: int
 ) -> tuple[list[StudyRecord], list[StudyRecord]]:
+    """Seeded holdout split, always leaving at least one study on each side."""
     if not 0 < val_fraction < 1:
         raise ValueError("val_fraction must be strictly between 0 and 1")
     if len(records) < 3:
@@ -162,7 +242,7 @@ def split_records(
 def split_records_fold(
     records: Sequence[StudyRecord], fold_count: int, fold_index: int, seed: int
 ) -> tuple[list[StudyRecord], list[StudyRecord]]:
-    """Return one deterministic, mutually exclusive study-level validation fold."""
+    """Seeded K-fold split; the same seed yields complementary, reusable folds."""
     if fold_count < 2:
         raise ValueError("fold_count must be at least 2")
     if not 0 <= fold_index < fold_count:
@@ -173,66 +253,54 @@ def split_records_fold(
     random.Random(seed).shuffle(shuffled)
     val_records = shuffled[fold_index::fold_count]
     val_uids = {record.study_uid for record in val_records}
-    train_records = [record for record in shuffled if record.study_uid not in val_uids]
-    return train_records, val_records
+    return [record for record in shuffled if record.study_uid not in val_uids], val_records
+
+
+# --------------------------------------------------------------------------- #
+# Dataset and batching
+# --------------------------------------------------------------------------- #
 
 
 class KneeReportDataset(Dataset):
-    """One three-plane MRI reading paired with one study report."""
+    """Serve one study as ``{images: [3 planes, 3 slices, H, W], report, study_uid}``.
+
+    Images are deterministic: identical settings and DICOM bytes always yield the
+    same tensor, which is what lets the optional disk and memory caches be safe.
+    """
 
     def __init__(
         self,
         records: Iterable[StudyRecord],
         image_kwargs: dict[str, Any],
         *,
-        cache_images: bool = False,
         image_cache_dir: Path | None = None,
-        memory_cache_size: int | None = None,
+        memory_cache_size: int = 0,
     ):
         self.records = list(records)
         self.image_kwargs = dict(image_kwargs)
         self.image_cache_dir = Path(image_cache_dir) if image_cache_dir is not None else None
         if self.image_cache_dir is not None:
             self.image_cache_dir.mkdir(parents=True, exist_ok=True)
-        capacity = (64 if cache_images else 0) if memory_cache_size is None else memory_cache_size
-        self.image_cache = TensorMemoryCache(capacity)
+        self.image_cache = TensorMemoryCache(memory_cache_size)
+        # Cache paths hash series fingerprints, which stat every DICOM file. Do it
+        # once here rather than per __getitem__ call.
         self.cache_paths = {record.study_uid: self._cache_path(record) for record in self.records}
 
     def __len__(self) -> int:
         return len(self.records)
 
-    def _load_images(self, record: StudyRecord) -> torch.Tensor:
-        cache_path = self.cache_paths[record.study_uid]
-        if cache_path is not None and cache_path.exists():
-            try:
-                cached = torch.load(cache_path, map_location="cpu", weights_only=True)
-                expected = (len(PLANES), 3, self.image_kwargs["image_size"], self.image_kwargs["image_size"])
-                if tuple(cached.shape) == expected and torch.isfinite(cached).all():
-                    return cached
-            except (OSError, RuntimeError, TypeError):
-                pass
-        images = []
-        for plane in PLANES:
-            image = read_slot(record.slots[plane], **self.image_kwargs)
-            if image is None:
-                raise RuntimeError(f"DICOM decode failed after indexing: {record.study_uid} {plane}")
-            images.append(apply_left_knee(image, plane, record.laterality))
-        stacked = torch.stack(images)
-        if cache_path is not None:
-            temporary = cache_path.with_name(f".{cache_path.name}.{uuid.uuid4().hex}.tmp")
-            try:
-                torch.save(stacked, temporary)
-                temporary.replace(cache_path)
-            finally:
-                temporary.unlink(missing_ok=True)
-        return stacked
-
     def _cache_path(self, record: StudyRecord) -> Path | None:
+        """Name a study's cache file after everything that could change its pixels.
+
+        Because the digest covers preprocessing version and settings, series paths,
+        laterality, and per-file size and modification times, a stale entry is
+        unreachable rather than wrong: changed inputs simply produce a new name.
+        """
         if self.image_cache_dir is None:
             return None
         fingerprint = json.dumps(
             {
-                "version": 1,
+                "version": CACHE_FORMAT_VERSION,
                 "preprocessing_version": PREPROCESSING_VERSION,
                 "image_kwargs": self.image_kwargs,
                 "laterality": record.laterality,
@@ -242,9 +310,54 @@ class KneeReportDataset(Dataset):
                 },
             },
             sort_keys=True,
-        ).encode()
-        suffix = hashlib.sha256(fingerprint).hexdigest()[:12]
-        return self.image_cache_dir / f"{record.study_uid}-{suffix}.pt"
+        )
+        return self.image_cache_dir / f"{record.study_uid}-{sha256_text(fingerprint)[:12]}.pt"
+
+    def _load_images(self, record: StudyRecord) -> torch.Tensor:
+        """Read a study's pixels from the disk cache, or preprocess and cache them."""
+        cache_path = self.cache_paths[record.study_uid]
+        if cache_path is not None and cache_path.exists():
+            cached = self._read_cache(cache_path)
+            if cached is not None:
+                return cached
+        images = []
+        for plane in PLANES:
+            image = read_slot(record.slots[plane], **self.image_kwargs)
+            if image is None:
+                # Indexing already proved every plane decodes, so reaching here
+                # means the underlying files changed during the run.
+                raise RuntimeError(f"DICOM decode failed after indexing: {record.study_uid} {plane}")
+            images.append(apply_left_knee(image, plane, record.laterality))
+        stacked = torch.stack(images)
+        if cache_path is not None:
+            self._write_cache(cache_path, stacked)
+        return stacked
+
+    def _read_cache(self, cache_path: Path) -> torch.Tensor | None:
+        """Return a cached tensor only if it is loadable, correctly shaped, finite.
+
+        A truncated or partially written file is treated as a miss, so a cache is
+        never a source of silent corruption -- worst case the study is re-read.
+        """
+        try:
+            cached = torch.load(cache_path, map_location="cpu", weights_only=True)
+        except (OSError, RuntimeError, TypeError):
+            return None
+        size = self.image_kwargs["image_size"]
+        expected = (len(PLANES), self.image_kwargs["slices_per_plane"], size, size)
+        if tuple(cached.shape) != expected or not torch.isfinite(cached).all():
+            return None
+        return cached
+
+    @staticmethod
+    def _write_cache(cache_path: Path, images: torch.Tensor) -> None:
+        """Publish a cache entry atomically; concurrent workers may race harmlessly."""
+        temporary = cache_path.with_name(f".{cache_path.name}.{uuid.uuid4().hex}.tmp")
+        try:
+            torch.save(images, temporary)
+            temporary.replace(cache_path)
+        finally:
+            temporary.unlink(missing_ok=True)
 
     def __getitem__(self, index: int) -> dict[str, Any]:
         record = self.records[index]
@@ -252,11 +365,7 @@ class KneeReportDataset(Dataset):
         if images is None:
             images = self._load_images(record)
             self.image_cache.put(record.study_uid, images)
-        return {
-            "images": images,
-            "report": record.report,
-            "study_uid": record.study_uid,
-        }
+        return {"images": images, "report": record.report, "study_uid": record.study_uid}
 
 
 def collate_image_reports(
@@ -267,6 +376,11 @@ def collate_image_reports(
     text_prefix: str = "",
     report_view: str = "full",
 ) -> dict[str, Any]:
+    """Stack studies and tokenize the reports to the batch's longest sequence.
+
+    The report view is selected here rather than at indexing time so one cohort can
+    be trained under several text framings without rebuilding it.
+    """
     tokens = tokenizer(
         [text_prefix + select_report_view(item["report"], report_view) for item in batch],
         padding=True,
@@ -285,10 +399,20 @@ def collate_image_reports(
 def make_collator(
     tokenizer: Any, max_text_length: int, text_prefix: str = "", report_view: str = "full"
 ):
+    """Bind text settings into a picklable collate function for loader workers."""
     return partial(
         collate_image_reports,
         tokenizer=tokenizer,
         max_text_length=max_text_length,
         text_prefix=text_prefix,
         report_view=report_view,
+    )
+
+
+def move_batch(batch: dict[str, Any], device: torch.device) -> tuple[torch.Tensor, ...]:
+    """Transfer the model inputs of a batch, leaving study identifiers on the host."""
+    return (
+        batch["images"].to(device, non_blocking=True),
+        batch["input_ids"].to(device, non_blocking=True),
+        batch["attention_mask"].to(device, non_blocking=True),
     )

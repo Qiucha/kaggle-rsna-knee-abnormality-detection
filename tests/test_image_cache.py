@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import torch
 
-from contrastive_learning.cache import TensorMemoryCache
+from contrastive_learning.data import TensorMemoryCache
 
 
 def test_tensor_memory_cache_is_bounded_and_least_recently_used() -> None:
