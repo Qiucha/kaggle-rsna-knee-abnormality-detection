@@ -1,0 +1,26 @@
+{
+  "_README": [
+    "Copy this file to paths.json at the repository root (it is git-ignored), or",
+    "point $CONTRASTIVE_PATHS_CONFIG at a copy kept elsewhere. It assigns the",
+    "directories that differ between machines; everything else about a run stays in",
+    "the experiment configuration. A command-line flag always overrides a value here.",
+    "Relative paths resolve against this file's own directory, not the working",
+    "directory, and '~' is expanded. A null value keeps the built-in default, and",
+    "keys beginning with '_' are ignored, so they can be used for notes."
+  ],
+
+  "_data_root": "Required by anything that reads DICOM data: the mount holding train_series.csv and the train_series/<study>/<series>/*.dcm tree. No default -- this is the one setting a new machine must fill in.",
+  "data_root": null,
+
+  "_reports_csv": "Study reports. Default: data/sample/train.csv, relative to the repository.",
+  "reports_csv": null,
+
+  "_cohort_manifest": "Frozen patient-grouped cohort used when no --cohort-manifest is given. No default; leave null to require the flag.",
+  "cohort_manifest": null,
+
+  "_output_dir": "Where a run writes checkpoints and metrics. Default: checkpoints/contrastive, relative to the repository.",
+  "output_dir": null,
+
+  "_image_cache_dir": "Optional on-disk cache of preprocessed studies, reused across runs. No default.",
+  "image_cache_dir": null
+}

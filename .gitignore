@@ -31,5 +31,20 @@ learn
 __pycache__/
 *.py[cod]
 
+# Per-machine directory assignments (copy configs/paths.template.json)
+/paths.json
+
 # Local training artifacts
 checkpoints/
+
+# Isolated CUDA training environment
+.venv-cuda/
+
+# Editor scratch logs
+.nvimlog
+
+# Local operational handoff notes: live run state, launcher PIDs, and
+# "read this next" instructions. Only the README describing the folder is
+# committed; the notes themselves stay on the machine that produced them.
+digest/handoff/*
+!digest/handoff/README.md
