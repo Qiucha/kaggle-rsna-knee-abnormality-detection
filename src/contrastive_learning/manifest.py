@@ -1,8 +1,31 @@
+"""Freeze one cohort: which studies exist, what text they train on, and their split.
+
+Everything downstream reads a *cohort manifest* -- a JSON-lines file with one row
+per study plus a sidecar ``.meta.json`` -- rather than re-deriving the cohort from
+CSVs and DICOM directories. That indirection is the point: split assignment,
+translation choice, and pixel eligibility are decided once, recorded with
+checksums, and afterwards can only be read, never recomputed. A run's numbers are
+therefore attributable to a specific cohort by hash.
+
+Two decisions this module owns are easy to get wrong elsewhere:
+
+**Splitting is by patient, not by study.** A patient with two studies would
+otherwise put near-duplicate anatomy on both sides of the train/validation
+boundary and inflate retrieval. Rows are grouped by a salted pseudonym of the
+DICOM ``PatientID``, groups are shuffled, and whole groups are assigned -- so
+targets are approximate by construction, since a group cannot be split.
+
+**Text policy is explicit.** ``multilingual_raw`` trains on reports as written and
+requires a multilingual text encoder. ``translated_english`` trains on English,
+using the source text when it is already English and a supplied translation
+otherwise; a study with neither becomes ineligible rather than silently training
+on text in the wrong language. Both the chosen text and the original are recorded
+with hashes, so a translation can always be audited after the fact.
+"""
+
 from __future__ import annotations
 
 import csv
-import hashlib
-import json
 import random
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -10,6 +33,14 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+from contrastive_learning.artifacts import (
+    read_json,
+    read_jsonl,
+    sha256_file,
+    sha256_text,
+    write_json,
+    write_jsonl,
+)
 from contrastive_learning.data import StudyRecord, pick_study_slots, read_series_manifest
 from contrastive_learning.preprocessing import (
     PLANES,
@@ -22,10 +53,18 @@ from contrastive_learning.preprocessing import (
 
 
 MANIFEST_VERSION = 1
+TEXT_POLICIES = ("multilingual_raw", "translated_english")
+SPLITS = ("train", "validation", "test", "excluded")
+
+# Salt for the patient pseudonym. It is versioned and constant: grouping must be
+# reproducible across manifest builds, while raw PatientIDs stay out of artifacts.
+_PSEUDONYM_SALT = "novo-contrastive-patient-v1"
 
 
 @dataclass(frozen=True)
 class ManifestConfig:
+    """Everything that determines a cohort's contents, splits, and eligibility."""
+
     reports_csv: Path
     series_csv: Path
     series_root: Path
@@ -38,6 +77,8 @@ class ManifestConfig:
     train_fraction: float = 0.80
     validation_fraction: float = 0.10
     seed: int = 2026
+    # Decoding every slice of every study is expensive; enable it to guarantee that
+    # no run can fail mid-epoch on an unreadable study, and to record pixel QC.
     validate_pixels: bool = False
     pixel_workers: int = 4
     image_size: int = 224
@@ -47,9 +88,21 @@ class ManifestConfig:
     slice_band_high: float = 0.80
     overwrite: bool = False
 
+    @property
+    def image_kwargs(self) -> dict[str, Any]:
+        """Preprocessing settings used for pixel validation, matching TrainConfig."""
+        return {
+            "image_size": self.image_size,
+            "crop_mm": self.crop_mm,
+            "slices_per_plane": self.slices_per_plane,
+            "slice_band": (self.slice_band_low, self.slice_band_high),
+        }
+
 
 @dataclass(frozen=True)
 class ManifestSummary:
+    """Counts a caller can print to judge a freshly built cohort at a glance."""
+
     total_studies: int
     eligible_studies: int
     excluded_studies: int
@@ -60,24 +113,26 @@ class ManifestSummary:
     metadata_path: str
 
 
-def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+# --------------------------------------------------------------------------- #
+# Patient identity
+# --------------------------------------------------------------------------- #
 
 
 def _pseudonym(value: str) -> str:
-    digest = hashlib.sha256(f"novo-contrastive-patient-v1\0{value}".encode()).hexdigest()
-    return f"patient-{digest[:20]}"
+    return f"patient-{sha256_text(f'{_PSEUDONYM_SALT}\0{value}')[:20]}"
 
 
-def _patient_id(slots: dict[str, Path], fallback: str) -> str:
+def _patient_id(slots: dict[str, Path] | None, fallback: str) -> str:
+    """Read ``PatientID`` from one slice, falling back to a per-study identity.
+
+    The fallback is deliberately unique per study: an unreadable tag must never
+    collapse unrelated studies into one grouping key, which would move them into
+    the same split together.
+    """
     try:
         import pydicom
 
-        path = middle_dicom(slots[PLANES[0]])
+        path = middle_dicom(slots[PLANES[0]]) if slots else None
         if path is not None:
             dataset = pydicom.dcmread(
                 path, stop_before_pixels=True, force=True, specific_tags=["PatientID"]
@@ -90,14 +145,49 @@ def _patient_id(slots: dict[str, Path], fallback: str) -> str:
     return f"study-fallback:{fallback}"
 
 
+# --------------------------------------------------------------------------- #
+# Building
+# --------------------------------------------------------------------------- #
+
+
 def _read_csv_rows(path: Path) -> list[dict[str, str]]:
-    with path.open(newline="", encoding="utf-8-sig") as handle:
+    """Read a CSV tolerating a UTF-8 byte order mark, which Excel exports add."""
+    with Path(path).open(newline="", encoding="utf-8-sig") as handle:
         return list(csv.DictReader(handle))
+
+
+def _require_columns(rows: list[dict[str, str]], columns: set[str], source: str) -> None:
+    if rows and not columns.issubset(rows[0]):
+        raise ValueError(f"{source} must contain {sorted(columns)}")
+
+
+def _resolve_text(
+    config: ManifestConfig, report: str, source_language: str, translated: str
+) -> tuple[str, str, str]:
+    """Choose the training text under the configured policy.
+
+    Returns the text, its language, and its provenance. An empty text marks the
+    study ineligible, which is how "no usable English text" is expressed without
+    inventing one.
+    """
+    if config.text_policy == "multilingual_raw":
+        return report, source_language, "raw_multilingual"
+    if source_language == "en":
+        return report, "en", "source_english"
+    if source_language != "und" and translated:
+        return translated, "en", "translated_english"
+    return "", "und", "missing_translation"
 
 
 def _assign_splits(
     rows: list[dict[str, Any]], train_fraction: float, validation_fraction: float, seed: int
 ) -> None:
+    """Assign whole patient groups to train/validation/test, in place.
+
+    Groups are walked in seeded random order and filled up to each target, so the
+    realised proportions land near the targets but never split a patient. Rows that
+    are not training eligible are marked ``excluded`` and never enter a split.
+    """
     if train_fraction <= 0 or validation_fraction <= 0 or train_fraction + validation_fraction >= 1:
         raise ValueError("train and validation fractions must be positive and sum to less than one")
     by_patient: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -110,12 +200,12 @@ def _assign_splits(
     random.Random(seed).shuffle(groups)
     total = sum(len(group) for group in groups)
     train_target = round(total * train_fraction)
-    validation_target = round(total * validation_fraction)
+    validation_target = train_target + round(total * validation_fraction)
     assigned = 0
     for group in groups:
         if assigned < train_target:
             split = "train"
-        elif assigned < train_target + validation_target:
+        elif assigned < validation_target:
             split = "validation"
         else:
             split = "test"
@@ -125,128 +215,159 @@ def _assign_splits(
 
 
 def _validate_row_pixels(row: dict[str, Any], config: ManifestConfig) -> tuple[str, dict[str, Any]]:
+    """Decode every plane of one study, returning a status and pixel QC summary."""
     if not row["slots"]:
         return "missing_plane", {}
-    kwargs = {
-        "image_size": config.image_size,
-        "crop_mm": config.crop_mm,
-        "slices_per_plane": config.slices_per_plane,
-        "slice_band": (config.slice_band_low, config.slice_band_high),
-    }
-    tensors = [read_slot(Path(row["slots"][plane]), **kwargs) for plane in PLANES]
+    tensors = [read_slot(Path(row["slots"][plane]), **config.image_kwargs) for plane in PLANES]
     if any(tensor is None for tensor in tensors):
         return "decode_failed", {}
     return "passed", {
         "shape": [len(PLANES), config.slices_per_plane, config.image_size, config.image_size],
-        "finite": all(bool(tensor is not None and tensor.isfinite().all()) for tensor in tensors),
-        "min": min(float(tensor.min()) for tensor in tensors if tensor is not None),
-        "max": max(float(tensor.max()) for tensor in tensors if tensor is not None),
+        "finite": all(bool(tensor.isfinite().all()) for tensor in tensors),
+        "min": min(float(tensor.min()) for tensor in tensors),
+        "max": max(float(tensor.max()) for tensor in tensors),
+    }
+
+
+def _manifest_row(
+    config: ManifestConfig,
+    source: dict[str, str],
+    study_uid: str,
+    slots: dict[str, Path] | None,
+    translation: dict[str, str],
+    label_columns: list[str],
+) -> dict[str, Any]:
+    """Describe one study completely enough to train on it without the source CSVs."""
+    report = (source.get(config.report_column) or "").strip()
+    source_language = (translation.get(config.language_column) or "und").strip().lower()
+    translated = (translation.get(config.translated_report_column) or "").strip()
+    training_report, report_language, report_provenance = _resolve_text(
+        config, report, source_language, translated
+    )
+    return {
+        "manifest_version": MANIFEST_VERSION,
+        "study_uid": study_uid,
+        "patient_group_id": _pseudonym(_patient_id(slots, study_uid)),
+        # A real split is assigned once every row exists; see _assign_splits.
+        "split": "excluded",
+        "training_eligible": bool(training_report and slots),
+        "report": training_report,
+        "source_report": report,
+        "source_language": source_language,
+        "report_language": report_language,
+        "report_provenance": report_provenance,
+        "report_sha256": sha256_text(training_report),
+        "source_report_sha256": sha256_text(report),
+        "slots": {plane: str(path) for plane, path in (slots or {}).items()},
+        # Fingerprints let a later audit prove the referenced series bytes are
+        # the ones this cohort was frozen against.
+        "series_fingerprints": {
+            plane: series_fingerprint(path) for plane, path in (slots or {}).items()
+        },
+        "laterality": resolve_laterality(slots) if slots else None,
+        "preprocessing_status": "not_validated" if slots else "missing_plane",
+        "preprocessing_qc": {},
+        # Non-report CSV columns are carried through untouched for later analysis.
+        "labels": {name: source.get(name, "") for name in label_columns},
     }
 
 
 def build_cohort_manifest(config: ManifestConfig) -> ManifestSummary:
+    """Freeze a cohort to disk and return its summary counts.
+
+    Refuses to overwrite an existing manifest unless asked: a manifest is the
+    identity of every experiment that cites it, so replacing one in place would
+    invalidate results that still reference the old checksum.
+    """
     output_path = Path(config.output_path)
     metadata_path = output_path.with_suffix(".meta.json")
     if not config.overwrite and (output_path.exists() or metadata_path.exists()):
         raise FileExistsError(f"Manifest output already exists: {output_path}")
-    if config.text_policy not in {"multilingual_raw", "translated_english"}:
-        raise ValueError("Supported text policies: multilingual_raw, translated_english")
+    if config.text_policy not in TEXT_POLICIES:
+        raise ValueError(f"Supported text policies: {', '.join(TEXT_POLICIES)}")
 
     report_rows = _read_csv_rows(Path(config.reports_csv))
     if not report_rows:
         raise ValueError("Reports CSV is empty")
     required = {"StudyInstanceUID", config.report_column}
-    if not required.issubset(report_rows[0]):
-        raise ValueError(f"Reports CSV must contain {sorted(required)}")
-    manifest = read_series_manifest(Path(config.series_csv))
+    _require_columns(report_rows, required, "Reports CSV")
+    series_by_study = read_series_manifest(Path(config.series_csv))
+
     translations: dict[str, dict[str, str]] = {}
     if config.translations_csv is not None:
         translation_rows = _read_csv_rows(Path(config.translations_csv))
-        translation_required = {
-            "StudyInstanceUID",
-            config.language_column,
-            config.translated_report_column,
-        }
-        if translation_rows and not translation_required.issubset(translation_rows[0]):
-            raise ValueError(f"Translations CSV must contain {sorted(translation_required)}")
+        _require_columns(
+            translation_rows,
+            {"StudyInstanceUID", config.language_column, config.translated_report_column},
+            "Translations CSV",
+        )
         translations = {
             row["StudyInstanceUID"].strip(): row
             for row in translation_rows
             if row.get("StudyInstanceUID", "").strip()
         }
+
     label_columns = [name for name in report_rows[0] if name not in required]
-    output_rows: list[dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
     seen: set[str] = set()
     for source in report_rows:
         study_uid = (source.get("StudyInstanceUID") or "").strip()
-        report = (source.get(config.report_column) or "").strip()
         if not study_uid or study_uid in seen:
             raise ValueError(f"Missing or duplicate StudyInstanceUID: {study_uid!r}")
         seen.add(study_uid)
-        slots = pick_study_slots(study_uid, manifest.get(study_uid, []), Path(config.series_root))
-        preprocessing_status = "not_validated" if slots is not None else "missing_plane"
-        patient_group_id = _pseudonym(_patient_id(slots, study_uid) if slots else study_uid)
-        translation = translations.get(study_uid, {})
-        source_language = (translation.get(config.language_column) or "und").strip().lower()
-        translated_report = (translation.get(config.translated_report_column) or "").strip()
-        if config.text_policy == "multilingual_raw":
-            training_report = report
-            report_language = source_language
-            report_provenance = "raw_multilingual"
-        elif source_language == "en":
-            training_report = report
-            report_language = "en"
-            report_provenance = "source_english"
-        elif source_language != "und" and translated_report:
-            training_report = translated_report
-            report_language = "en"
-            report_provenance = "translated_english"
-        else:
-            training_report = ""
-            report_language = "und"
-            report_provenance = "missing_translation"
-        output_rows.append(
-            {
-                "manifest_version": MANIFEST_VERSION,
-                "study_uid": study_uid,
-                "patient_group_id": patient_group_id,
-                "split": "excluded",
-                "training_eligible": bool(training_report and slots),
-                "report": training_report,
-                "source_report": report,
-                "source_language": source_language,
-                "report_language": report_language,
-                "report_provenance": report_provenance,
-                "report_sha256": hashlib.sha256(training_report.encode()).hexdigest(),
-                "source_report_sha256": hashlib.sha256(report.encode()).hexdigest(),
-                "slots": {plane: str(path) for plane, path in (slots or {}).items()},
-                "series_fingerprints": {
-                    plane: series_fingerprint(path) for plane, path in (slots or {}).items()
-                },
-                "laterality": resolve_laterality(slots) if slots else None,
-                "preprocessing_status": preprocessing_status,
-                "preprocessing_qc": {},
-                "labels": {name: source.get(name, "") for name in label_columns},
-            }
+        rows.append(
+            _manifest_row(
+                config,
+                source,
+                study_uid,
+                pick_study_slots(study_uid, series_by_study.get(study_uid, []), Path(config.series_root)),
+                translations.get(study_uid, {}),
+                label_columns,
+            )
         )
+
     if config.validate_pixels:
         if config.pixel_workers < 1:
             raise ValueError("pixel_workers must be at least one")
+        # DICOM decoding is dominated by file IO and releases the GIL, so threads
+        # are enough and avoid re-importing pydicom in worker processes.
         with ThreadPoolExecutor(max_workers=config.pixel_workers) as executor:
-            results = executor.map(lambda row: _validate_row_pixels(row, config), output_rows)
-            for row, (status, qc) in zip(output_rows, results, strict=True):
+            results = executor.map(lambda row: _validate_row_pixels(row, config), rows)
+            for row, (status, qc) in zip(rows, results, strict=True):
                 row["preprocessing_status"] = status
                 row["preprocessing_qc"] = qc
                 row["training_eligible"] = bool(row["training_eligible"] and status == "passed")
-    _assign_splits(output_rows, config.train_fraction, config.validation_fraction, config.seed)
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = output_path.with_suffix(output_path.suffix + ".tmp")
-    with temporary.open("w", encoding="utf-8") as handle:
-        for row in output_rows:
-            handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
-    temporary.replace(output_path)
-    metadata = {
+    _assign_splits(rows, config.train_fraction, config.validation_fraction, config.seed)
+    # Reports keep their original scripts, so the manifest is not ASCII-escaped.
+    write_jsonl(output_path, rows, ensure_ascii=False)
+    write_json(metadata_path, _cohort_metadata(config, output_path))
+
+    counts: dict[str, dict[str, int]] = {
+        "split": defaultdict(int),
+        "language": defaultdict(int),
+        "preprocessing": defaultdict(int),
+    }
+    for row in rows:
+        counts["split"][row["split"]] += 1
+        counts["language"][row["report_language"]] += 1
+        counts["preprocessing"][row["preprocessing_status"]] += 1
+    eligible = sum(row["training_eligible"] for row in rows)
+    return ManifestSummary(
+        total_studies=len(rows),
+        eligible_studies=eligible,
+        excluded_studies=len(rows) - eligible,
+        split_counts=dict(counts["split"]),
+        language_counts=dict(counts["language"]),
+        preprocessing_counts=dict(counts["preprocessing"]),
+        output_path=str(output_path),
+        metadata_path=str(metadata_path),
+    )
+
+
+def _cohort_metadata(config: ManifestConfig, output_path: Path) -> dict[str, Any]:
+    """Sidecar describing how the manifest was produced, and hashing its inputs."""
+    return {
         "manifest_version": MANIFEST_VERSION,
         "preprocessing_version": PREPROCESSING_VERSION,
         "text_policy": config.text_policy,
@@ -255,49 +376,43 @@ def build_cohort_manifest(config: ManifestConfig) -> ManifestSummary:
         "validation_fraction": config.validation_fraction,
         "test_fraction": 1 - config.train_fraction - config.validation_fraction,
         "source_hashes": {
-            "reports_csv": _sha256_file(Path(config.reports_csv)),
-            "series_csv": _sha256_file(Path(config.series_csv)),
+            "reports_csv": sha256_file(Path(config.reports_csv)),
+            "series_csv": sha256_file(Path(config.series_csv)),
             **(
-                {"translations_csv": _sha256_file(Path(config.translations_csv))}
+                {"translations_csv": sha256_file(Path(config.translations_csv))}
                 if config.translations_csv is not None
                 else {}
             ),
         },
-        "manifest_sha256": _sha256_file(output_path),
+        "manifest_sha256": sha256_file(output_path),
         "config": {
             key: str(value) if isinstance(value, Path) else value
             for key, value in asdict(config).items()
         },
     }
-    metadata_path.write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-    split_counts: dict[str, int] = defaultdict(int)
-    language_counts: dict[str, int] = defaultdict(int)
-    preprocessing_counts: dict[str, int] = defaultdict(int)
-    for row in output_rows:
-        split_counts[row["split"]] += 1
-        language_counts[row["report_language"]] += 1
-        preprocessing_counts[row["preprocessing_status"]] += 1
-    eligible = sum(row["training_eligible"] for row in output_rows)
-    return ManifestSummary(
-        total_studies=len(output_rows),
-        eligible_studies=eligible,
-        excluded_studies=len(output_rows) - eligible,
-        split_counts=dict(split_counts),
-        language_counts=dict(language_counts),
-        preprocessing_counts=dict(preprocessing_counts),
-        output_path=str(output_path),
-        metadata_path=str(metadata_path),
-    )
+
+# --------------------------------------------------------------------------- #
+# Reading
+# --------------------------------------------------------------------------- #
 
 
 def read_cohort_manifest(path: Path) -> tuple[list[StudyRecord], dict[str, Any]]:
+    """Load the training-eligible studies of a verified cohort, with its metadata.
+
+    Every invariant a training run depends on is checked here, before any of it
+    can affect a result: unique study identifiers, known splits, no patient group
+    spanning two splits, complete eligible rows, and manifest bytes matching the
+    checksum in the sidecar. A missing checksum is an error rather than a warning --
+    legacy cohorts must be migrated by an audited, recorded step, never accepted
+    silently, because accepting one would make the run unattributable.
+    """
     path = Path(path)
-    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
-    metadata_path = path.with_suffix(".meta.json")
-    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    rows = read_jsonl(path)
+    metadata = read_json(path.with_suffix(".meta.json"))
     if metadata.get("manifest_version") != MANIFEST_VERSION:
         raise ValueError("Unsupported cohort manifest version")
+
     seen_uids: set[str] = set()
     group_splits: dict[str, str] = {}
     for row in rows:
@@ -306,21 +421,22 @@ def read_cohort_manifest(path: Path) -> tuple[list[StudyRecord], dict[str, Any]]
             raise ValueError(f"Missing or duplicate manifest study_uid: {uid!r}")
         seen_uids.add(uid)
         split = row.get("split")
-        if split not in {"train", "validation", "test", "excluded"}:
+        if split not in SPLITS:
             raise ValueError(f"Invalid manifest split: {split!r}")
         group = row.get("patient_group_id", "")
-        if group in group_splits and group_splits[group] != split:
+        if group_splits.setdefault(group, split) != split:
             raise ValueError(f"patient group spans multiple splits: {group}")
-        group_splits[group] = split
         if row.get("training_eligible") and (
             not row.get("report") or set(row.get("slots", {})) != set(PLANES)
         ):
             raise ValueError(f"Eligible manifest row is incomplete: {uid}")
+
     expected_hash = metadata.get("manifest_sha256")
     if not expected_hash:
         raise ValueError("Cohort manifest checksum is required; audit and migrate legacy metadata")
-    if _sha256_file(path) != expected_hash:
+    if sha256_file(path) != expected_hash:
         raise ValueError("Cohort manifest checksum does not match its metadata")
+
     records = [
         StudyRecord(
             study_uid=row["study_uid"],
