@@ -10,7 +10,7 @@ from contrastive_learning.data import (
     split_records_fold,
 )
 from contrastive_learning.model import symmetric_contrastive_loss
-from contrastive_learning.training import retrieval_diagnostics, retrieval_metrics
+from contrastive_learning.evaluation import retrieval_diagnostics, retrieval_metrics
 
 
 def test_symmetric_contrastive_loss_rewards_matching_pairs() -> None:
@@ -99,3 +99,10 @@ def test_collator_applies_the_configured_text_prefix() -> None:
     )
 
     assert captured == ["query: knee report"]
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason='CUDA unavailable')
+def test_validation_health_accepts_cpu_embeddings_and_cuda_temperature() -> None:
+    from contrastive_learning.evaluation import embedding_health_metrics
+    metrics = embedding_health_metrics(torch.eye(3), torch.eye(3), torch.tensor(1.0, device='cuda'))
+    assert metrics['validation_loss'] >= 0

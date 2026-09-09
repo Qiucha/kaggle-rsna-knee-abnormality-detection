@@ -8,7 +8,7 @@ import pytest
 import torch
 
 from contrastive_learning.config import TrainConfig
-from contrastive_learning.run_state import initialize_run
+from contrastive_learning.checkpoints import initialize_run
 
 
 def test_new_run_refuses_to_reuse_an_existing_output_directory(tmp_path: Path) -> None:

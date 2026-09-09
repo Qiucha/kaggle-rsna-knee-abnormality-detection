@@ -5,7 +5,7 @@ import pytest
 import torch
 
 from contrastive_learning.config import TrainConfig
-from contrastive_learning.run_state import initialize_run
+from contrastive_learning.checkpoints import initialize_run
 
 
 def test_resume_retains_loss_for_recall_ties(tmp_path):
@@ -24,7 +24,7 @@ def test_resume_retains_loss_for_recall_ties(tmp_path):
 def test_training_resume_and_finalization_agree_on_ties(tmp_path, monkeypatch):
     from types import SimpleNamespace
     from contrastive_learning import training
-    from contrastive_learning.selection import verified_best_epoch
+    from contrastive_learning.checkpoints import verified_best_epoch
 
     class TinyModel(torch.nn.Module):
         def __init__(self):
@@ -35,12 +35,11 @@ def test_training_resume_and_finalization_agree_on_ties(tmp_path, monkeypatch):
             return torch.eye(2) * self.logit_scale, None, None
 
     records = [SimpleNamespace(split=split) for split in ['train', 'train', 'validation']]
-    monkeypatch.setattr(training, 'read_cohort_manifest', lambda _: (records, {'text_policy': 'translated_english'}))
+    monkeypatch.setattr(training, 'load_cohort', lambda *a, **kw: SimpleNamespace(
+        records=records, summary={}, split=lambda name: [r for r in records if r.split == name]))
     monkeypatch.setattr(training, 'build_model', lambda *a, **kw: (TinyModel(), None, {}))
-    monkeypatch.setattr(training, 'make_collator', lambda *a: None)
-    monkeypatch.setattr(training, 'KneeReportDataset', lambda *a, **kw: None)
-    monkeypatch.setattr(training, 'DataLoader', lambda *a, **kw: [None])
-    monkeypatch.setattr(training, '_move_batch', lambda *a: (None, None, None))
+    monkeypatch.setattr(training, 'make_loader', lambda *a, **kw: [None])
+    monkeypatch.setattr(training, 'move_batch', lambda *a: (None, None, None))
     monkeypatch.setattr(training, 'augment_study_images', lambda x: x)
     monkeypatch.setattr(torch.cuda, 'is_available', lambda: False)
     losses = iter([2.0, 1.0, 0.5, 0.5, 0.8])
@@ -66,23 +65,28 @@ def test_training_resume_and_finalization_agree_on_ties(tmp_path, monkeypatch):
 
 @pytest.mark.parametrize('field', ['mean_r@1', 'validation_loss'])
 def test_selection_rejects_nonfinite_metrics(field):
-    from contrastive_learning.selection import is_better
+    from contrastive_learning.checkpoints import is_better
     metrics = {'epoch': 1, 'mean_r@1': 0.25, 'validation_loss': 1.0}
     metrics[field] = float('nan')
     with pytest.raises(ValueError, match='finite'):
         is_better(metrics, None)
 
 
-def test_frozen_baseline_matches_resolved_config(monkeypatch):
+def test_frozen_baseline_matches_resolved_config(monkeypatch, tmp_path):
+    # The frozen matrix names no DICOM mount; the paths configuration supplies it,
+    # which is what lets those commands resolve to the same run on any machine.
     import sys
     from pathlib import Path
     from contrastive_learning import cli
     root = Path(__file__).resolve().parents[1]
     matrix = json.loads((root / 'configs/contrastive/full-multilingual-matrix.json').read_text())
     expected = json.loads((root / 'configs/contrastive/full-projection-v1-resolved.json').read_text())
+    paths_config = tmp_path / 'paths.json'
+    paths_config.write_text(json.dumps({'data_root': expected['data_root']}))
     captured = []
     monkeypatch.chdir(root)
-    monkeypatch.setattr(sys, 'argv', ['train', *matrix['base_args'], '--output-dir', expected['output_dir']])
+    monkeypatch.setattr(sys, 'argv', ['train', '--paths-config', str(paths_config),
+                                      *matrix['base_args'], '--output-dir', expected['output_dir']])
     monkeypatch.setattr(Path, 'exists', lambda _: True)
     monkeypatch.setattr(cli, 'run_training', lambda config: captured.append(config.as_dict()))
     cli.main()
