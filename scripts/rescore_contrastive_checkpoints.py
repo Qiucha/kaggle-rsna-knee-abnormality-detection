@@ -3,12 +3,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))
+
+from contrastive_learning.experiments import rescore_checkpoints
 
 
 def main() -> None:
@@ -27,43 +28,15 @@ def main() -> None:
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
 
-    checkpoints = sorted(args.checkpoint_root.rglob("best.pt"))
-    completed = []
-    for index, checkpoint in enumerate(checkpoints, start=1):
-        output = checkpoint.parent / "evaluation-validation-best.json"
-        rankings = checkpoint.parent / "rankings-validation-best.jsonl"
-        command = [
-            sys.executable,
-            str(REPO_ROOT / "scripts" / "evaluate_contrastive.py"),
-            str(checkpoint),
-            "--image-cache-dir",
-            str(args.image_cache_dir),
-        ]
-        if args.overwrite:
-            command.append("--overwrite")
-        print(f"[{index}/{len(checkpoints)}] {checkpoint}", flush=True)
-        if not output.exists() or args.overwrite:
-            subprocess.run(command, cwd=REPO_ROOT, check=True)
-        result = json.loads(output.read_text(encoding="utf-8"))
-        completed.append(result)
-
-    summary = {
-        "schema_version": 1,
-        "metric_tie_policy": "uniform_expected_credit",
-        "checkpoint_count": len(completed),
-        "checkpoints_with_metric_changes": sum(
-            any(abs(delta) > 1e-8 for delta in result["metric_deltas"].values())
-            for result in completed
-        ),
-        "queries_with_tied_candidates": sum(
-            result["queries_with_tied_candidates"] for result in completed
-        ),
-        "results": completed,
-    }
-    args.summary.parent.mkdir(parents=True, exist_ok=True)
-    args.summary.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    summary = rescore_checkpoints(
+        args.checkpoint_root, args.image_cache_dir, args.summary, REPO_ROOT,
+        overwrite=args.overwrite,
+    )
     print(json.dumps({key: value for key, value in summary.items() if key != "results"}, indent=2))
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
