@@ -94,6 +94,7 @@ class TrainConfig:
     # is far too small to fine-tune either encoder end to end.
     image_unfreeze_last: int = 3
     text_unfreeze_last: int = 2
+    image_drop_path_rate: float = 0.0
     use_lora: bool = False
     lora_rank: int = 16
     lora_alpha: float = 32.0
