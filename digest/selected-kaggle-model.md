@@ -24,6 +24,6 @@ the final heads were refitted on all 56 studies. The Kaggle inference bundle use
 image backbone features and these heads. It does not run the report encoder or the
 contrastive projection layers.
 
-Sources: [saved training configuration](../checkpoints/contrastive/both-lora-holdout-v1/holdout-both-lora-depth6-r64-seed2026/config.json),
+Sources: [holdout experiment matrix](../configs/contrastive/both-lora-holdout-v1.json),
 [competition bundle configuration](../configs/kaggle/lora-holdout-v1.json), and
 [benchmark and leaderboard record](kaggle-submission-pipeline.md).

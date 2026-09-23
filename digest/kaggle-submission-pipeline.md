@@ -10,9 +10,6 @@ image encoder, fitted pathology heads, macro ROC-AUC, and submission inference.
 Kaggle Benchmarks and its Model Proxy are a separate product for evaluating external
 LLMs; use that workflow only when an LLM evaluation is explicitly requested.
 
-For the follow-up experiment fitting a frozen-encoder MLP on LM-derived labels,
-see [the LM supervision protocol and results](lm-mlp-v1.md).
-
 ## Current model choice
 
 The default is the **holdout-trained six-block, rank-64 LoRA encoder** at
