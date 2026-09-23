@@ -1,0 +1,7 @@
+# Inference only; scikit-learn is used during local bundle fitting, never at inference.
+# Validated locally with torch 2.13.0, transformers 5.16.1, pydicom 3.0.2.
+numpy
+pandas
+torch
+transformers==5.16.1
+pydicom==3.0.2

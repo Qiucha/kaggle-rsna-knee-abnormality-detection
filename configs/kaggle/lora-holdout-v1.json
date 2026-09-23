@@ -1,0 +1,16 @@
+{
+  "checkpoints": [
+    "checkpoints/contrastive/both-lora-holdout-v1/holdout-both-lora-depth6-r64-seed2026/best.pt"
+  ],
+  "labels_csv": "data/cleaned.csv",
+  "cohort_manifest": "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
+  "manifest_sha256": "d104337696a19d52d12480c1cfaae30c937916102e36a67e3124755fa20123f5",
+  "population_splits": [
+    "excluded"
+  ],
+  "probe": {
+    "folds": 8,
+    "seed": 2026,
+    "c": 1.0
+  }
+}
