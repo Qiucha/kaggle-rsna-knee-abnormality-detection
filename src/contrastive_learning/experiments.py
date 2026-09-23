@@ -37,18 +37,29 @@ SELECTION_FILENAME = "validation-selection.json"
 
 
 def _replace_args(arguments: list[str], overrides: list[str]) -> list[str]:
-    """Apply ``--flag value`` overrides onto base arguments, in place or appended.
+    """Apply ``--flag value`` or boolean ``--flag`` overrides onto base arguments.
 
     Overriding rather than appending matters because the training CLI takes the
     last occurrence of a flag; rewriting keeps the emitted command readable and
     makes an experiment's difference from the baseline visible at a glance.
     """
     result = list(arguments)
-    for flag, value in zip(overrides[::2], overrides[1::2], strict=True):
-        if flag in result:
-            result[result.index(flag) + 1] = value
+    i = 0
+    while i < len(overrides):
+        flag = overrides[i]
+        if not flag.startswith("--"):
+            raise ValueError(f"Expected flag starting with '--', got {flag}")
+        if i + 1 < len(overrides) and not overrides[i + 1].startswith("--"):
+            value = overrides[i + 1]
+            i += 2
+            if flag in result:
+                result[result.index(flag) + 1] = value
+            else:
+                result.extend((flag, value))
         else:
-            result.extend((flag, value))
+            i += 1
+            if flag not in result:
+                result.append(flag)
     return result
 
 

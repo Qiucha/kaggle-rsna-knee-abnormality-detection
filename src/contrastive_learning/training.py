@@ -194,6 +194,10 @@ def run_training(config: TrainConfig) -> dict[str, Any]:
         image_model_revision=config.image_model_revision,
         text_model_revision=config.text_model_revision,
         text_pooling=config.text_pooling,
+        use_lora=config.use_lora,
+        lora_rank=config.lora_rank,
+        lora_alpha=config.lora_alpha,
+        lora_dropout=config.lora_dropout,
         local_files_only=config.local_files_only,
     )
     print(f"Transformer blocks: {block_info}; text={config.text_model}; image={config.image_model}")

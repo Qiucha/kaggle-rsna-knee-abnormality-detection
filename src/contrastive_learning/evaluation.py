@@ -263,6 +263,10 @@ def evaluate_checkpoint(
         image_model_revision=config.image_model_revision,
         text_model_revision=config.text_model_revision,
         text_pooling=config.text_pooling,
+        use_lora=config.use_lora,
+        lora_rank=config.lora_rank,
+        lora_alpha=config.lora_alpha,
+        lora_dropout=config.lora_dropout,
         pretrained_backbones=not has_full_weights(checkpoint),
         local_files_only=True,
     )

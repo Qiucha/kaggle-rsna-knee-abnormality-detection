@@ -236,6 +236,10 @@ def build_model(
     image_model_revision: str | None = None,
     text_model_revision: str | None = None,
     text_pooling: str = "cls",
+    use_lora: bool = False,
+    lora_rank: int = 16,
+    lora_alpha: float = 32.0,
+    lora_dropout: float = 0.0,
     pretrained_backbones: bool = True,
     local_files_only: bool = False,
 ) -> tuple[ImageReportContrastiveModel, Any, dict[str, Any]]:
@@ -276,8 +280,20 @@ def build_model(
         revision=text_model_revision,
         local_files_only=local_files_only,
     )
-    image_blocks = freeze_then_unfreeze_last(image_backbone, image_unfreeze_last)
-    text_blocks = freeze_then_unfreeze_last(text_backbone, text_unfreeze_last)
+    if use_lora:
+        from contrastive_learning.lora import apply_lora_to_backbone
+
+        image_blocks = apply_lora_to_backbone(
+            image_backbone, count=image_unfreeze_last, rank=lora_rank,
+            alpha=lora_alpha, dropout=lora_dropout,
+        )
+        text_blocks = apply_lora_to_backbone(
+            text_backbone, count=text_unfreeze_last, rank=lora_rank,
+            alpha=lora_alpha, dropout=lora_dropout,
+        )
+    else:
+        image_blocks = freeze_then_unfreeze_last(image_backbone, image_unfreeze_last)
+        text_blocks = freeze_then_unfreeze_last(text_backbone, text_unfreeze_last)
     model = ImageReportContrastiveModel(
         ImageTower(image_backbone, embedding_dim),
         TextTower(text_backbone, embedding_dim, pooling=text_pooling),
@@ -285,6 +301,10 @@ def build_model(
     return model, tokenizer, {
         "image_blocks": image_blocks,
         "text_blocks": text_blocks,
+        "use_lora": use_lora,
+        "lora_rank": lora_rank if use_lora else None,
+        "lora_alpha": lora_alpha if use_lora else None,
+        "lora_dropout": lora_dropout if use_lora else None,
         "image_revision": getattr(image_backbone.config, "_commit_hash", image_model_revision),
         "text_revision": getattr(text_backbone.config, "_commit_hash", text_model_revision),
     }

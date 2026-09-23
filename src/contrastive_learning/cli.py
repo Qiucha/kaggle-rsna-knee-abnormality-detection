@@ -125,6 +125,12 @@ def build_parser() -> argparse.ArgumentParser:
     optimization.add_argument("--seed", type=int, default=2026)
     optimization.add_argument("--no-amp", action="store_true")
 
+    lora = parser.add_argument_group("LoRA adaptation")
+    lora.add_argument("--use-lora", action="store_true")
+    lora.add_argument("--lora-rank", type=int, default=16)
+    lora.add_argument("--lora-alpha", type=float, default=32.0)
+    lora.add_argument("--lora-dropout", type=float, default=0.0)
+
     splitting = parser.add_argument_group("splitting (ignored with --cohort-manifest)")
     splitting.add_argument("--val-fraction", type=float, default=0.10)
     splitting.add_argument(

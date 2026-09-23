@@ -94,6 +94,10 @@ class TrainConfig:
     # is far too small to fine-tune either encoder end to end.
     image_unfreeze_last: int = 3
     text_unfreeze_last: int = 2
+    use_lora: bool = False
+    lora_rank: int = 16
+    lora_alpha: float = 32.0
+    lora_dropout: float = 0.0
     epochs: int = 20
     batch_size: int = 16
     num_workers: int = 4
@@ -152,6 +156,13 @@ class TrainConfig:
             raise ValueError("image_memory_cache_size cannot be negative")
         if self.text_pooling not in {"cls", "mean"}:
             raise ValueError("text_pooling must be 'cls' or 'mean'")
+        if self.use_lora:
+            if self.lora_rank <= 0:
+                raise ValueError("lora_rank must be positive")
+            if self.lora_alpha <= 0:
+                raise ValueError("lora_alpha must be positive")
+            if not 0.0 <= self.lora_dropout < 1.0:
+                raise ValueError("lora_dropout must be in [0.0, 1.0)")
         if self.report_view not in REPORT_VIEWS:
             raise ValueError(f"report_view must be one of {REPORT_VIEWS}")
         if self.trainable_checkpoints and (
