@@ -227,6 +227,16 @@ class TrainConfig:
             key: str(value) if isinstance(value, Path) else value
             for key, value in asdict(self).items()
         }
+        # Keep the frozen baseline's resolved config stable. Old checkpoints have
+        # no LoRA keys; from_dict supplies these defaults when reading them.
+        # Active adapters still record every setting needed to rebuild the model.
+        if not self.use_lora:
+            for key in ("use_lora", "lora_rank", "lora_alpha", "lora_dropout"):
+                out.pop(key)
+        # Later variants may define this optional field. A zero rate uses the
+        # original model path and need not change an existing run manifest.
+        if out.get("image_drop_path_rate") == 0.0:
+            out.pop("image_drop_path_rate")
         # Only derivable with a mount; a manifest-driven run records neither, which
         # is also what makes such a run resumable on a host without the mount.
         if self.data_root is not None:
