@@ -18,6 +18,7 @@ from contrastive_learning.submission import (
     predict_head,
     validate_submission,
 )
+from contrastive_learning.submission_training import training_population
 
 
 def test_submission_requires_exact_order_and_probabilities():
@@ -68,6 +69,11 @@ def test_oof_preprocessing_sees_only_training_fold():
         assert (assignments[val] == i).all()
     with pytest.raises(ValueError, match="examples"):
         benchmark_head(x, np.zeros_like(y), folds=3)
+
+
+def test_locked_test_population_is_rejected_before_reading():
+    with pytest.raises(ValueError, match="locked test"):
+        training_population(None, None, ["test"])
 
 
 @pytest.mark.parametrize("lora", [False, True])
