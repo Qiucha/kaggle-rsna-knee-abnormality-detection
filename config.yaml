@@ -1,0 +1,14 @@
+data:
+  dir: data
+  train: train.csv
+  train_series: train_series.csv
+  gold_label: gold_label.csv
+  gold_unlabeled: gold_unlabeled.csv
+  lm_label:
+    dir: lm_label
+  translation:
+    dir: translation
+    train_translated: train_translated.csv
+    train_translated_clean: train_translated_clean.csv
+    claude_translations: claude_translations.csv
+    gold_translated: gold_translated.csv

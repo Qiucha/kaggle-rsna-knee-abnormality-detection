@@ -4,3 +4,8 @@ torch
 torchvision
 # torchmetrics
 pydicom
+PyYAML==6.0.3
+matplotlib==3.11.1
+seaborn==0.13.2
+tqdm==4.70.0
+ftfy==6.3.1

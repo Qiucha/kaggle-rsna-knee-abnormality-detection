@@ -23,3 +23,12 @@ research
 learn
 
 # Tools
+
+# Experimentation
+stubs/
+
+# Python
+__pycache__/
+venv/
+.env
+secrets/
