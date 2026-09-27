@@ -17,6 +17,7 @@ from __future__ import annotations
 import csv
 import json
 import random
+import sys
 import uuid
 from collections import OrderedDict, defaultdict
 from dataclasses import dataclass
@@ -32,10 +33,12 @@ from contrastive_learning.preprocessing import (
     PLANES,
     PREPROCESSING_VERSION,
     apply_left_knee,
+    count_decode_event,
     count_dicoms,
     read_slot,
     resolve_laterality,
     series_fingerprint,
+    series_transfer_syntax,
 )
 from contrastive_learning.text import select_report_view
 
@@ -60,6 +63,10 @@ class StudyRecord:
     split: str | None = None
     report_language: str = "und"
     report_provenance: str = "raw"
+    # Inference only: per plane, the series to try, in order, when the selected one
+    # does not decode at all. Training and manifests never set it, so they keep
+    # failing loudly; it is not part of any cache key.
+    fallbacks: dict[str, tuple[Path, ...]] | None = None
 
 
 @dataclass(frozen=True)
@@ -179,6 +186,51 @@ def pick_study_slots(
             return None
         selected[plane] = best_path
     return selected
+
+
+def rank_plane_candidates(
+    study_uid: str,
+    series_rows: Sequence[dict[str, str]],
+    series_root: Path,
+) -> dict[str, list[Path]]:
+    """Every nonempty series per plane, in the order :func:`pick_study_slots` prefers.
+
+    Preferred-weighting series come first (fluid-sensitive when the plane has any),
+    by slice count and then manifest row, exactly as the selection rule ranks them;
+    the plane's other series follow as a last resort. Used only to find a fallback
+    when the selected series will not decode: the selection itself always comes
+    from :func:`pick_study_slots`, so this ranking can never change a first choice.
+    """
+    ranked: dict[str, list[Path]] = {}
+    for plane in PLANES:
+        candidates = [row for row in series_rows if row["Anatomical_Plane"] == plane]
+        fluid = [row for row in candidates if str(row["Fluid_Sensitive"]).strip() == "1"]
+        preferred = fluid or candidates
+        ordered: list[Path] = []
+        for pool in (preferred, [row for row in candidates if row not in preferred]):
+            counted = [
+                (count_dicoms(path), row_index, path)
+                for row_index, path in enumerate(
+                    Path(series_root) / study_uid / row["SeriesInstanceUID"] for row in pool
+                )
+            ]
+            counted.sort(key=lambda item: (-item[0], item[1]))
+            ordered += [path for count, _, path in counted if count > 0 and path not in ordered]
+        ranked[plane] = ordered
+    return ranked
+
+
+def plane_fallbacks(
+    slots: dict[str, Path],
+    study_uid: str,
+    series_rows: Sequence[dict[str, str]],
+    series_root: Path,
+) -> dict[str, tuple[Path, ...]]:
+    """The fallback series per plane: the ranked candidates minus the selected one."""
+    ranked = rank_plane_candidates(study_uid, series_rows, series_root)
+    return {
+        plane: tuple(path for path in ranked[plane] if path != slots[plane]) for plane in PLANES
+    }
 
 
 def build_study_records(
@@ -326,15 +378,36 @@ class KneeReportDataset(Dataset):
             if cached is not None:
                 return cached
         images = []
+        used_fallback = False
         for plane in PLANES:
             image = read_slot(record.slots[plane], **self.image_kwargs)
+            failed = record.slots[plane]
+            # Inference records carry ranked alternatives: a plane that will not
+            # decode at all degrades to the next series instead of ending the run.
+            # That series may be a contrast the model rarely saw in this slot, so
+            # every use is logged and counted.
+            for alternative in (record.fallbacks or {}).get(plane, ()):
+                if image is not None:
+                    break
+                count_decode_event(series_transfer_syntax(failed), "fallback_series")
+                image = read_slot(alternative, **self.image_kwargs)
+                print(
+                    f"decode fallback: study {record.study_uid} {plane}: {failed.name} -> "
+                    f"{alternative.name} ({'ok' if image is not None else 'failed'})",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                failed, used_fallback = alternative, True
             if image is None:
                 # Indexing already proved every plane decodes, so reaching here
-                # means the underlying files changed during the run.
+                # means the underlying files changed during the run, or (inference)
+                # no candidate series of this plane decodes.
                 raise RuntimeError(f"DICOM decode failed after indexing: {record.study_uid} {plane}")
             images.append(apply_left_knee(image, plane, record.laterality))
         stacked = torch.stack(images)
-        if cache_path is not None:
+        # The cache key names the selected series, so pixels from a fallback series
+        # must not be stored under it.
+        if cache_path is not None and not used_fallback:
             self._write_cache(cache_path, stacked)
         return stacked
 

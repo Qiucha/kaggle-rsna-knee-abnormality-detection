@@ -22,12 +22,16 @@ Three of those choices carry medical rather than engineering reasoning:
 
 Every read is failure-tolerant by design: a corrupt slice or an unreadable tag
 returns ``None`` or a fallback rather than raising, so one bad study is excluded at
-indexing time instead of ending a run.
+indexing time instead of ending a run. Tolerance is not silence, though: every
+decode outcome is counted per transfer syntax (:func:`decode_counts`), and
+``KNEE_STRICT_DECODE=1`` turns a partially decoded plane into an error.
 """
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
+from functools import cache
 import hashlib
 import os
 from pathlib import Path
@@ -49,7 +53,38 @@ PLANE_KEYS = {"Sagittal": "sagittal", "Coronal": "coronal", "Axial": "axial"}
 
 # Bumping this invalidates every cached tensor, because it is hashed into their
 # cache keys and into cohort metadata. Change it whenever pixel output changes.
+# The per-syntax decoder pins below deliberately did not bump it: they keep every
+# file that decoded before on the decoder it used before, so no pixel changed.
 PREPROCESSING_VERSION = "2026-09-04.1"
+
+# Which pydicom decoding plugin each compressed transfer syntax is pinned to.
+# Without a pin, installing the vendored pylibjpeg wheels would silently move lossy
+# JPEG baseline/extended, JPEG 2000 and RLE onto pylibjpeg, because pydicom tries it
+# ahead of Pillow and its own RLE decoder; for lossy JPEG baseline that changes
+# pixels (verified on Kaggle, see kaggle/codecs/README.md). So each syntax stays
+# on the plugin that decodes it today, and pylibjpeg is used only where nothing did:
+# JPEG Lossless (.57, .70) and JPEG-LS. Uncompressed syntaxes have no plugins.
+DECODING_PLUGINS = {
+    "1.2.840.10008.1.2.4.50": "pillow",  # JPEG Baseline (8-bit)
+    "1.2.840.10008.1.2.4.51": "pillow",  # JPEG Extended (12-bit)
+    "1.2.840.10008.1.2.4.90": "pillow",  # JPEG 2000 Lossless
+    "1.2.840.10008.1.2.4.91": "pillow",  # JPEG 2000
+    "1.2.840.10008.1.2.5": "pydicom",  # RLE Lossless
+    "1.2.840.10008.1.2.4.57": "pylibjpeg",  # JPEG Lossless
+    "1.2.840.10008.1.2.4.70": "pylibjpeg",  # JPEG Lossless SV1
+    "1.2.840.10008.1.2.4.80": "pylibjpeg",  # JPEG-LS Lossless
+    "1.2.840.10008.1.2.4.81": "pylibjpeg",  # JPEG-LS Near-Lossless
+}
+
+# Set to "1" for local validation: a plane with any undecodable selected slice then
+# raises instead of being patched from its neighbours.
+STRICT_DECODE_ENV = "KNEE_STRICT_DECODE"
+
+# Per-process decode telemetry keyed by (transfer syntax, event). Submission
+# inference decodes in-process, so one counter sees every read; DataLoader workers
+# each keep their own. Events: decoded, failed, pin_retry_decoded,
+# substituted_slices, undecodable_planes, fallback_series.
+_DECODE_COUNTS: Counter[tuple[str, str]] = Counter()
 
 
 def _require_pydicom() -> Any:
@@ -216,21 +251,109 @@ def _row_spacing(series_dir: Path) -> float | None:
 # --------------------------------------------------------------------------- #
 
 
+def count_decode_event(syntax: str, event: str, count: int = 1) -> None:
+    """Record ``count`` decode events of one kind against one transfer syntax."""
+    _DECODE_COUNTS[(syntax, event)] += count
+
+
+def decode_counts(*, reset: bool = False) -> dict[str, dict[str, int]]:
+    """This process's decode counters as ``{syntax: {event: count}}``.
+
+    With ``reset`` the counters are cleared after reading, so a caller can scope
+    them to one run (submission inference does this at its start).
+    """
+    counts: dict[str, dict[str, int]] = {}
+    for (syntax, event), value in sorted(_DECODE_COUNTS.items()):
+        counts.setdefault(syntax, {})[event] = value
+    if reset:
+        _DECODE_COUNTS.clear()
+    return counts
+
+
+def _syntax_name(uid: str) -> str:
+    """A short readable transfer syntax name, e.g. ``JPEGLosslessSV1``."""
+    if not uid:
+        return "unknown"
+    return _require_pydicom().uid.UID(uid).keyword or uid
+
+
+def _transfer_syntax(ds: Any) -> str:
+    return str(getattr(getattr(ds, "file_meta", None), "TransferSyntaxUID", "") or "")
+
+
+def slice_transfer_syntax(path: Path) -> str:
+    """One file's transfer syntax name, from its header only; ``unknown`` if unreadable."""
+    try:
+        ds = _require_pydicom().dcmread(path, stop_before_pixels=True, force=True)
+        return _syntax_name(_transfer_syntax(ds))
+    except Exception:
+        return "unknown"
+
+
+def series_transfer_syntax(series_dir: Path) -> str:
+    """The transfer syntax name of a series' middle file, used to label its counters."""
+    path = middle_dicom(series_dir)
+    return slice_transfer_syntax(path) if path is not None else "unknown"
+
+
+@cache
+def decoding_plugin(transfer_syntax: str) -> str:
+    """The plugin :func:`_decode_pixels` pins for a syntax, or ``""`` for the default.
+
+    A pin whose plugin is not installed is dropped, so an environment without
+    Pillow or pylibjpeg decodes exactly as it did before pins existed. pydicom fixes
+    plugin availability when it is imported, which is what makes caching safe.
+    """
+    wanted = DECODING_PLUGINS.get(transfer_syntax, "")
+    if not wanted:
+        return ""
+    try:
+        from pydicom.pixels import get_decoder
+
+        available = get_decoder(transfer_syntax).available_plugins
+    except Exception:
+        return ""
+    return wanted if wanted in available else ""
+
+
 def _decode_pixels(path: Path) -> np.ndarray | None:
     """Decode one slice into rescaled float values, or ``None`` if it cannot be read.
 
     The rescale slope and intercept are applied so values are in the units the
     scanner intended, which is what makes percentile normalization meaningful.
+
+    The decoder is pinned per transfer syntax (:data:`DECODING_PLUGINS`). When a
+    pinned plugin raises, pydicom's default chain gets one more try: the pinned
+    plugin was the only one available before the codec wheels, so a file it cannot
+    decode also failed before, and the retry can rescue such a file (12-bit JPEG
+    extended, say) but never change one that already decoded.
     """
     dicom = _require_pydicom()
+    syntax = "unknown"
     try:
         ds = dicom.dcmread(path, force=True)
-        pixels = ds.pixel_array.astype(np.float32)
+        uid = _transfer_syntax(ds)
+        syntax = _syntax_name(uid)
+        plugin = decoding_plugin(uid)
+        if plugin:
+            ds.pixel_array_options(decoding_plugin=plugin)
+        try:
+            array = ds.pixel_array
+        except Exception:
+            if not plugin:
+                raise
+            ds.pixel_array_options()
+            array = ds.pixel_array
+            count_decode_event(syntax, "pin_retry_decoded")
+        pixels = array.astype(np.float32)
         slope = float(getattr(ds, "RescaleSlope", 1) or 1)
         intercept = float(getattr(ds, "RescaleIntercept", 0) or 0)
-        return pixels * slope + intercept
+        rescaled = pixels * slope + intercept
     except Exception:
+        count_decode_event(syntax, "failed")
         return None
+    count_decode_event(syntax, "decoded")
+    return rescaled
 
 
 def _slice_indices(n_slices: int, slice_band: tuple[float, float], count: int) -> np.ndarray:
@@ -284,7 +407,8 @@ def read_slot(
     Returns ``None`` when the series is unreadable, so callers can exclude the study
     rather than handle an exception. Undecodable individual slices are substituted
     with their nearest decoded neighbour, which keeps the channel count fixed
-    without inventing pixel values.
+    without inventing pixel values. Both outcomes are counted per transfer syntax;
+    with ``KNEE_STRICT_DECODE=1`` a substitution raises instead.
     """
     try:
         paths = ordered_slice_paths(series_dir)
@@ -294,8 +418,19 @@ def read_slot(
 
     slices: list[np.ndarray | None] = [_decode_pixels(paths[int(index)]) for index in indices]
     decoded = [index for index, image in enumerate(slices) if image is not None]
+    failed = [paths[int(indices[index])] for index, image in enumerate(slices) if image is None]
     if not decoded:
+        count_decode_event(slice_transfer_syntax(failed[0]), "undecodable_planes")
         return None
+    if failed:
+        syntaxes = sorted({slice_transfer_syntax(path) for path in failed})
+        if os.environ.get(STRICT_DECODE_ENV) == "1":
+            raise RuntimeError(
+                f"{len(failed)} of {len(slices)} selected slices failed to decode in "
+                f"{series_dir} ({', '.join(syntaxes)}); unset {STRICT_DECODE_ENV} to substitute"
+            )
+        for path in failed:
+            count_decode_event(slice_transfer_syntax(path), "substituted_slices")
     for index, image in enumerate(slices):
         if image is None:
             slices[index] = slices[min(decoded, key=lambda good: abs(good - index))]

@@ -138,8 +138,14 @@ The original series selection, crop, normalization, slice sampling, and laterali
 code are included in the bundle. There is no Hugging Face cache dependency after export.
 
 The CSV must have exactly the sample's study order and twelve label columns, unique
-IDs, and finite [0,1] probabilities. A missing plane or failed DICOM decode raises
-an explicit error; there is no silent row dropping or constant-prediction fallback.
+IDs, and finite [0,1] probabilities. A missing plane raises an explicit error. A
+selected plane that does not decode falls back to the next candidate series (logged),
+and the run fails only if no series of that plane decodes; there is no silent row
+dropping or constant-prediction fallback. Decode counters per transfer syntax are
+printed at the end and stored in the benchmark JSON.
+
+DICOM codecs on Kaggle (vendored wheels, per-syntax Pillow pin, self-test, counters,
+`KNEE_STRICT_DECODE`, series fallback): see `kaggle/codecs/README.md`.
 The accompanying `submission.benchmark.json` records end-to-end runtime, GPU peak
 allocation, study count, and artifact hashes. Runtime on three public example
 studies is a smoke benchmark, not an estimate for Kaggle's hidden test runtime.
@@ -154,8 +160,10 @@ studies is a smoke benchmark, not an estimate for Kaggle's hidden test runtime.
    `requirements-kaggle.txt`. For an incompatible Kaggle image, download compatible
    Linux/Python wheels ahead of time, attach them as a private dataset, and install
    using `pip install --no-index --find-links <wheel-directory> -r <bundle>/requirements.txt`.
-   Wheels are not included in the exported bundle. The local environment is Python
-   3.13; do not copy its native extensions into a different Kaggle Python version.
+   The bundle does include one set of wheels: the DICOM codecs in `codecs/` (JPEG
+   Lossless, JPEG-LS), which the notebook installs and self-tests before prediction.
+   The local environment is Python 3.13; do not copy its native extensions into a
+   different Kaggle Python version.
 4. Run and save a notebook version. It produces `/kaggle/working/submission.csv` and
    `submission.benchmark.json`. The private version above validates this path. A
    future leaderboard submission should use that version's output and record the

@@ -17,6 +17,8 @@ research
 
 # Data
 *.dcm
+# Codec self-test fixtures shipped in the Kaggle bundle (see kaggle/codecs/)
+!kaggle/codecs/fixtures/*.dcm
 *.png
 data/processed/
 

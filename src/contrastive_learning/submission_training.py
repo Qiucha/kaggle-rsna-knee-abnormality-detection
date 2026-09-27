@@ -83,6 +83,8 @@ def train_bundle(
     output.mkdir(parents=True, exist_ok=False)
     bundle_dir = output / "bundle"
     bundle_dir.mkdir()
+    # Before any feature extraction, so incomplete codecs fail fast.
+    codec_hashes = copy_codecs(root, bundle_dir)
     members, results, all_oof = [], {}, []
     baseline_by_preprocessing = {}
     for i, checkpoint in enumerate(checkpoints):
@@ -196,6 +198,8 @@ def train_bundle(
             "feature": "uniform_mean_cls_patch",
             "ensemble": "mean_probability",
             "members": members,
+            # Listed here so the bundle hash changes whenever a codec file does.
+            "codecs": codec_hashes,
         },
     )
     shutil.copytree(
@@ -214,7 +218,7 @@ def train_bundle(
     source_hashes = {
         str(path.relative_to(bundle_dir)): sha256_file(path)
         for path in sorted((bundle_dir / "src").rglob("*.py"))
-    }
+    } | codec_hashes
     write_json(
         output / "benchmark.json",
         {
@@ -247,6 +251,29 @@ def train_bundle(
         flush=True,
     )
     return results
+
+
+def copy_codecs(root: Path, bundle_dir: Path) -> dict[str, str]:
+    """Copy the vendored DICOM codecs into ``bundle_dir/codecs``; return their hashes.
+
+    Kaggle's offline image has no JPEG Lossless or JPEG-LS decoder. The notebook
+    installs these wheels and runs the self-test before the prediction process
+    imports pydicom (see kaggle/codecs/README.md). A bundle without all four
+    wheels, the fixtures, and the installer is refused rather than shipped.
+    """
+    source = root / "kaggle" / "codecs"
+    wheels = sorted((source / "wheels").glob("*.whl"))
+    if len(wheels) != 4 or not (source / "install_and_selftest.py").is_file():
+        raise FileNotFoundError(f"Incomplete vendored codecs in {source}")
+    if not (source / "fixtures" / "manifest.json").is_file():
+        raise FileNotFoundError(f"Missing codec self-test fixtures in {source}")
+    target = bundle_dir / "codecs"
+    shutil.copytree(source, target, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+    return {
+        str(path.relative_to(bundle_dir)): sha256_file(path)
+        for path in sorted(target.rglob("*"))
+        if path.is_file()
+    }
 
 
 def _save_npz(path, **values):

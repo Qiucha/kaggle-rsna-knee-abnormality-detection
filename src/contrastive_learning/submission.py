@@ -6,6 +6,8 @@ matching the project's strongest existing readout. No report encoder is needed.
 
 from __future__ import annotations
 
+import json
+import sys
 import time
 from pathlib import Path
 
@@ -15,9 +17,15 @@ import torch
 
 from .artifacts import read_json, sha256_file, write_atomic, write_json
 from .checkpoints import checkpoint_config, has_full_weights, read_checkpoint
-from .data import KneeReportDataset, StudyRecord, pick_study_slots, read_series_manifest
+from .data import (
+    KneeReportDataset,
+    StudyRecord,
+    pick_study_slots,
+    plane_fallbacks,
+    read_series_manifest,
+)
 from .model import _IMAGENET_MEAN, _IMAGENET_STD, freeze_then_unfreeze_last
-from .preprocessing import PREPROCESSING_VERSION, resolve_laterality
+from .preprocessing import PREPROCESSING_VERSION, decode_counts, resolve_laterality
 
 LABELS = [
     "ACL",
@@ -302,7 +310,12 @@ def load_member(path: Path, device):
 def predict_submission(
     bundle_dir: Path, data_root: Path, output: Path, *, device="cpu", batch_size=8
 ):
-    """Predict in sample order, fail explicitly on missing planes/decoding errors."""
+    """Predict in sample order, fail explicitly on missing planes/decoding errors.
+
+    A selected plane that does not decode at all falls back to the next ranked
+    series of that plane; the run fails only when none decodes. Decode counters
+    are reset here and reported (stderr and the benchmark JSON) at the end.
+    """
     started = time.perf_counter()
     bundle = read_json(bundle_dir / "bundle.json")
     if (
@@ -317,15 +330,10 @@ def predict_submission(
     test = pd.read_csv(data_root / "test.csv", dtype={UID: str})
     if set(validate_ids(test)) != set(ids):
         raise ValueError("test.csv and sample_submission.csv IDs differ")
-    series = read_series_manifest(data_root / "test_series.csv")
-    records = []
-    for uid in ids:
-        slots = pick_study_slots(uid, series.get(uid, []), data_root / "test_series")
-        if slots is None:
-            raise ValueError(
-                f"Study {uid} lacks a usable three-plane input; submission not written"
-            )
-        records.append(StudyRecord(uid, "", slots, resolve_laterality(slots)))
+    records = submission_records(
+        ids, read_series_manifest(data_root / "test_series.csv"), data_root / "test_series"
+    )
+    decode_counts(reset=True)
     if str(device).startswith("cuda"):
         torch.cuda.reset_peak_memory_stats(device)
     predictions = []
@@ -353,6 +361,36 @@ def predict_submission(
         else None,
         "submission_sha256": sha256_file(output),
         "bundle_sha256": sha256_file(bundle_dir / "bundle.json"),
+        # Summed over members: every member re-reads every study.
+        "decode_counts": decode_counts(),
     }
+    print(
+        "decode_counts", json.dumps(report["decode_counts"], sort_keys=True),
+        file=sys.stderr, flush=True,
+    )
     write_json(output.with_suffix(".benchmark.json"), report)
     return report
+
+
+def submission_records(ids, series, series_root: Path) -> list[StudyRecord]:
+    """One inference record per study, with ranked fallback series per plane.
+
+    The selected series are exactly the training rule's (:func:`pick_study_slots`);
+    fallbacks only matter when a selected plane does not decode at all, which
+    would otherwise abort the whole submission.
+    """
+    records = []
+    for uid in ids:
+        rows = series.get(uid, [])
+        slots = pick_study_slots(uid, rows, series_root)
+        if slots is None:
+            raise ValueError(
+                f"Study {uid} lacks a usable three-plane input; submission not written"
+            )
+        records.append(
+            StudyRecord(
+                uid, "", slots, resolve_laterality(slots),
+                fallbacks=plane_fallbacks(slots, uid, rows, series_root),
+            )
+        )
+    return records
