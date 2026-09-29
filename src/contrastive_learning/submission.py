@@ -144,8 +144,9 @@ def image_features(backbone, images: torch.Tensor) -> torch.Tensor:
     mean = images.new_tensor(_IMAGENET_MEAN).view(1, 3, 1, 1)
     std = images.new_tensor(_IMAGENET_STD).view(1, 3, 1, 1)
     tokens = backbone(pixel_values=(images - mean) / std).last_hidden_state
+    first_patch = 1 + int(getattr(backbone.config, "num_register_tokens", 0))
     return (
-        torch.cat((tokens[:, 0], tokens[:, 1:].mean(1)), dim=-1)
+        torch.cat((tokens[:, 0], tokens[:, first_patch:].mean(1)), dim=-1)
         .reshape(batch, planes, -1)
         .mean(1)
     )
