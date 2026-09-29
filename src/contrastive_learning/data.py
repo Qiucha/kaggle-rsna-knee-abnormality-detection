@@ -111,6 +111,20 @@ class TensorMemoryCache:
 # --------------------------------------------------------------------------- #
 
 
+def read_csv_rows(path: Path, required_columns: set[str] | None = None) -> list[dict[str, str]]:
+    """Read a CSV tolerating the UTF-8 byte order mark that Excel exports add.
+
+    Every CSV this project reads -- reports, the series inventory, translations --
+    goes through here, so a cohort manifest and a legacy CSV run can never disagree
+    about a file's dialect or about which columns a file is required to carry.
+    """
+    with Path(path).open(newline="", encoding="utf-8-sig") as handle:
+        reader = csv.DictReader(handle)
+        if required_columns and not required_columns.issubset(reader.fieldnames or []):
+            raise ValueError(f"{path} must contain columns {sorted(required_columns)}")
+        return list(reader)
+
+
 def read_reports(path: Path, report_column: str = "Report") -> dict[str, str]:
     """Read one nonempty report per study, rejecting duplicate study identifiers.
 
@@ -118,31 +132,22 @@ def read_reports(path: Path, report_column: str = "Report") -> dict[str, str]:
     same anatomy in the candidate pool twice and quietly change retrieval metrics.
     """
     reports: dict[str, str] = {}
-    with Path(path).open(newline="", encoding="utf-8-sig") as handle:
-        reader = csv.DictReader(handle)
-        required = {"StudyInstanceUID", report_column}
-        if not required.issubset(reader.fieldnames or []):
-            raise ValueError(f"{path} must contain columns {sorted(required)}")
-        for row in reader:
-            uid = row["StudyInstanceUID"].strip()
-            report = (row[report_column] or "").strip()
-            if uid and report:
-                if uid in reports:
-                    raise ValueError(f"Duplicate StudyInstanceUID in {path}: {uid}")
-                reports[uid] = report
+    for row in read_csv_rows(path, {"StudyInstanceUID", report_column}):
+        uid = row["StudyInstanceUID"].strip()
+        report = (row[report_column] or "").strip()
+        if uid and report:
+            if uid in reports:
+                raise ValueError(f"Duplicate StudyInstanceUID in {path}: {uid}")
+            reports[uid] = report
     return reports
 
 
 def read_series_manifest(path: Path) -> dict[str, list[dict[str, str]]]:
     """Group the series inventory by study, preserving each study's row order."""
     by_study: dict[str, list[dict[str, str]]] = defaultdict(list)
-    with Path(path).open(newline="", encoding="utf-8-sig") as handle:
-        reader = csv.DictReader(handle)
-        required = {"StudyInstanceUID", "SeriesInstanceUID", "Fluid_Sensitive", "Anatomical_Plane"}
-        if not required.issubset(reader.fieldnames or []):
-            raise ValueError(f"{path} must contain columns {sorted(required)}")
-        for row in reader:
-            by_study[row["StudyInstanceUID"].strip()].append(row)
+    required = {"StudyInstanceUID", "SeriesInstanceUID", "Fluid_Sensitive", "Anatomical_Plane"}
+    for row in read_csv_rows(path, required):
+        by_study[row["StudyInstanceUID"].strip()].append(row)
     return dict(by_study)
 
 
