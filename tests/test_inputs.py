@@ -7,6 +7,8 @@ import torch
 from contrastive_learning import data, inputs, training
 from contrastive_learning.config import TrainConfig
 from contrastive_learning.data import DataSummary, StudyRecord
+import numpy as np
+from contrastive_learning.preprocessing import _centre_to_extent
 
 
 def records(count=7):
@@ -95,3 +97,21 @@ def test_loaders_preserve_pairing_report_view_and_resume_order(monkeypatch):
     resumed = inputs.make_loader(cohort, tokenizer, config, training=True, generator=restored)
     assert [batch["study_uid"] for batch in resumed] == expected
     assert sum(map(len, expected)) == 6
+
+
+def test_centre_to_extent_crops_and_pads_to_exactly_the_requested_size():
+    # A fixed physical box must be exact for every series, or two series land at
+    # different millimetres per pixel. Larger than the image must pad, not skip.
+    volume = torch.arange(2 * 40 * 40, dtype=torch.float32).reshape(2, 40, 40).numpy()
+    for wanted in (10, 20, 39, 40, 60):
+        out = _centre_to_extent(volume, wanted)
+        assert out.shape == (2, 2 * (wanted // 2), 2 * (wanted // 2))
+
+
+def test_centre_to_extent_keeps_the_centre_and_pads_with_zeros():
+    volume = np.ones((1, 10, 10), dtype=np.float32)
+    padded = _centre_to_extent(volume, 20)
+    assert padded.shape == (1, 20, 20)
+    assert padded.sum() == 100.0                       # no signal invented
+    assert padded[0, 5:15, 5:15].sum() == 100.0        # original sits centred
+    assert padded[0, 0, 0] == 0.0                      # and the margin is air

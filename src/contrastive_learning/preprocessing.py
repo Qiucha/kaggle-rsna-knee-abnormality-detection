@@ -250,6 +250,26 @@ def _slice_indices(n_slices: int, slice_band: tuple[float, float], count: int) -
         indices = np.append(indices, indices[-1])
     return indices[:count]
 
+def _centre_to_extent(volume: np.ndarray, wanted: int) -> np.ndarray:
+    """Centre-crop or zero-pad every slice to exactly ``wanted`` pixels square.
+
+    Cropping alone cannot normalise scale: a fixed physical box only fits inside the
+    image when it is smaller than the acquired field of view, so any constant above
+    the smallest FOV in the cohort would be silently skipped for some series and the
+    two would land at different millimetres per pixel. Padding the short side instead
+    makes the physical extent exact for every series. Pad value is zero, which is
+    what lies outside the acquired volume anyway.
+    """
+    slices, height, width = volume.shape
+    cy, cx, half = height // 2, width // 2, wanted // 2
+    out = np.zeros((slices, 2 * half, 2 * half), dtype=volume.dtype)
+    top, left = max(0, cy - half), max(0, cx - half)
+    patch = volume[:, top : cy + half, left : cx + half]
+    y = (out.shape[1] - patch.shape[1]) // 2
+    x = (out.shape[2] - patch.shape[2]) // 2
+    out[:, y : y + patch.shape[1], x : x + patch.shape[2]] = patch
+    return out
+
 
 def read_slot(
     series_dir: Path,
@@ -290,11 +310,10 @@ def read_slot(
     spacing = _row_spacing(series_dir)
     if spacing is not None:
         wanted = int(round(crop_mm / spacing))
-        height, width = shape
-        # Skip the crop when it would be degenerate or larger than the image.
-        if 16 < wanted < min(height, width):
-            cy, cx, half = height // 2, width // 2, wanted // 2
-            volume = volume[:, max(0, cy - half) : cy + half, max(0, cx - half) : cx + half]
+        # Degenerate requests are still skipped; everything else is made exact, so
+        # every series leaves here at the same crop_mm / image_size scale.
+        if wanted > 16:
+            volume = _centre_to_extent(volume, wanted)
 
     # Percentiles over the whole slot, not per slice, so relative slice intensity
     # is preserved; they also clip the bright outliers that min/max scaling ruins.
