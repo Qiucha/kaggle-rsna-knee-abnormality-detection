@@ -1,4 +1,4 @@
-"""Load timm-format DINOv2 ViTs (e.g. OmniRad) as Hugging Face ``Dinov2Model``.
+"""Load timm-format DINOv2 and DINO ViTs (e.g. OmniRad, RadioDino) as HF ``Dinov2Model``.
 
 Radiology-pretrained backbones such as ``Snarcy/OmniRad-small`` are published for
 timm as ``vit_small_patch14_dinov2``, the same architecture as
@@ -58,7 +58,14 @@ def convert_state_dict(timm_state: dict[str, torch.Tensor]) -> dict[str, torch.T
             if module not in _BLOCK_RENAMES:
                 raise KeyError(f"Unmapped timm key: {key}")
             out[f"{prefix}{_BLOCK_RENAMES[module]}.{kind}"] = value
-    out["embeddings.mask_token"] = torch.zeros(1, out["embeddings.cls_token"].shape[-1])
+    width = out["embeddings.cls_token"].shape[-1]
+    # Original-DINO ViTs (e.g. RadioDino) have no layer scale; ones make the
+    # DINOv2 block compute exactly the plain ViT block.
+    for name in [k for k in out if k.endswith("norm1.weight") and k.startswith("encoder.layer.")]:
+        prefix = name[: -len("norm1.weight")]
+        for i in (1, 2):
+            out.setdefault(f"{prefix}layer_scale{i}.lambda1", torch.ones(width))
+    out["embeddings.mask_token"] = torch.zeros(1, width)
     return out
 
 
@@ -79,6 +86,9 @@ def load_timm_dinov2(repo: str, revision: str, *, base_model: str, base_revision
     state = convert_state_dict(load_file(path))
     config = AutoConfig.from_pretrained(base_model, revision=base_revision,
                                         local_files_only=local_files_only)
+    # Patch size and grid come from the weights, so a patch-16 model can borrow a
+    # patch-14 base's width and depth.
+    config.patch_size = state["embeddings.patch_embeddings.projection.weight"].shape[-1]
     grid = int(round((state["embeddings.position_embeddings"].shape[1] - 1) ** 0.5))
     config.image_size = grid * config.patch_size
     model = Dinov2Model(config)

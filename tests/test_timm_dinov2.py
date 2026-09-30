@@ -48,3 +48,35 @@ def test_unknown_timm_keys_raise_instead_of_being_dropped():
         convert_state_dict(state)
     with pytest.raises(KeyError):
         convert_state_dict({**timm_state(), "reg_token": torch.zeros(1, 4, 8)})
+
+
+def test_dino_weights_without_layer_scale_get_identity_scales():
+    state = {k: v for k, v in timm_state().items() if ".ls" not in k}
+    converted = convert_state_dict(state)
+    for i in range(2):
+        for j in (1, 2):
+            assert torch.equal(converted[f"encoder.layer.{i}.layer_scale{j}.lambda1"], torch.ones(8))
+
+
+def test_real_layer_scales_are_not_overwritten():
+    state = timm_state()
+    converted = convert_state_dict(state)
+    assert torch.equal(converted["encoder.layer.1.layer_scale1.lambda1"], state["blocks.1.ls1.gamma"])
+
+
+def test_patch_size_and_image_size_come_from_the_weights(tmp_path, monkeypatch):
+    from safetensors.torch import save_file
+    from transformers import Dinov2Config
+
+    from contrastive_learning import timm_dinov2
+
+    state = {k: v for k, v in timm_state(grid=3).items() if ".ls" not in k}
+    state["patch_embed.proj.weight"] = torch.randn(8, 3, 16, 16)
+    save_file(state, tmp_path / "model.safetensors")
+    base = Dinov2Config(hidden_size=8, num_hidden_layers=2, num_attention_heads=2,
+                        intermediate_size=32, image_size=518, patch_size=14)
+    monkeypatch.setattr("huggingface_hub.hf_hub_download", lambda *a, **k: str(tmp_path / "model.safetensors"))
+    monkeypatch.setattr("transformers.AutoConfig.from_pretrained", lambda *a, **k: base)
+    model = timm_dinov2.load_timm_dinov2("x", "r", base_model="b", base_revision="r")
+    assert (model.config.patch_size, model.config.image_size) == (16, 48)
+    assert model(pixel_values=torch.rand(1, 3, 48, 48)).last_hidden_state.shape == (1, 10, 8)
