@@ -113,7 +113,21 @@ class FinetuneModel(nn.Module):
         }
 
 
-def load_backbone(config: dict) -> nn.Module:
+def load_backbone(config: dict) -> tuple[nn.Module, dict]:
+    """The backbone to fine-tune, with its trainable parameters set, and its adaptation.
+
+    Without ``init_checkpoint`` this is the pretrained model with its last blocks
+    unfrozen. With it, the checkpoint's own adapted encoder is restored and its own
+    adaptation (for example LoRA over the last blocks) stays trainable, so training
+    continues exactly the parameters contrastive training adapted.
+    """
+    if config.get("init_checkpoint"):
+        from .submission import load_encoder
+
+        backbone, run_config, adaptation = load_encoder(ROOT / config["init_checkpoint"])
+        if run_config.image_kwargs != image_kwargs(config):
+            raise ValueError("init_checkpoint was trained on different image settings")
+        return backbone.train(), adaptation
     from transformers import AutoModel
 
     backbone = AutoModel.from_pretrained(
@@ -122,7 +136,9 @@ def load_backbone(config: dict) -> nn.Module:
         local_files_only=True,
     )
     freeze_then_unfreeze_last(backbone, config["image_unfreeze_last"])
-    return backbone
+    adaptation = {"use_lora": False, "image_unfreeze_last": config["image_unfreeze_last"],
+                  "lora_rank": 0, "lora_alpha": 0.0, "lora_dropout": 0.0}
+    return backbone, adaptation
 
 
 def _loader(records, config, *, training, generator=None):
@@ -200,7 +216,8 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
 
     torch.manual_seed(config["seed"])
     np.random.seed(config["seed"])
-    model = FinetuneModel(load_backbone(config), config["head_hidden"], config["dropout"]).to(device)
+    backbone, adaptation = load_backbone(config)
+    model = FinetuneModel(backbone, config["head_hidden"], config["dropout"]).to(device)
     backbone_params = [p for p in model.backbone.parameters() if p.requires_grad]
     optimizer = torch.optim.AdamW(
         [
@@ -306,8 +323,6 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     write_atomic(output / "predictions.npz", save_predictions)
 
     # A Kaggle bundle member, loadable by submission.load_member.
-    adaptation = {"use_lora": False, "image_unfreeze_last": config["image_unfreeze_last"],
-                  "lora_rank": 0, "lora_alpha": 0.0, "lora_dropout": 0.0}
     export_member(
         output / "member-00.pt",
         model.backbone,
