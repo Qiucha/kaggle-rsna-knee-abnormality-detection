@@ -40,12 +40,14 @@ from .artifacts import sha256_file, write_atomic, write_json
 from .data import KneeReportDataset
 from .lm_proxy import load_test_population, masked_macro_auroc
 from .lm_supervision import load_population
+from .preprocessing import PLANES, apply_left_knee, read_slot
 from .model import _IMAGENET_MEAN, _IMAGENET_STD, freeze_then_unfreeze_last
 from .submission import LABELS, UID, export_member, score_predictions
 from .supervised_head import masked_bce
 
 ROOT = Path(__file__).resolve().parents[2]
 TARGETS = ("verdict", "soft")
+SLICE_SAMPLING = ("fixed", "random")
 
 
 def image_kwargs(config: dict) -> dict:
@@ -141,10 +143,52 @@ def load_backbone(config: dict) -> tuple[nn.Module, dict]:
     return backbone, adaptation
 
 
+class RandomSliceDataset(torch.utils.data.Dataset):
+    """Training studies with fresh jittered slices per plane on every read.
+
+    Uncached by design: a cache would freeze the first draw. Each read seeds its own
+    generator from torch's RNG, which the DataLoader seeds per worker from the
+    loader's generator, so workers draw differently and a seed replays the run.
+
+    Every epoch decodes DICOMs again, which is too slow over the WSL ``/mnt`` mount.
+    ``mirror`` maps a series-root prefix to a byte-identical local copy.
+    """
+
+    def __init__(self, records, kwargs: dict, mirror: dict | None = None):
+        self.records, self.kwargs, self.mirror = list(records), kwargs, mirror
+
+    def _series(self, path: Path) -> Path:
+        if not self.mirror:
+            return path
+        local = Path(self.mirror["to"]) / path.relative_to(self.mirror["from"])
+        if not local.is_dir():
+            raise FileNotFoundError(f"Series missing from the local mirror: {local}")
+        return local
+
+    def __len__(self) -> int:
+        return len(self.records)
+
+    def __getitem__(self, index: int) -> dict:
+        record = self.records[index]
+        rng = np.random.default_rng(int(torch.randint(2**62, (1,))))
+        images = []
+        for plane in PLANES:
+            image = read_slot(self._series(record.slots[plane]), **self.kwargs, slice_rng=rng)
+            if image is None:
+                raise RuntimeError(f"DICOM decode failed after indexing: {record.study_uid} {plane}")
+            images.append(apply_left_knee(image, plane, record.laterality))
+        return {"images": torch.stack(images), "study_uid": record.study_uid}
+
+
+def _dataset(records, config, *, training):
+    # Evaluation, LM-test, gold and the exported member always see the fixed slices.
+    if training and config.get("train_slice_sampling", "fixed") == "random":
+        return RandomSliceDataset(records, image_kwargs(config), config.get("train_series_mirror"))
+    return KneeReportDataset(records, image_kwargs(config), image_cache_dir=ROOT / config["image_cache_dir"])
+
+
 def _loader(records, config, *, training, generator=None):
-    dataset = KneeReportDataset(
-        records, image_kwargs(config), image_cache_dir=ROOT / config["image_cache_dir"]
-    )
+    dataset = _dataset(records, config, training=training)
 
     def collate(batch):
         return torch.stack([item["images"] for item in batch]), [item["study_uid"] for item in batch]
@@ -188,6 +232,8 @@ def _scheduler(optimizer, total_steps: int, warmup_fraction: float):
 def validate_config(config: dict) -> None:
     if config["targets"] not in TARGETS:
         raise ValueError(f"targets must be one of {TARGETS}")
+    if config.get("train_slice_sampling", "fixed") not in SLICE_SAMPLING:
+        raise ValueError(f"train_slice_sampling must be one of {SLICE_SAMPLING}")
     if config["image_unfreeze_last"] < 1:
         raise ValueError("Fine-tuning needs at least one unfrozen block")
     if config["slices_per_plane"] != 3:

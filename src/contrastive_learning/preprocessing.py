@@ -32,6 +32,7 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 from functools import cache
+from itertools import pairwise
 import hashlib
 import os
 from pathlib import Path
@@ -373,6 +374,23 @@ def _slice_indices(n_slices: int, slice_band: tuple[float, float], count: int) -
         indices = np.append(indices, indices[-1])
     return indices[:count]
 
+def jittered_slice_indices(
+    n_slices: int, slice_band: tuple[float, float], count: int, rng: np.random.Generator
+) -> np.ndarray:
+    """One random slice from each of ``count`` equal strata of the band, in order.
+
+    The training-time counterpart of :func:`_slice_indices`: each draw stays in the
+    stratum around the fixed sampler's pick, so channel order and spacing look like
+    what evaluation serves, while the exact slices change every epoch.
+    """
+    low = int(slice_band[0] * (n_slices - 1))
+    high = int(slice_band[1] * (n_slices - 1))
+    if high - low + 1 < count:
+        return _slice_indices(n_slices, slice_band, count)
+    edges = np.linspace(low, high + 1, count + 1).astype(int)
+    return np.asarray([rng.integers(a, b) for a, b in pairwise(edges)], dtype=int)
+
+
 def _centre_to_extent(volume: np.ndarray, wanted: int) -> np.ndarray:
     """Centre-crop or zero-pad every slice to exactly ``wanted`` pixels square.
 
@@ -401,6 +419,7 @@ def read_slot(
     crop_mm: float = 130.0,
     slices_per_plane: int = 3,
     slice_band: tuple[float, float] = (0.20, 0.80),
+    slice_rng: np.random.Generator | None = None,
 ) -> torch.Tensor | None:
     """Read one plane's series into a float tensor ``[slices, H, W]`` in ``[0, 1]``.
 
@@ -408,13 +427,17 @@ def read_slot(
     rather than handle an exception. Undecodable individual slices are substituted
     with their nearest decoded neighbour, which keeps the channel count fixed
     without inventing pixel values. Both outcomes are counted per transfer syntax;
-    with ``KNEE_STRICT_DECODE=1`` a substitution raises instead.
+    with ``KNEE_STRICT_DECODE=1`` a substitution raises instead. ``slice_rng``
+    switches to :func:`jittered_slice_indices`, for training only.
     """
     try:
         paths = ordered_slice_paths(series_dir)
     except (FileNotFoundError, OSError):
         return None
-    indices = _slice_indices(len(paths), slice_band, slices_per_plane)
+    if slice_rng is None:
+        indices = _slice_indices(len(paths), slice_band, slices_per_plane)
+    else:
+        indices = jittered_slice_indices(len(paths), slice_band, slices_per_plane, slice_rng)
 
     slices: list[np.ndarray | None] = [_decode_pixels(paths[int(index)]) for index in indices]
     decoded = [index for index, image in enumerate(slices) if image is not None]

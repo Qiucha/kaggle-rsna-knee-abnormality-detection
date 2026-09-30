@@ -60,3 +60,50 @@ def test_invalid_rung_configs_are_rejected(change):
               "epochs": 20, "batch_size": 16, "patience": 5, **change}
     with pytest.raises(ValueError):
         validate_config(config)
+
+
+def test_jittered_slices_stay_in_their_strata_and_replay_under_a_seed():
+    from contrastive_learning.preprocessing import _slice_indices, jittered_slice_indices
+
+    draws = [jittered_slice_indices(40, (0.2, 0.8), 3, np.random.default_rng(s)) for s in range(200)]
+    for indices in draws:
+        assert len(indices) == 3 and list(indices) == sorted(indices)
+        assert 7 <= indices[0] < 15 <= indices[1] < 23 <= indices[2] <= 31
+    assert len({tuple(d) for d in draws}) > 50
+    assert (jittered_slice_indices(40, (0.2, 0.8), 3, np.random.default_rng(1))
+            == jittered_slice_indices(40, (0.2, 0.8), 3, np.random.default_rng(1))).all()
+    # Too few slices to stratify: the fixed sampler's answer.
+    assert (jittered_slice_indices(4, (0.2, 0.8), 3, np.random.default_rng(0))
+            == _slice_indices(4, (0.2, 0.8), 3)).all()
+
+
+def test_only_the_training_dataset_samples_slices_at_random(tmp_path):
+    from contrastive_learning.data import KneeReportDataset
+    from contrastive_learning.finetune import RandomSliceDataset, _dataset
+
+    config = {"image_size": 28, "crop_mm": 130.0, "slices_per_plane": 3, "slice_band": [0.2, 0.8],
+              "image_cache_dir": str(tmp_path),
+              "train_slice_sampling": "random"}
+    assert isinstance(_dataset([], config, training=True), RandomSliceDataset)
+    assert isinstance(_dataset([], config, training=False), KneeReportDataset)
+    config["train_slice_sampling"] = "fixed"
+    assert isinstance(_dataset([], config, training=True), KneeReportDataset)
+
+
+def test_unknown_slice_sampling_is_rejected():
+    with pytest.raises(ValueError):
+        validate_config({"targets": "verdict", "image_unfreeze_last": 3, "slices_per_plane": 3,
+                         "epochs": 20, "batch_size": 16, "patience": 5,
+                         "train_slice_sampling": "shuffled"})
+
+
+def test_random_slices_read_from_the_local_mirror(tmp_path):
+    from pathlib import Path
+
+    from contrastive_learning.finetune import RandomSliceDataset
+
+    (tmp_path / "local" / "study" / "series").mkdir(parents=True)
+    dataset = RandomSliceDataset([], {}, {"from": "/mnt/d/train_series", "to": str(tmp_path / "local")})
+    assert dataset._series(Path("/mnt/d/train_series/study/series")) == tmp_path / "local/study/series"
+    with pytest.raises(FileNotFoundError):
+        dataset._series(Path("/mnt/d/train_series/study/other"))
