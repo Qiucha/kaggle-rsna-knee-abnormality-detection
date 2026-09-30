@@ -204,13 +204,21 @@ def load_backbone(config: dict) -> tuple[nn.Module, dict]:
         if run_config.image_kwargs != image_kwargs(config):
             raise ValueError("init_checkpoint was trained on different image settings")
         return backbone.train(), adaptation
-    from transformers import AutoModel
+    if config.get("image_model_format") == "timm_dinov2":
+        # e.g. OmniRad: timm weights renamed onto HF's Dinov2Model, config from the base.
+        from .timm_dinov2 import load_timm_dinov2
 
-    backbone = AutoModel.from_pretrained(
-        config["image_model"],
-        revision=config["image_model_revision"],
-        local_files_only=True,
-    )
+        backbone = load_timm_dinov2(config["image_model"], config["image_model_revision"],
+                                    base_model=config["image_model_base"],
+                                    base_revision=config["image_model_base_revision"])
+    else:
+        from transformers import AutoModel
+
+        backbone = AutoModel.from_pretrained(
+            config["image_model"],
+            revision=config["image_model_revision"],
+            local_files_only=True,
+        )
     freeze_then_unfreeze_last(backbone, config["image_unfreeze_last"])
     adaptation = {"use_lora": False, "image_unfreeze_last": config["image_unfreeze_last"],
                   "lora_rank": 0, "lora_alpha": 0.0, "lora_dropout": 0.0}
