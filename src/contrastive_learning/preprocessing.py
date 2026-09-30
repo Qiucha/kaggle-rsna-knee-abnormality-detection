@@ -391,6 +391,77 @@ def jittered_slice_indices(
     return np.asarray([rng.integers(a, b) for a, b in pairwise(edges)], dtype=int)
 
 
+def window_indices(
+    n_slices: int,
+    slice_band: tuple[float, float],
+    windows: int,
+    rng: np.random.Generator | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """``windows`` contiguous 3-slice windows, one per equal stratum of the band.
+
+    Returns indices ``(windows, 3)`` and a validity mask ``(windows,)``. Each window is
+    centred on one slice of its stratum: the stratum centre when ``rng`` is ``None``
+    (evaluation) and a uniform draw from it otherwise (training), so the two only
+    ever disagree inside a stratum. A stratum with no slice (a stack too short for
+    ``windows`` distinct centres) is marked invalid instead of repeating a neighbour;
+    its indices copy a valid window's so nothing extra is decoded.
+    """
+    if windows < 1:
+        raise ValueError("windows must be >= 1")
+    low = int(slice_band[0] * (n_slices - 1))
+    high = max(low, int(slice_band[1] * (n_slices - 1)))
+    edges = np.linspace(low, high + 1, windows + 1).astype(int)
+    valid = edges[1:] > edges[:-1]
+    centres = np.asarray([
+        (rng.integers(a, b) if rng is not None else (a + b - 1) // 2) if b > a else -1
+        for a, b in pairwise(edges)
+    ])
+    centres[~valid] = centres[valid][0]
+    indices = (centres[:, None] + np.arange(-1, 2)).clip(0, n_slices - 1)
+    return indices, valid
+
+
+def read_windows(
+    series_dir: Path,
+    *,
+    windows: int,
+    image_size: int = 224,
+    crop_mm: float = 130.0,
+    slice_band: tuple[float, float] = (0.20, 0.80),
+    slice_rng: np.random.Generator | None = None,
+) -> tuple[torch.Tensor, torch.Tensor] | None:
+    """One plane as ``windows`` 3-slice images ``[windows, 3, H, W]`` plus a validity mask.
+
+    Every selected slice is decoded once and normalised together, as :func:`read_slot`
+    does for its three, so intensity stays comparable across depth. Invalid windows
+    are zero. Returns ``None`` when the series is unreadable.
+    """
+    try:
+        paths = ordered_slice_paths(series_dir)
+    except (FileNotFoundError, OSError):
+        return None
+    indices, valid = window_indices(len(paths), slice_band, windows, slice_rng)
+    unique = np.unique(indices[valid])
+    volume = _read_volume(series_dir, paths, unique, image_size=image_size, crop_mm=crop_mm)
+    if volume is None:
+        return None
+    images = volume[torch.as_tensor(np.searchsorted(unique, indices))]
+    mask = torch.as_tensor(valid)
+    images[~mask] = 0
+    return images, mask
+
+
+def apply_left_knee_windows(
+    images: torch.Tensor, valid: torch.Tensor, plane: str, laterality: str | None
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """:func:`apply_left_knee` for ``[windows, 3, H, W]``: sagittal depth is both axes."""
+    if laterality != "R":
+        return images, valid
+    if plane in ("Coronal", "Axial"):
+        return torch.flip(images, dims=[-1]), valid
+    return torch.flip(images, dims=[0, 1]), torch.flip(valid, dims=[0])
+
+
 def _centre_to_extent(volume: np.ndarray, wanted: int) -> np.ndarray:
     """Centre-crop or zero-pad every slice to exactly ``wanted`` pixels square.
 
@@ -438,7 +509,13 @@ def read_slot(
         indices = _slice_indices(len(paths), slice_band, slices_per_plane)
     else:
         indices = jittered_slice_indices(len(paths), slice_band, slices_per_plane, slice_rng)
+    return _read_volume(series_dir, paths, indices, image_size=image_size, crop_mm=crop_mm)
 
+
+def _read_volume(
+    series_dir: Path, paths: list[Path], indices: np.ndarray, *, image_size: int, crop_mm: float
+) -> torch.Tensor | None:
+    """Decode ``indices`` of one series and crop, normalise and resize them jointly."""
     slices: list[np.ndarray | None] = [_decode_pixels(paths[int(index)]) for index in indices]
     decoded = [index for index, image in enumerate(slices) if image is not None]
     failed = [paths[int(indices[index])] for index, image in enumerate(slices) if image is None]

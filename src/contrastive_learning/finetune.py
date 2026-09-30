@@ -36,11 +36,18 @@ import pandas as pd
 import torch
 from torch import nn
 
-from .artifacts import sha256_file, write_atomic, write_json
+from .artifacts import sha256_file, sha256_text, write_atomic, write_json
 from .data import KneeReportDataset
 from .lm_proxy import load_test_population, masked_macro_auroc
 from .lm_supervision import load_population
-from .preprocessing import PLANES, apply_left_knee, read_slot
+from .preprocessing import (
+    PLANES,
+    PREPROCESSING_VERSION,
+    apply_left_knee,
+    apply_left_knee_windows,
+    read_slot,
+    read_windows,
+)
 from .model import _IMAGENET_MEAN, _IMAGENET_STD, freeze_then_unfreeze_last
 from .submission import LABELS, UID, export_member, score_predictions
 from .supervised_head import masked_bce
@@ -48,6 +55,7 @@ from .supervised_head import masked_bce
 ROOT = Path(__file__).resolve().parents[2]
 TARGETS = ("verdict", "soft")
 SLICE_SAMPLING = ("fixed", "random")
+POOLING = ("mean", "attention")
 
 
 def image_kwargs(config: dict) -> dict:
@@ -72,19 +80,24 @@ def soft_targets(lm_labels_csv: Path, uids: list[str], hard_masks: np.ndarray) -
     return np.where(hard_masks > 0, values, 0.0).astype(np.float32)
 
 
+def dense_head(width: int, hidden_dims: list[int], dropout: float) -> nn.Sequential:
+    """ReLU MLP from ``width`` to one logit per label; exports as ``dense_v1``."""
+    widths = [width, *hidden_dims, len(LABELS)]
+    layers: list[nn.Module] = []
+    for i, (a, b) in enumerate(pairwise(widths)):
+        layers.append(nn.Linear(a, b))
+        if i < len(widths) - 2:
+            layers.extend([nn.ReLU(), nn.Dropout(dropout)])
+    return nn.Sequential(*layers)
+
+
 class FinetuneModel(nn.Module):
     """Backbone plus dense head over the plane-averaged CLS + mean-patch feature."""
 
     def __init__(self, backbone: nn.Module, hidden_dims: list[int], dropout: float):
         super().__init__()
         self.backbone = backbone
-        widths = [2 * backbone.config.hidden_size, *hidden_dims, len(LABELS)]
-        layers: list[nn.Module] = []
-        for i, (a, b) in enumerate(pairwise(widths)):
-            layers.append(nn.Linear(a, b))
-            if i < len(widths) - 2:
-                layers.extend([nn.ReLU(), nn.Dropout(dropout)])
-        self.head = nn.Sequential(*layers)
+        self.head = dense_head(2 * backbone.config.hidden_size, hidden_dims, dropout)
         self.register_buffer("mean", torch.tensor(_IMAGENET_MEAN).view(1, 3, 1, 1), persistent=False)
         self.register_buffer("std", torch.tensor(_IMAGENET_STD).view(1, 3, 1, 1), persistent=False)
 
@@ -113,6 +126,67 @@ class FinetuneModel(nn.Module):
                 if isinstance(layer, nn.Linear)
             ],
         }
+
+
+class WindowModel(nn.Module):
+    """R4: backbone over K 3-slice windows per plane, pooled under a validity mask.
+
+    ``pooling="mean"`` (R4a) averages valid windows within each plane, then the
+    planes, and feeds R1c's dense head. ``pooling="attention"`` (R4b) lets 12 learned
+    label queries attend over all valid windows of all planes, each token carrying a
+    learned plane embedding, and scores each label from its own pooled token. Keys
+    are a low-dimensional projection and values are the raw tokens, which keeps the
+    head's size near R1c's so R4b against R4a tests attention, not capacity.
+    """
+
+    def __init__(self, backbone: nn.Module, hidden_dims: list[int], dropout: float, pooling: str,
+                 key_dim: int = 128):
+        super().__init__()
+        self.backbone, self.pooling = backbone, pooling
+        width = 2 * backbone.config.hidden_size
+        if pooling == "mean":
+            self.head = dense_head(width, hidden_dims, dropout)
+        else:
+            self.plane_embedding = nn.Parameter(torch.zeros(len(PLANES), width))
+            self.key = nn.Linear(width, key_dim)
+            self.queries = nn.Parameter(torch.randn(len(LABELS), key_dim) / math.sqrt(key_dim))
+            self.dropout = nn.Dropout(dropout)
+            self.label_weight = nn.Parameter(torch.zeros(len(LABELS), width))
+            self.label_bias = nn.Parameter(torch.zeros(len(LABELS)))
+            nn.init.normal_(self.label_weight, std=1 / math.sqrt(width))
+        self.register_buffer("mean", torch.tensor(_IMAGENET_MEAN).view(1, 3, 1, 1), persistent=False)
+        self.register_buffer("std", torch.tensor(_IMAGENET_STD).view(1, 3, 1, 1), persistent=False)
+
+    def tokens(self, images: torch.Tensor, valid: torch.Tensor) -> torch.Tensor:
+        """``[B, planes, K, width]`` CLS + mean-patch per window; invalid windows stay zero.
+
+        Only valid windows go through the backbone.
+        """
+        flat = images.reshape(-1, *images.shape[-3:])[valid.reshape(-1)].float()
+        hidden = self.backbone(pixel_values=(flat - self.mean) / self.std).last_hidden_state
+        first_patch = 1 + int(getattr(self.backbone.config, "num_register_tokens", 0))
+        pooled = torch.cat((hidden[:, 0], hidden[:, first_patch:].mean(1)), dim=-1)
+        out = pooled.new_zeros(valid.numel(), pooled.shape[-1])
+        out[valid.reshape(-1)] = pooled
+        return out.reshape(*valid.shape, -1)
+
+    def forward(self, images: torch.Tensor, valid: torch.Tensor, *, return_attention: bool = False):
+        tokens = self.tokens(images, valid)
+        weights = valid.to(tokens.dtype)
+        if self.pooling == "mean":
+            counts = weights.sum(-1)
+            planes = (tokens * weights[..., None]).sum(2) / counts.clamp(min=1)[..., None]
+            present = (counts > 0).to(tokens.dtype)
+            study = (planes * present[..., None]).sum(1) / present.sum(1).clamp(min=1)[:, None]
+            logits, attention = self.head(study), None
+        else:
+            tokens = (tokens + self.plane_embedding[None, :, None]).flatten(1, 2)
+            scores = torch.einsum("lk,bnk->bln", self.queries, self.key(tokens)) / math.sqrt(self.queries.shape[1])
+            scores = scores.float().masked_fill(~valid.flatten(1)[:, None], float("-inf"))
+            attention = scores.softmax(-1).nan_to_num(0.0)
+            pooled = self.dropout(torch.einsum("bln,bnd->bld", attention.to(tokens.dtype), tokens))
+            logits = (pooled * self.label_weight).sum(-1) + self.label_bias
+        return (logits, attention) if return_attention else logits
 
 
 def load_backbone(config: dict) -> tuple[nn.Module, dict]:
@@ -180,7 +254,64 @@ class RandomSliceDataset(torch.utils.data.Dataset):
         return {"images": torch.stack(images), "study_uid": record.study_uid}
 
 
+class WindowDataset(RandomSliceDataset):
+    """Studies as ``[planes, K, 3, H, W]`` windows plus a ``[planes, K]`` validity mask.
+
+    Training draws jittered windows on every read. Evaluation takes stratum centres,
+    which are deterministic, so they are cached in float16 under ``cache_dir``. An
+    unreadable plane becomes a fully masked plane rather than an error.
+    """
+
+    def __init__(self, records, config: dict, *, training: bool):
+        super().__init__(records, image_kwargs(config), config.get("train_series_mirror"))
+        self.windows, self.training = config["windows_per_plane"], training
+        self.cache_dir = None if training else ROOT / config["window_cache_dir"]
+        self.settings = {"preprocessing_version": PREPROCESSING_VERSION, "windows": self.windows,
+                         **{k: v for k, v in self.kwargs.items() if k != "slices_per_plane"}}
+
+    def _read(self, record, rng) -> tuple[torch.Tensor, torch.Tensor]:
+        size = self.kwargs["image_size"]
+        images = torch.zeros(len(PLANES), self.windows, 3, size, size)
+        valid = torch.zeros(len(PLANES), self.windows, dtype=torch.bool)
+        kwargs = {k: v for k, v in self.kwargs.items() if k != "slices_per_plane"}
+        for i, plane in enumerate(PLANES):
+            read = read_windows(self._series(record.slots[plane]), windows=self.windows,
+                                **kwargs, slice_rng=rng)
+            if read is not None:
+                images[i], valid[i] = apply_left_knee_windows(*read, plane, record.laterality)
+        return images, valid
+
+    def __getitem__(self, index: int) -> dict:
+        record = self.records[index]
+        if self.training:
+            images, valid = self._read(record, np.random.default_rng(int(torch.randint(2**62, (1,)))))
+            return {"images": images, "valid": valid, "study_uid": record.study_uid}
+        key = sha256_text(json.dumps({**self.settings, "laterality": record.laterality,
+                                      "slots": {p: str(record.slots[p]) for p in PLANES}}, sort_keys=True))
+        path = self.cache_dir / f"{record.study_uid}-{key[:12]}.pt"
+        if path.exists():
+            cached = torch.load(path, weights_only=True)
+            images, valid = cached["images"].float(), cached["valid"]
+        else:
+            images, valid = self._read(record, None)
+            self.cache_dir.mkdir(parents=True, exist_ok=True)
+            write_atomic(path, lambda t: torch.save({"images": images.half(), "valid": valid}, t))
+        return {"images": images, "valid": valid, "study_uid": record.study_uid}
+
+    def _series(self, path: Path) -> Path:
+        # The mirror holds only training series. Evaluation reads fall back to the
+        # source once, since their windows are then cached (see scripts/build_window_cache.py).
+        try:
+            return super()._series(path)
+        except FileNotFoundError:
+            if self.training:
+                raise
+            return path
+
+
 def _dataset(records, config, *, training):
+    if config.get("windows_per_plane"):
+        return WindowDataset(records, config, training=training)
     # Evaluation, LM-test, gold and the exported member always see the fixed slices.
     if training and config.get("train_slice_sampling", "fixed") == "random":
         return RandomSliceDataset(records, image_kwargs(config), config.get("train_series_mirror"))
@@ -191,7 +322,10 @@ def _loader(records, config, *, training, generator=None):
     dataset = _dataset(records, config, training=training)
 
     def collate(batch):
-        return torch.stack([item["images"] for item in batch]), [item["study_uid"] for item in batch]
+        # Model inputs first, as a tuple the model is called with; study uids last.
+        inputs = tuple(torch.stack([item[key] for item in batch])
+                       for key in ("images", "valid") if key in batch[0])
+        return inputs, [item["study_uid"] for item in batch]
 
     return torch.utils.data.DataLoader(
         dataset,
@@ -204,16 +338,41 @@ def _loader(records, config, *, training, generator=None):
     )
 
 
+def _to(inputs, device):
+    return tuple(x.to(device, non_blocking=True) for x in inputs)
+
+
 @torch.inference_mode()
-def predict(model, loader, device, amp) -> tuple[np.ndarray, list[str]]:
+def predict(model, loader, device, amp, *, extras: dict | None = None) -> tuple[np.ndarray, list[str]]:
+    """Probabilities in loader order. For a windowed model, ``extras`` (a dict) collects
+    the validity masks and, for attention pooling, the attention weights."""
     model.eval()
     parts, uids = [], []
-    for images, batch_uids in loader:
+    for inputs, batch_uids in loader:
+        inputs = _to(inputs, device)
         with torch.autocast(device_type=device.split(":")[0], enabled=amp):
-            logits = model(images.to(device, non_blocking=True))
+            if extras is not None and isinstance(model, WindowModel):
+                logits, attention = model(*inputs, return_attention=True)
+                extras.setdefault("valid", []).append(inputs[1].cpu().numpy())
+                if attention is not None:
+                    extras.setdefault("attention", []).append(attention.float().cpu().numpy())
+            else:
+                logits = model(*inputs)
         parts.append(logits.float().sigmoid().cpu().numpy())
         uids.extend(batch_uids)
     return np.concatenate(parts), uids
+
+
+def masked_window_counts(valid: np.ndarray) -> dict:
+    """How often each fallback of design decision 6 fired, from ``[studies, planes, K]``."""
+    windows = valid.shape[-1]
+    return {
+        "studies": int(valid.shape[0]),
+        "windows": int(valid.size),
+        "masked_windows": int((~valid).sum()),
+        "masked_planes": int((~valid.any(-1)).sum()),
+        "short_planes": int((valid.any(-1) & (valid.sum(-1) < windows)).sum()),
+    }
 
 
 def _scheduler(optimizer, total_steps: int, warmup_fraction: float):
@@ -238,6 +397,17 @@ def validate_config(config: dict) -> None:
         raise ValueError("Fine-tuning needs at least one unfrozen block")
     if config["slices_per_plane"] != 3:
         raise ValueError("The image path takes exactly 3 slices per plane")
+    if config.get("windows_per_plane") is not None:
+        if config["windows_per_plane"] < 1:
+            raise ValueError("windows_per_plane must be positive")
+        if config.get("pooling") not in POOLING:
+            raise ValueError(f"A windowed rung needs pooling in {POOLING}")
+        if "window_cache_dir" not in config:
+            raise ValueError("A windowed rung needs window_cache_dir for evaluation windows")
+    elif "pooling" in config:
+        raise ValueError("pooling applies only with windows_per_plane")
+    if config.get("grad_accumulation", 1) < 1:
+        raise ValueError("grad_accumulation must be positive")
     for key in ("epochs", "batch_size", "patience"):
         if config[key] < 1:
             raise ValueError(f"{key} must be positive")
@@ -263,19 +433,27 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     torch.manual_seed(config["seed"])
     np.random.seed(config["seed"])
     backbone, adaptation = load_backbone(config)
-    model = FinetuneModel(backbone, config["head_hidden"], config["dropout"]).to(device)
+    windowed = bool(config.get("windows_per_plane"))
+    if windowed:
+        model = WindowModel(backbone, config["head_hidden"], config["dropout"], config["pooling"])
+    else:
+        model = FinetuneModel(backbone, config["head_hidden"], config["dropout"])
+    model = model.to(device)
     backbone_params = [p for p in model.backbone.parameters() if p.requires_grad]
     optimizer = torch.optim.AdamW(
         [
             {"params": backbone_params, "lr": config["lr_backbone"]},
-            {"params": model.head.parameters(), "lr": config["lr_head"]},
+            {"params": [p for n, p in model.named_parameters() if not n.startswith("backbone.")],
+             "lr": config["lr_head"]},
         ],
         weight_decay=config["weight_decay"],
     )
     generator = torch.Generator().manual_seed(config["seed"])
     train_loader = _loader(groups["train"], config, training=True, generator=generator)
     validation_loader = _loader(groups["validation"], config, training=False)
-    scheduler = _scheduler(optimizer, config["epochs"] * len(train_loader), config["warmup_fraction"])
+    accumulation = config.get("grad_accumulation", 1)
+    steps_per_epoch = math.ceil(len(train_loader) / accumulation)
+    scheduler = _scheduler(optimizer, config["epochs"] * steps_per_epoch, config["warmup_fraction"])
     scaler = torch.amp.GradScaler(enabled=config["amp"])
     y_all = torch.as_tensor(train_y, device=device)
     m_all = torch.as_tensor(masks["train"], device=device)
@@ -292,22 +470,31 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     stale = 0
     for epoch in range(1, config["epochs"] + 1):
         model.train()
-        epoch_started, losses = time.perf_counter(), []
-        for images, uids in train_loader:
+        epoch_started, losses, train_valid = time.perf_counter(), [], []
+        optimizer.zero_grad(set_to_none=True)
+        for batch, (inputs, uids) in enumerate(train_loader, start=1):
             index = torch.as_tensor([train_rows[u] for u in uids], device=device)
-            optimizer.zero_grad(set_to_none=True)
             with torch.autocast(device_type=device.split(":")[0], enabled=config["amp"]):
-                logits = model(images.to(device, non_blocking=True))
+                logits = model(*_to(inputs, device))
             loss = masked_bce(logits.float(), y_all[index], m_all[index], observed_rates)
             if not torch.isfinite(loss):
                 raise ValueError(f"Nonfinite training loss at epoch {epoch}")
-            scaler.scale(loss).backward()
-            scaler.unscale_(optimizer)
-            nn.utils.clip_grad_norm_(model.parameters(), config["grad_clip_norm"])
-            scaler.step(optimizer)
-            scaler.update()
-            scheduler.step()
+            scaler.scale(loss / accumulation).backward()
             losses.append(float(loss))
+            if windowed:
+                train_valid.append(inputs[1].numpy())
+            # Step every `accumulation` micro-batches, and flush a partial group at epoch end.
+            if batch % accumulation == 0 or batch == len(train_loader):
+                scaler.unscale_(optimizer)
+                nn.utils.clip_grad_norm_(model.parameters(), config["grad_clip_norm"])
+                scaler.step(optimizer)
+                scaler.update()
+                scheduler.step()
+                optimizer.zero_grad(set_to_none=True)
+            if config.get("max_steps") and batch >= config["max_steps"]:
+                break
+        if windowed and epoch == 1:
+            window_counts = {"train": masked_window_counts(np.concatenate(train_valid))}
         probabilities, uids = predict(model, validation_loader, device, config["amp"])
         order = {u: i for i, u in enumerate(uids)}
         probabilities = probabilities[[order[r.study_uid] for r in groups["validation"]]]
@@ -323,6 +510,8 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
             "validation_macro_auroc": validation_auroc["macro_auroc"],
             "seconds": time.perf_counter() - epoch_started,
         }
+        if device.startswith("cuda"):
+            row["peak_memory_gb"] = torch.cuda.max_memory_allocated() / 2**30
         with (output / "history.jsonl").open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(row, sort_keys=True) + "\n")
         print(json.dumps(row), flush=True)
@@ -347,11 +536,20 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     test_rows, test_y, test_m, test_identity = load_test_population(
         ROOT / config["cohort_manifest"], lm_csv, ROOT / config["gold_labels_csv"]
     )
-    scored = {}
-    for name, rows in (("lm_test", test_rows), ("gold", groups["gold"])):
-        probabilities, uids = predict(model, _loader(rows, config, training=False), device, config["amp"])
-        order = {u: i for i, u in enumerate(uids)}
-        scored[name] = probabilities[[order[r.study_uid] for r in rows]]
+    scored, extras = {}, {}
+    for name, rows in (("validation", groups["validation"]), ("lm_test", test_rows), ("gold", groups["gold"])):
+        if name == "validation" and not windowed:
+            continue
+        extras[name] = {} if windowed else None
+        loader = _loader(rows, config, training=False)
+        probabilities, uids = predict(model, loader, device, config["amp"], extras=extras[name])
+        order = [{u: i for i, u in enumerate(uids)}[r.study_uid] for r in rows]
+        scored[name] = probabilities[order]
+        if windowed:
+            valid = np.concatenate(extras[name]["valid"])[order]
+            window_counts[name] = masked_window_counts(valid)
+            extras[name] = {"valid": valid, **({"attention": np.concatenate(extras[name]["attention"])[order]}
+                                               if "attention" in extras[name] else {})}
     lm_test = masked_macro_auroc(scored["lm_test"], test_y, test_m)
     gold = score_predictions(targets["gold"], scored["gold"])
 
@@ -368,14 +566,24 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
 
     write_atomic(output / "predictions.npz", save_predictions)
 
-    # A Kaggle bundle member, loadable by submission.load_member.
-    export_member(
-        output / "member-00.pt",
-        model.backbone,
-        SimpleNamespace(image_kwargs=image_kwargs(config)),
-        adaptation,
-        model.export_head(),
-    )
+    if windowed:
+        # Validity masks and, for attention pooling, [studies, labels, planes*K] weights.
+        def save_windows(path):
+            with path.open("wb") as handle:
+                np.savez_compressed(handle, lm_test_uids=np.asarray(test_identity["study_uids"]),
+                                    **{f"lm_test_{k}": v for k, v in extras["lm_test"].items()})
+
+        write_atomic(output / "windows.npz", save_windows)
+    else:
+        # A Kaggle bundle member, loadable by submission.load_member. The Kaggle path
+        # serves 3 slices per plane, so windowed rungs are not exported (design decision 10).
+        export_member(
+            output / "member-00.pt",
+            model.backbone,
+            SimpleNamespace(image_kwargs=image_kwargs(config)),
+            adaptation,
+            model.export_head(),
+        )
     report = {
         "rung": config["name"],
         "best_epoch": best["epoch"],
@@ -386,6 +594,7 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
                  "studies": len(targets["gold"])},
         "population": population,
         "lm_labels_sha256": sha256_file(lm_csv),
+        **({"window_counts": window_counts, "exported": False} if windowed else {}),
         "seconds": time.perf_counter() - started,
     }
     write_json(output / "report.json", report)

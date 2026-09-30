@@ -107,3 +107,95 @@ def test_random_slices_read_from_the_local_mirror(tmp_path):
     assert dataset._series(Path("/mnt/d/train_series/study/series")) == tmp_path / "local/study/series"
     with pytest.raises(FileNotFoundError):
         dataset._series(Path("/mnt/d/train_series/study/other"))
+
+
+def test_eval_windows_sit_inside_the_strata_training_draws_from():
+    from contrastive_learning.preprocessing import window_indices
+
+    for n in range(1, 120):
+        centre, valid = window_indices(n, (0.2, 0.8), 8)
+        draws = [window_indices(n, (0.2, 0.8), 8, np.random.default_rng(s)) for s in range(30)]
+        for indices, drawn_valid in draws:
+            assert (drawn_valid == valid).all()
+            # Each window is 3 contiguous slices (clipped only at the series ends).
+            assert (indices >= 0).all() and (indices < n).all()
+        lows = np.min([d[0][:, 1] for d in draws], axis=0)
+        highs = np.max([d[0][:, 1] for d in draws], axis=0)
+        assert ((lows <= centre[:, 1]) & (centre[:, 1] <= highs))[valid].all() or n < 20
+        assert list(centre[valid, 1]) == sorted(set(centre[valid, 1]))
+
+
+def test_short_stacks_mask_windows_instead_of_repeating_them():
+    from contrastive_learning.preprocessing import window_indices
+
+    _, valid = window_indices(60, (0.2, 0.8), 8)
+    assert valid.all()
+    indices, valid = window_indices(8, (0.2, 0.8), 8)
+    assert 0 < valid.sum() < 8
+    assert len(set(indices[valid, 1])) == valid.sum()
+
+
+def test_sagittal_right_knees_reverse_window_depth_and_mask_together():
+    from contrastive_learning.preprocessing import apply_left_knee_windows
+
+    images = torch.arange(4 * 3, dtype=torch.float32).view(4, 3, 1, 1)
+    valid = torch.tensor([True, True, True, False])
+    flipped, flipped_valid = apply_left_knee_windows(images, valid, "Sagittal", "R")
+    assert flipped.flatten().tolist() == list(range(11, -1, -1))
+    assert flipped_valid.tolist() == [False, True, True, True]
+
+
+@pytest.mark.parametrize("pooling", ["mean", "attention"])
+def test_masked_windows_do_not_change_predictions(pooling):
+    from contrastive_learning.finetune import WindowModel
+
+    torch.manual_seed(0)
+    model = WindowModel(tiny_backbone(), [16], dropout=0.0, pooling=pooling).eval()
+    images = torch.rand(2, 3, 4, 3, 28, 28)
+    valid = torch.ones(2, 3, 4, dtype=torch.bool)
+    valid[0, 1, 2:] = False
+    valid[1, 2] = False  # a whole missing plane
+    noisy = images.clone()
+    noisy[~valid] = torch.rand_like(noisy[~valid])
+    with torch.no_grad():
+        logits, attention = model(images, valid, return_attention=True)
+        assert torch.allclose(logits, model(noisy, valid), atol=1e-5)
+    assert logits.shape == (2, len(LABELS)) and torch.isfinite(logits).all()
+    if pooling == "attention":
+        assert attention.shape == (2, len(LABELS), 12)
+        assert torch.allclose(attention.sum(-1), torch.ones(2, len(LABELS)))
+        assert (attention[~valid.flatten(1)[:, None].expand_as(attention)] == 0).all()
+
+
+def test_mean_pooling_on_one_window_per_plane_matches_r1c():
+    from contrastive_learning.finetune import WindowModel
+
+    torch.manual_seed(0)
+    backbone = tiny_backbone().eval()
+    windowed = WindowModel(backbone, [16], dropout=0.0, pooling="mean").eval()
+    plain = FinetuneModel(backbone, [16], dropout=0.0).eval()
+    plain.head.load_state_dict(windowed.head.state_dict())
+    images = torch.rand(2, 3, 3, 28, 28)
+    with torch.no_grad():
+        assert torch.allclose(windowed(images[:, :, None], torch.ones(2, 3, 1, dtype=torch.bool)),
+                              plain(images), atol=1e-5)
+
+
+@pytest.mark.parametrize("change", [{"pooling": "mean"}, {"windows_per_plane": 8},
+                                    {"windows_per_plane": 8, "pooling": "max", "window_cache_dir": "x"},
+                                    {"grad_accumulation": 0}])
+def test_invalid_window_configs_are_rejected(change):
+    config = {"targets": "verdict", "image_unfreeze_last": 3, "slices_per_plane": 3,
+              "epochs": 20, "batch_size": 16, "patience": 5, **change}
+    with pytest.raises(ValueError):
+        validate_config(config)
+
+
+def test_masked_window_counts():
+    from contrastive_learning.finetune import masked_window_counts
+
+    valid = np.ones((2, 3, 4), bool)
+    valid[0, 0, 3] = False
+    valid[1, 2] = False
+    assert masked_window_counts(valid) == {"studies": 2, "windows": 24, "masked_windows": 5,
+                                           "masked_planes": 1, "short_planes": 1}
