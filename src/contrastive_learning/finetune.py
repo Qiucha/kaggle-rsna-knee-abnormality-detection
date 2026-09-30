@@ -341,7 +341,9 @@ def _loader(records, config, *, training, generator=None):
         generator=generator,
         num_workers=config["num_workers"],
         collate_fn=collate,
-        persistent_workers=config["num_workers"] > 0,
+        # Evaluation workers respawn per pass: kept alive, they sat idle through
+        # training and grew by ~0.5 GB each per pass until K=16 ran out of RAM.
+        persistent_workers=training and config["num_workers"] > 0,
     )
 
 

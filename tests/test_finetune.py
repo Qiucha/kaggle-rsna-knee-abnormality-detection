@@ -220,3 +220,16 @@ def test_a_corrupt_window_cache_entry_is_rebuilt(tmp_path, monkeypatch, damage):
     second = dataset[0]
     assert len(reads) == 2
     assert torch.equal(second["images"], first["images"]) and entry.stat().st_size > len(damage)
+
+
+def test_only_training_loaders_keep_their_workers_alive(tmp_path):
+    from types import SimpleNamespace
+
+    from contrastive_learning.finetune import _loader
+
+    config = {"image_size": 28, "crop_mm": 130.0, "slices_per_plane": 3, "slice_band": [0.2, 0.8],
+              "windows_per_plane": 2, "window_cache_dir": str(tmp_path),
+              "batch_size": 2, "num_workers": 2}
+    records = [SimpleNamespace(study_uid="s", laterality="L", slots={})]
+    assert _loader(records, config, training=True).persistent_workers
+    assert not _loader(records, config, training=False).persistent_workers
