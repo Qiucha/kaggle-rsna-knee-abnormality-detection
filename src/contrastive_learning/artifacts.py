@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import uuid
 from pathlib import Path
 from typing import Any, Callable
@@ -40,13 +41,24 @@ def write_atomic(path: Path, write: Callable[[Path], None]) -> Path:
     The temporary name is unique, so concurrent writers of the same artifact
     cannot corrupt each other's payloads; the loser of the rename race simply
     has its bytes replaced by an equivalent file.
+
+    The data is fsynced before the rename and the directory after it. Without
+    that, a hard stop (seen when WSL went down mid-build) can persist the rename
+    but not the bytes, leaving an empty or truncated file under the final name.
     """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
     try:
         write(temporary)
+        with temporary.open("rb") as handle:
+            os.fsync(handle.fileno())
         temporary.replace(path)
+        directory = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
     finally:
         temporary.unlink(missing_ok=True)
     return path

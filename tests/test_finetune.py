@@ -199,3 +199,24 @@ def test_masked_window_counts():
     valid[1, 2] = False
     assert masked_window_counts(valid) == {"studies": 2, "windows": 24, "masked_windows": 5,
                                            "masked_planes": 1, "short_planes": 1}
+
+
+@pytest.mark.parametrize("damage", [b"", b"\x80\x02truncated"])
+def test_a_corrupt_window_cache_entry_is_rebuilt(tmp_path, monkeypatch, damage):
+    from types import SimpleNamespace
+
+    from contrastive_learning import finetune
+
+    config = {"image_size": 28, "crop_mm": 130.0, "slices_per_plane": 3, "slice_band": [0.2, 0.8],
+              "windows_per_plane": 2, "window_cache_dir": str(tmp_path / "cache")}
+    record = SimpleNamespace(study_uid="s", laterality="L", slots={p: tmp_path / p for p in finetune.PLANES})
+    dataset = finetune.WindowDataset([record], config, training=False)
+    reads = []
+    monkeypatch.setattr(dataset, "_read", lambda r, rng: reads.append(1) or (
+        torch.ones(3, 2, 3, 28, 28), torch.ones(3, 2, dtype=torch.bool)))
+    first = dataset[0]
+    (entry,) = (tmp_path / "cache").iterdir()
+    entry.write_bytes(damage)
+    second = dataset[0]
+    assert len(reads) == 2
+    assert torch.equal(second["images"], first["images"]) and entry.stat().st_size > len(damage)

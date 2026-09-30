@@ -289,8 +289,15 @@ class WindowDataset(RandomSliceDataset):
         key = sha256_text(json.dumps({**self.settings, "laterality": record.laterality,
                                       "slots": {p: str(record.slots[p]) for p in PLANES}}, sort_keys=True))
         path = self.cache_dir / f"{record.study_uid}-{key[:12]}.pt"
+        cached = None
         if path.exists():
-            cached = torch.load(path, weights_only=True)
+            # A hard stop of WSL can keep write_atomic's rename but drop the data,
+            # leaving an empty or truncated entry; rebuild it instead of crashing.
+            try:
+                cached = torch.load(path, weights_only=True)
+            except Exception:  # any damage means rebuild; the entry is derived data
+                cached = None
+        if cached is not None:
             images, valid = cached["images"].float(), cached["valid"]
         else:
             images, valid = self._read(record, None)
