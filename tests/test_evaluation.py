@@ -67,3 +67,24 @@ def test_checkpoint_evaluation_preserves_reports(tmp_path, monkeypatch, compact)
     assert all(row["query_uid"] == row["top_uid"] for row in rows)
     with pytest.raises(FileExistsError, match="already exists"):
         evaluation.evaluate_checkpoint(checkpoint_path)
+
+
+def test_checkpoint_evaluation_rebuilds_lora_adapters(tmp_path, monkeypatch):
+    # A compact LoRA checkpoint stores only adapter weights; rebuilt without
+    # adapters, strict=False loading would silently drop them.
+    config = TrainConfig(output_dir=tmp_path, use_lora=True, lora_rank=8, lora_alpha=16.0, lora_dropout=0.1)
+    checkpoint_path = tmp_path / "best.pt"
+    torch.save({"config": config.as_dict(), "epoch": 1, "metrics": {}, "trainable_state_dict": {}}, checkpoint_path)
+    model_options = []
+
+    def build_model(*args, **kwargs):
+        model_options.append(kwargs)
+        raise RuntimeError("stop after build_model")
+
+    monkeypatch.setattr(evaluation, "build_model", build_model)
+    monkeypatch.setattr(evaluation, "load_cohort", lambda *args: SimpleNamespace(split=lambda _: ["a"]))
+    with pytest.raises(RuntimeError, match="stop after build_model"):
+        evaluation.evaluate_checkpoint(checkpoint_path)
+    assert {key: model_options[0][key] for key in ("use_lora", "lora_rank", "lora_alpha", "lora_dropout")} == {
+        "use_lora": True, "lora_rank": 8, "lora_alpha": 16.0, "lora_dropout": 0.1,
+    }
