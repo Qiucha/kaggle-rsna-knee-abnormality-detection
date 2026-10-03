@@ -133,6 +133,7 @@ Open questions for Track 2:
 - [Deploy the full experiment grid](#deploy-the-full-experiment-grid)
 - [Evaluating and reporting](#evaluating-and-reporting)
 - [Reproducibility rules](#reproducibility-rules)
+- [Known limitations](KNOWN_LIMITATIONS.md) — behaviour that is easy to trip over, and what to do instead
 
 ---
 

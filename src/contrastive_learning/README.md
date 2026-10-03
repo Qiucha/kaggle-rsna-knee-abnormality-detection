@@ -7,6 +7,8 @@ loss, and validation measures retrieval in both directions.
 
 For installing, running, and reporting, see the [root README](../../README.md).
 This file documents the code itself.
+Behaviour that is easy to trip over is listed in
+[KNOWN_LIMITATIONS.md](../../KNOWN_LIMITATIONS.md).
 
 ## Where the code lives
 
