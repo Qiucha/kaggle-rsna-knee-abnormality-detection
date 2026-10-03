@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "probe_version": "gold-probe-extended-v2",
+  "purpose": "Every image-block variant plus the shuffled-pairing control, scored in one extraction pass so all arms share identical folds and resamples.",
+  "cohort_manifest": "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
+  "manifest_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+  "gold_labels_csv": "data/cleaned.csv",
+  "population": "gold studies whose cohort split is train or validation; locked-test gold studies are counted only",
+  "estimand": "Readout quality of a frozen representation on a cohort it was trained on. Explicitly NOT generalisation: 56 of 58 gold cases were exposed to contrastive training or checkpoint selection.",
+  "labels": [
+    "ACL",
+    "MCL",
+    "Medial Meniscus",
+    "Lateral Meniscus",
+    "Medial OA",
+    "Lateral OA",
+    "PF OA",
+    "Effusion",
+    "Synovitis",
+    "Baker's",
+    "Contusion",
+    "Fracture"
+  ],
+  "probe": {
+    "estimator": "sklearn.linear_model.LogisticRegression",
+    "penalty": "l2",
+    "C": 1.0,
+    "solver": "lbfgs",
+    "max_iter": 5000,
+    "class_weight": null,
+    "standardize": "StandardScaler fitted inside each training fold",
+    "folds": 8,
+    "fold": "StratifiedKFold(shuffle=True), stratification computed inside the per-label fold loop",
+    "fold_seed": 2026,
+    "predictions": "exactly one held-out decision_function score per study per label",
+    "tuning": "none; every hyperparameter is fixed here before the first fit"
+  },
+  "metrics": {
+    "primary": "pooled out-of-fold AUROC per label, macro-averaged over the 12 labels",
+    "secondary": "pooled out-of-fold average precision (AUPRC)",
+    "tie_policy": "midrank. Every reported point estimate comes from sklearn.metrics.roc_auc_score. The bootstrap replicates use an equivalent rank-sum implementation (scipy.stats.rankdata) for speed, and the script asserts the two agree to 1e-9 on every label's real scores before building any interval. Section 6 of the EDA notebook's argsort AUROC is reported alongside the LM reference for comparison only, never used as a result.",
+    "environment_note": "sklearn 1.8 deprecates the explicit penalty=l2 argument pinned above and removes it in 1.10. The fitted model is unchanged, since l2 is the default; a rerun on 1.10 must translate it to l1_ratio=0 rather than silently dropping it.",
+    "rare_labels": "MCL has 8 positives over 56 cases: pooled-OOF only, fold-level AUROC declared uninformative in advance"
+  },
+  "bootstrap": {
+    "resamples": 5000,
+    "seed": 2029,
+    "unit": "study",
+    "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable"
+  },
+  "arms": {
+    "before_cl": {
+      "name": "dinov2-unadapted",
+      "image_model": "facebook/dinov2-small",
+      "image_model_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+      "pooling": "uniform mean over the three planes",
+      "features": [
+        "uniform_mean_768"
+      ]
+    },
+    "after_cl": {
+      "name": "image-block adaptation variants and the shuffled-pairing control",
+      "note": "One extraction pass serves every arm. Pairwise contrasts come from scripts/compare_downstream_arms.py, not from evaluate_downstream_probe.py.",
+      "checkpoint_selection_note": "Every treatment arm uses best.pt, selected on validation Recall@1. The control uses last.pt deliberately: its pairings are permuted, so validation Recall@1 is meaningless by construction and selection on it picked epoch 3 (R@1 0.00567, chance 0.00227) \u2014 an almost untrained checkpoint. last.pt matches the treatment on training steps, which is the comparison the control is for.",
+      "checkpoints": [
+        "checkpoints/contrastive/image-block-cohort-compare-v1/original-multilingual-seed2026/best.pt",
+        "checkpoints/contrastive/image-block-cohort-compare-v1/original-multilingual-seed2027/best.pt",
+        "checkpoints/contrastive/image-block-cohort-compare-v1/original-multilingual-seed2028/best.pt",
+        "checkpoints/contrastive/image-block-cohort-compare-v1/translated-english-seed2026/best.pt",
+        "checkpoints/contrastive/image-block-cohort-compare-v1/translated-english-seed2027/best.pt",
+        "checkpoints/contrastive/image-block-cohort-compare-v1/translated-english-seed2028/best.pt",
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze2-seed2026/best.pt",
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze4-seed2026/best.pt",
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze4-seed2027/best.pt",
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze4-seed2028/best.pt",
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze8-seed2026/best.pt",
+        "checkpoints/contrastive/image-block-epochs-v1/original-40ep-seed2026/best.pt",
+        "checkpoints/contrastive/image-block-control-v1/shuffled-pairing-unfreeze4-seed2026/last.pt"
+      ],
+      "arm_tags": {
+        "checkpoints/contrastive/image-block-cohort-compare-v1/original-multilingual-seed2026/best.pt": "orig/uf1/20ep/s2026",
+        "checkpoints/contrastive/image-block-cohort-compare-v1/original-multilingual-seed2027/best.pt": "orig/uf1/20ep/s2027",
+        "checkpoints/contrastive/image-block-cohort-compare-v1/original-multilingual-seed2028/best.pt": "orig/uf1/20ep/s2028",
+        "checkpoints/contrastive/image-block-cohort-compare-v1/translated-english-seed2026/best.pt": "transl/uf1/20ep/s2026",
+        "checkpoints/contrastive/image-block-cohort-compare-v1/translated-english-seed2027/best.pt": "transl/uf1/20ep/s2027",
+        "checkpoints/contrastive/image-block-cohort-compare-v1/translated-english-seed2028/best.pt": "transl/uf1/20ep/s2028",
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze2-seed2026/best.pt": "orig/uf2/20ep/s2026",
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze4-seed2026/best.pt": "orig/uf4/20ep/s2026",
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze4-seed2027/best.pt": "orig/uf4/20ep/s2027",
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze4-seed2028/best.pt": "orig/uf4/20ep/s2028",
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze8-seed2026/best.pt": "orig/uf8/20ep/s2026",
+        "checkpoints/contrastive/image-block-epochs-v1/original-40ep-seed2026/best.pt": "orig/uf1/40ep/s2026",
+        "checkpoints/contrastive/image-block-control-v1/shuffled-pairing-unfreeze4-seed2026/last.pt": "CONTROL shuffled pairing/uf4/20ep/s2026"
+      },
+      "features": [
+        "uniform_mean_768",
+        "plane_attention_768",
+        "projection_256"
+      ]
+    },
+    "frozen_tower_null": {
+      "name": "frozen-backbone contrastive runs (--image-unfreeze-last 0), one per report policy",
+      "checkpoints": [
+        "checkpoints/contrastive/full-multilingual-v1/00-projection-full-mean-512/best.pt",
+        "checkpoints/contrastive/claude-translated-dfd07db-q2-v1/00-full-seed2026/best.pt"
+      ],
+      "features": [
+        "uniform_mean_768",
+        "plane_attention_768",
+        "projection_256"
+      ],
+      "declared_in_advance": "These runs never updated a DINOv2 weight, so their uniform_mean_768 features must be numerically identical to the before_cl arm. That identity is asserted as a correctness check, and any difference in that feature set would be a bug, not a result."
+    }
+  },
+  "comparisons": {
+    "primary": "before_cl/uniform_mean_768 versus each after_cl arm's uniform_mean_768 -- matched pooling and dimensionality, so the only difference is the adapted DINOv2 block",
+    "cohort_contrast": "after_cl/original-multilingual-seed2026/uniform_mean_768 versus after_cl/translated-english-seed2026/uniform_mean_768, paired over the same studies, folds and study resamples, via scripts/compare_downstream_arms.py",
+    "confounded": "projection_256 is a learned 768->256 linear-plus-GELU compression; a linear probe cannot gain from compression, so this arm is reported but is not evidence against contrastive learning"
+  },
+  "reference": {
+    "lm_label_extraction": "data/lm_label/*.csv scored against the same gold labels on the same 56 studies, as the text-side label-extraction ceiling"
+  },
+  "scope": "Read-only over existing artifacts. No training, no locked-test evaluation, no writes into any run directory.",
+  "cohort_note": "The cohort manifest pinned here defines the study population and the preprocessed images only. The two arms were trained on two manifests whose images and splits are identical; they differ in report text, and the base multilingual manifest additionally retains two studies the translated manifest quarantines. The 56-study gold population resolves identically under both, verified before training."
+}

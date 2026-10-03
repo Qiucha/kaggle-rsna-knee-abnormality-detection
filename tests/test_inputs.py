@@ -8,7 +8,7 @@ from contrastive_learning import data, inputs, training
 from contrastive_learning.config import TrainConfig
 from contrastive_learning.data import DataSummary, StudyRecord
 import numpy as np
-from contrastive_learning.preprocessing import _centre_to_extent
+from contrastive_learning.preprocessing import _centre_to_extent, _slice_indices, slice_group_indices
 
 
 def records(count=7):
@@ -109,6 +109,39 @@ def test_loaders_preserve_pairing_report_view_and_resume_order(monkeypatch):
     resumed = inputs.make_loader(cohort, tokenizer, config, training=True, generator=restored)
     assert [batch["study_uid"] for batch in resumed] == expected
     assert sum(map(len, expected)) == 6
+
+
+def test_slice_groups_are_contiguous_and_tile_the_band():
+    # Each group must be a coherent local stack: the current sampler's three channels
+    # straddle a median 62.7mm, which is wider than the joint.
+    groups = slice_group_indices(30, (0.20, 0.80), group_size=3, groups=5)
+    assert groups.shape == (5, 3)
+    for group in groups:
+        assert list(group) == list(range(group[0], group[0] + 3))
+    starts = [int(g[0]) for g in groups]
+    assert starts == sorted(starts)
+    assert starts[0] >= int(0.20 * 29)
+    # Tiling covers more of the volume than the three fixed depths do.
+    assert len(set(groups.ravel().tolist())) > len(set(_slice_indices(30, (0.20, 0.80), 3).tolist()))
+
+
+def test_slice_groups_stay_inside_short_series():
+    for n in (4, 7, 16):
+        groups = slice_group_indices(n, (0.20, 0.80), group_size=3, groups=5)
+        assert groups.shape == (5, 3)
+        assert groups.min() >= 0 and groups.max() <= n - 1
+
+
+def test_degenerate_series_collapses_to_the_middle_slice():
+    groups = slice_group_indices(2, (0.20, 0.80), group_size=3, groups=4)
+    assert groups.shape == (4, 3)
+    assert set(groups.ravel().tolist()) == {1}
+
+
+def test_slice_groups_reject_nonsense_shapes():
+    for kwargs in ({"group_size": 0, "groups": 3}, {"group_size": 3, "groups": 0}):
+        with pytest.raises(ValueError, match=">= 1"):
+            slice_group_indices(30, (0.20, 0.80), **kwargs)
 
 
 def test_centre_to_extent_crops_and_pads_to_exactly_the_requested_size():

@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "probe_version": "gold-probe-crop150-v1",
+  "purpose": "Answer the question the 150mm crop was actually chosen to serve: does retaining 95.7% of tissue instead of 86.1% help the twelve pathology labels? The crop was chosen on measured tissue retention, not on a predicted score, and retrieval fell (0.1340 -> 0.1190). Retrieval and label readout have dissociated twice in this project, so the retrieval drop does not settle the label question. This config scores it directly.",
+  "cohort_manifest": "data/processed/contrastive-cohort.jsonl",
+  "manifest_sha256": "54bd803e23acf3299daeb815d651a34249c736689e20d790f862fc71c0520b63",
+  "gold_labels_csv": "data/cleaned.csv",
+  "population": "gold studies whose cohort split is train or validation (56); the 2 locked-test gold studies are counted and dropped before any pixel is read",
+  "population_splits": ["train", "validation"],
+  "population_splits_note": "Declared explicitly rather than left to the default. A null here is NOT the default: resolve_population is reached via config.get('population_splits', ('train','validation')), and a present-but-null key returns None and raises. The older exposed configs omit the key entirely; the holdout config names ['excluded']. Naming the splits is the clearer of the two working forms.",
+
+  "REQUIRES_PER_ARM_PREPROCESSING": "This is the FIRST probe config in the project whose arms do not share one preprocessing. Before 2026-09-15 evaluate_downstream_probe.py took image_kwargs from whichever checkpoint loaded first and applied it to every arm, which would have fed one of these two arms pixels it never trained on and produced a plausible, wrong number with no error. It now extracts features once per distinct preprocessing (extract_features_by_preprocessing), verified inert on single-preprocessing configs by reproducing gold-probe-unexposed-v2's integrity assertion exactly. Do not run this config on an older revision of that script.",
+
+  "estimand": "PRIMARY: pooled paired difference in macro out-of-fold AUROC, crop150 minus crop130, across three matched seeds (2026/2027/2028), bootstrapped over studies using the SAME resample indices for both arms and resampling the per-study difference. The arms are paired on seed, on the same 56 studies, the same folds and the same resamples; they differ only in the physical crop and therefore in the pixels each encoder was trained on and is scored at.",
+
+  "EXPOSURE_CAVEAT": "BOTH arms trained on contrastive-cohort.jsonl, which contains 48 of the gold studies in train and 8 in validation. Every LEVEL produced by this config is therefore a development statistic, exposure-inflated by approximately 0.0168 of macro AUROC (gold-holdout-v1.md), and must never be quoted against the 0.6938 generalisation estimate. The paired DIFFERENCE between the two arms is a contrast between arms sharing the same exposure and is NOT corrected by that figure.",
+
+  "labels": [
+    "ACL",
+    "MCL",
+    "Medial Meniscus",
+    "Lateral Meniscus",
+    "Medial OA",
+    "Lateral OA",
+    "PF OA",
+    "Effusion",
+    "Synovitis",
+    "Baker's",
+    "Contusion",
+    "Fracture"
+  ],
+
+  "probe": {
+    "estimator": "sklearn.linear_model.LogisticRegression",
+    "penalty": "l2",
+    "C": 1.0,
+    "solver": "lbfgs",
+    "max_iter": 5000,
+    "class_weight": null,
+    "standardize": "StandardScaler fitted inside each training fold",
+    "folds": 8,
+    "fold": "StratifiedKFold(shuffle=True), stratification computed inside the per-label fold loop",
+    "fold_seed": 2026,
+    "predictions": "exactly one held-out decision_function score per study per label",
+    "tuning": "none; every hyperparameter is fixed here before the first fit and is copied unchanged from gold-probe-unexposed-v2 so this probe is comparable in construction to every earlier one"
+  },
+
+  "metrics": {
+    "primary": "pooled out-of-fold AUROC per label, macro-averaged over the 12 labels",
+    "secondary": "pooled out-of-fold average precision (AUPRC)",
+    "tie_policy": "midrank. Point estimates from sklearn.metrics.roc_auc_score; bootstrap replicates use the rank-sum equivalent, asserted to agree to 1e-9 on real scores before any interval is built.",
+    "rare_labels": "MCL has 8 positives over 56 cases: pooled-OOF only, fold-level AUROC declared uninformative in advance"
+  },
+
+  "bootstrap": {
+    "resamples": 5000,
+    "seed": 2029,
+    "unit": "study",
+    "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable"
+  },
+
+  "arms": {
+    "before_cl": {
+      "name": "dinov2-unadapted",
+      "image_model": "facebook/dinov2-small",
+      "image_model_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+      "pooling": "uniform mean over the three planes",
+      "note": "Extracted ONCE PER CROP, because unadapted DINOv2 at 130mm and at 150mm are different feature sets. They appear as before_cl/dinov2-unadapted@crop130mm and @crop150mm. Each is the floor for its own arm; they are NOT a common reference and the two arms' gains over them must not be differenced against each other.",
+      "features": [
+        "uniform_mean_768"
+      ]
+    },
+    "crop130": {
+      "name": "the recorded 4-block baseline at a 130mm crop",
+      "note": "The runs behind validation R@1 0.1383/0.1434/0.1202 and the 0.7106 pooled exposed level.",
+      "image_cache_dir": "checkpoints/contrastive/full-multilingual-v1/image-cache",
+      "checkpoints": [
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze4-seed2026/best.pt",
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze4-seed2027/best.pt",
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze4-seed2028/best.pt"
+      ],
+      "features": [
+        "uniform_mean_768"
+      ]
+    },
+    "crop150": {
+      "name": "the 150mm crop re-baseline, identical in every argument except --crop-mm",
+      "note": "Validation R@1 0.1156/0.1202/0.1213. Convergence-checked: these runs reached their validation minimum at epoch 9.0 and then overfit, so they are not truncated (convergence-curves.html).",
+      "image_cache_dir": "checkpoints/contrastive/crop150-v1/image-cache",
+      "checkpoints": [
+        "checkpoints/contrastive/crop150-v1/crop150-unfreeze4-seed2026/best.pt",
+        "checkpoints/contrastive/crop150-v1/crop150-unfreeze4-seed2027/best.pt",
+        "checkpoints/contrastive/crop150-v1/crop150-unfreeze4-seed2028/best.pt"
+      ],
+      "features": [
+        "uniform_mean_768"
+      ]
+    }
+  },
+
+  "comparisons": {
+    "primary": "crop150/* versus crop130/*, paired on seed over the same 56 studies, folds and resamples, via scripts/compare_downstream_arms.py.",
+    "reference": "before_cl/dinov2-unadapted@crop130mm is the floor for crop130 and @crop150mm the floor for crop150. Report each beside its own arm; do NOT difference the two gains."
+  },
+
+  "PRE_REGISTERED_READING": {
+    "crop150 above crop130, pooled CI excluding zero": "The wider crop helps the labels despite costing retrieval. That is a genuine dissociation and it would make crop150 the preferred preprocessing on the metric that matters clinically, even though selection remains retrieval R@1.",
+    "pooled CI spanning zero": "NULL on the label question. The crop change is then neither justified nor refuted by label readout, and the retrieval cost stands as the only measured effect. Given 56 studies and 8-33 positives per label, a single-arm interval runs roughly +/-0.015 to +/-0.03, so a null here is weak evidence and must be reported as underpowered rather than as 'no effect'.",
+    "crop150 below crop130, pooled CI excluding zero": "The wider crop hurts both retrieval AND label readout. The dilution mechanism (extra field is muscle and subcutaneous fat) is then the better-supported of the two explanations in crop150-rebaseline-v1.md.",
+    "selection": "Selection remains retrieval R@1 throughout. Nothing is selected on label AUROC, and this result does not change which checkpoint any future arm starts from."
+  },
+
+  "scope": "Read-only over existing artifacts. No training, no locked-test evaluation, no writes into any run directory.",
+  "protocol": "digest/handoff/handoff-20260913-overfitting-confirmed.md, fifth-session crop150 probe block"
+}

@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "probe_version": "gold-probe-unexposed-v2",
+  "purpose": "As v1, plus the data-size control arm. All four arms are scored in ONE extraction pass so every contrast is paired on the same 56 studies, folds and resamples. v1 is retained as the record of the primary result; v2 is authoritative once the exposed arm is re-asserted to reproduce 0.7106.",
+  "cohort_manifest": "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
+  "manifest_sha256": "d104337696a19d52d12480c1cfaae30c937916102e36a67e3124755fa20123f5",
+  "gold_labels_csv": "data/cleaned.csv",
+  "population": "the 56 gold studies, parked in split 'excluded' by the holdout cohort so that neither contrastive training nor checkpoint selection could see them; the 2 locked-test gold studies are counted only",
+  "estimand": "PRIMARY: pooled paired difference in macro out-of-fold AUROC, unexposed minus exposed, across three matched seeds, bootstrapped over studies using the SAME resample indices for both arms and resampling the per-study difference. This measures how much of the published 0.7105 is exposure inflation. The unexposed arm alone is the project's first gold-probe number that is an estimate of generalisation rather than a development statistic -- at study level, not patient level, since patient identity is unverifiable.",
+  "labels": [
+    "ACL",
+    "MCL",
+    "Medial Meniscus",
+    "Lateral Meniscus",
+    "Medial OA",
+    "Lateral OA",
+    "PF OA",
+    "Effusion",
+    "Synovitis",
+    "Baker's",
+    "Contusion",
+    "Fracture"
+  ],
+  "probe": {
+    "estimator": "sklearn.linear_model.LogisticRegression",
+    "penalty": "l2",
+    "C": 1.0,
+    "solver": "lbfgs",
+    "max_iter": 5000,
+    "class_weight": null,
+    "standardize": "StandardScaler fitted inside each training fold",
+    "folds": 8,
+    "fold": "StratifiedKFold(shuffle=True), stratification computed inside the per-label fold loop",
+    "fold_seed": 2026,
+    "predictions": "exactly one held-out decision_function score per study per label",
+    "tuning": "none; every hyperparameter is fixed here before the first fit"
+  },
+  "metrics": {
+    "primary": "pooled out-of-fold AUROC per label, macro-averaged over the 12 labels",
+    "secondary": "pooled out-of-fold average precision (AUPRC)",
+    "tie_policy": "midrank. Every reported point estimate comes from sklearn.metrics.roc_auc_score. The bootstrap replicates use an equivalent rank-sum implementation (scipy.stats.rankdata) for speed, and the script asserts the two agree to 1e-9 on every label's real scores before building any interval. Section 6 of the EDA notebook's argsort AUROC is reported alongside the LM reference for comparison only, never used as a result.",
+    "environment_note": "sklearn 1.8 deprecates the explicit penalty=l2 argument pinned above and removes it in 1.10. The fitted model is unchanged, since l2 is the default; a rerun on 1.10 must translate it to l1_ratio=0 rather than silently dropping it.",
+    "rare_labels": "MCL has 8 positives over 56 cases: pooled-OOF only, fold-level AUROC declared uninformative in advance"
+  },
+  "bootstrap": {
+    "resamples": 5000,
+    "seed": 2029,
+    "unit": "study",
+    "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable"
+  },
+  "arms": {
+    "before_cl": {
+      "name": "dinov2-unadapted",
+      "image_model": "facebook/dinov2-small",
+      "image_model_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+      "pooling": "uniform mean over the three planes",
+      "features": [
+        "uniform_mean_768"
+      ]
+    },
+    "unexposed": {
+      "name": "4-block adaptation trained WITHOUT the 56 gold studies (gold-holdout-v1)",
+      "note": "Encoder never saw these studies as training pairs nor through checkpoint selection.",
+      "checkpoint_selection_note": "best.pt, selected on validation Recall@1 over the 433-study holdout validation split. That R@1 is NOT comparable to the published 0.1383, which is over 441 candidates; never place them in one table.",
+      "checkpoints": [
+        "checkpoints/contrastive/gold-holdout-v1/holdout-unfreeze4-seed2026/best.pt",
+        "checkpoints/contrastive/gold-holdout-v1/holdout-unfreeze4-seed2027/best.pt",
+        "checkpoints/contrastive/gold-holdout-v1/holdout-unfreeze4-seed2028/best.pt"
+      ],
+      "features": [
+        "uniform_mean_768"
+      ]
+    },
+    "exposed": {
+      "name": "the published 4-block baselines, trained WITH the 56 gold studies",
+      "note": "Identical in every argument except the cohort manifest. These are the runs behind the 0.7105 headline in gold-probe-extended-v3.",
+      "checkpoints": [
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze4-seed2026/best.pt",
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze4-seed2027/best.pt",
+        "checkpoints/contrastive/image-block-depth-v1/original-unfreeze4-seed2028/best.pt"
+      ],
+      "features": [
+        "uniform_mean_768"
+      ]
+    },
+    "control_datasize": {
+      "name": "4-block adaptation trained WITH the gold studies but on 56 fewer non-gold studies",
+      "note": "Data-size control for the holdout arm, required by the protocol because the unexposed arm landed below exposed. 48 train + 8 validation NON-gold studies dropped at matched counts (cohort contrastive-cohort-datasize-control-v1.jsonl, sha 8798fccb16c20b2b6ebdb4752f7dd92c487b11d7da841c1a8228dfcf7aa8030b); every gold study left in place, so exposure is retained and only training-set size changed.",
+      "checkpoints": [
+        "checkpoints/contrastive/datasize-control-v1/control-unfreeze4-seed2026/best.pt",
+        "checkpoints/contrastive/datasize-control-v1/control-unfreeze4-seed2027/best.pt",
+        "checkpoints/contrastive/datasize-control-v1/control-unfreeze4-seed2028/best.pt"
+      ],
+      "features": [
+        "uniform_mean_768"
+      ]
+    }
+  },
+  "comparisons": {
+    "primary": "exposed/uniform_mean_768 versus unexposed/uniform_mean_768, paired over the same 56 studies, the same folds and the same study resamples, via scripts/compare_downstream_arms.py. Pre-registered: unexposed at or above exposed means exposure did not materially inflate 0.7105; unexposed materially below means every probe figure in digest/ needs relabelling.",
+    "reference": "before_cl/uniform_mean_768 (unadapted DINOv2, 0.6438) is the floor both arms are read against.",
+    "confound": "The unexposed arm also trained on 48 fewer studies (3,478 vs 3,526) and selected over 433 rather than 441. Dropping training data can only hurt, so a null needs no control; only a drop does. See the protocol.",
+    "control": "control_datasize vs exposed isolates the cost of training on 56 fewer studies with exposure retained. Pre-registered reading: ~0 means the holdout deficit is essentially all exposure; ~-0.0168 means essentially all data loss; intermediate means the exposure share is (holdout - exposed) - (control - exposed) with its own paired CI."
+  },
+  "reference": {
+    "lm_label_extraction": "data/lm_label/*.csv scored against the same gold labels on the same 56 studies, as the text-side label-extraction ceiling"
+  },
+  "scope": "Read-only over existing artifacts plus the three gold-holdout runs. No training here, no locked-test evaluation, no writes into any run directory.",
+  "cohort_note": "The cohort manifest pinned here defines the study population and the preprocessed images only, both identical to contrastive-cohort.jsonl. It differs from it solely in that the 56 gold studies carry split 'excluded' instead of train/validation. The exposed arm's checkpoints were trained on contrastive-cohort.jsonl; the unexposed arm's on this one. Scoring both here is what makes the contrast paired.",
+  "population_splits": [
+    "excluded"
+  ],
+  "protocol": "digest/gold-holdout-probe-protocol.md",
+  "integrity_assertion": "Re-extraction under --overwrite must reproduce the exposed arm at 0.7105/0.7039/0.7173 (mean 0.7106) and the unexposed arm at 0.6970/0.6825/0.7018. A drift there invalidates the pass; do not read the control until it is checked."
+}

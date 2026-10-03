@@ -262,6 +262,33 @@ def _row_spacing(series_dir: Path) -> float | None:
         return None
 
 
+def series_fov_mm(series_dir: Path) -> tuple[float, float] | None:
+    """A slice's true physical extent ``(rows_mm, cols_mm)``, read from the DICOM.
+
+    ``ReconstructionDiameter`` would state this directly but is absent from every
+    series in this cohort, so it is derived as ``PixelSpacing * (Rows, Columns)``.
+    Returns ``None`` when the tags are missing or invalid, so callers can fall back
+    rather than handle an exception.
+    """
+    path = middle_dicom(series_dir)
+    if path is None:
+        return None
+    dicom = _require_pydicom()
+    try:
+        ds = dicom.dcmread(
+            path, stop_before_pixels=True, force=True,
+            specific_tags=["PixelSpacing", "Rows", "Columns"],
+        )
+        spacing = getattr(ds, "PixelSpacing", None)
+        rows, columns = getattr(ds, "Rows", None), getattr(ds, "Columns", None)
+        if spacing is None or len(spacing) < 2 or not rows or not columns:
+            return None
+        extent = (float(spacing[0]) * int(rows), float(spacing[1]) * int(columns))
+        return extent if all(np.isfinite(v) and v > 0 for v in extent) else None
+    except Exception:
+        return None
+
+
 # --------------------------------------------------------------------------- #
 # Pixels
 # --------------------------------------------------------------------------- #
@@ -389,6 +416,7 @@ def _slice_indices(n_slices: int, slice_band: tuple[float, float], count: int) -
         indices = np.append(indices, indices[-1])
     return indices[:count]
 
+
 def jittered_slice_indices(
     n_slices: int, slice_band: tuple[float, float], count: int, rng: np.random.Generator
 ) -> np.ndarray:
@@ -404,6 +432,37 @@ def jittered_slice_indices(
         return _slice_indices(n_slices, slice_band, count)
     edges = np.linspace(low, high + 1, count + 1).astype(int)
     return np.asarray([rng.integers(a, b) for a, b in pairwise(edges)], dtype=int)
+
+
+def slice_group_indices(
+    n_slices: int, slice_band: tuple[float, float], group_size: int, groups: int
+) -> np.ndarray:
+    """Indices of ``groups`` local stacks of ``group_size`` slices, tiling the band.
+
+    Returns shape ``(groups, group_size)``. Two differences from :func:`_slice_indices`,
+    which returns one spread-out set:
+
+    * **Each group is contiguous**, so the channels of one input are a coherent local
+      mini-volume. The existing sampler puts its three channels a median 31mm apart,
+      which is further than most findings are wide.
+    * **The groups tile the band**, so the volume is covered rather than sampled at
+      three fixed depths.
+
+    Group starts are spread evenly and clamped into the band; short series repeat
+    slices rather than fail, matching the existing sampler's padding behaviour.
+    """
+    if groups < 1 or group_size < 1:
+        raise ValueError("groups and group_size must be >= 1")
+    low = int(slice_band[0] * (n_slices - 1))
+    high = int(slice_band[1] * (n_slices - 1))
+    if high <= low:  # degenerate series: every group is the middle slice
+        return np.full((groups, group_size), n_slices // 2, dtype=int)
+    # Last legal start keeps a whole group inside the series.
+    last_start = max(low, min(high, n_slices - group_size))
+    starts = np.unique(np.linspace(low, last_start, groups).astype(int))
+    while len(starts) < groups:  # too few distinct starts to tile: repeat the last
+        starts = np.append(starts, starts[-1])
+    return np.stack([np.arange(s, s + group_size).clip(0, n_slices - 1) for s in starts[:groups]])
 
 
 def window_indices(
