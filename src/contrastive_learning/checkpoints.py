@@ -308,6 +308,11 @@ def _dependency_versions() -> dict[str, str]:
 
 
 def _validate_resume_config(saved: dict[str, Any], current: dict[str, Any]) -> None:
+    # A setting the saved config lacks was added to TrainConfig after that run
+    # started, so the run trained with its default; only a non-default value now
+    # is a real change.
+    defaults = TrainConfig().as_dict()
+    saved = {**{key: defaults[key] for key in defaults.keys() - saved.keys()}, **saved}
     differences = {
         key: (saved.get(key), current.get(key))
         for key in saved.keys() | current.keys()
