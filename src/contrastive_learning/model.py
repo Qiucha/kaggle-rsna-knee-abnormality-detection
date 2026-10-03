@@ -189,9 +189,12 @@ class ImageTower(_FrozenAwareModule):
                 nn.Linear(hidden, 1),
             )
         else:
-            # Registered as None rather than omitted so that loading a checkpoint saved
-            # by the other mode fails loudly on the missing keys instead of silently
-            # leaving freshly initialized attention in place.
+            # No attention parameters exist in this mode, so a checkpoint saved by the
+            # other mode fails a strict load on its plane_* keys. A compact checkpoint
+            # loads with strict=False, which ignores them: an attention checkpoint read
+            # into this mode silently drops its attention, and the reverse leaves the
+            # attention freshly initialized. Build with the pooling the checkpoint's
+            # saved config names, as evaluate_checkpoint does.
             self.plane_embeddings = None
             self.plane_attention = None
         self.projection = ProjectionHead(feature_dim, embedding_dim)
