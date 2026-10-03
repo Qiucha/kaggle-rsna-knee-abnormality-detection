@@ -72,3 +72,9 @@ scripts/require_free_space.sh
 
 # Personal Kaggle kernel metadata (account slug, private dataset)
 notebooks/kernel-metadata.json
+
+# Kept from main
+venv/
+stubs/
+.env
+secrets/
