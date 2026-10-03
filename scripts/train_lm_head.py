@@ -12,7 +12,7 @@ from contrastive_learning.lm_supervision import prepare_features
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--config", type=Path, default=Path("configs/kaggle/lm-mlp-tower-size-58-dinov2-small-e5-base.json")
+        "--config", type=Path, default=Path("configs/kaggle/lm-mlp-v1.json")
     )
     parser.add_argument(
         "--features",
@@ -42,10 +42,15 @@ def main():
         image_cache_dir=args.image_cache_dir,
     )
     if not args.features_only:
-        from contrastive_learning.lm_proxy import score_run
         from contrastive_learning.lm_supervision import run_experiment
 
+        from contrastive_learning.lm_proxy import score_run
+
         run_experiment(config, args.output, prepared, device=args.device)
+        if config.get("image_baseline"):
+            # score_run re-extracts LM-test features from the adapted checkpoint; gold scores are in report.json.
+            print("image_baseline: LM-test scoring skipped", flush=True)
+            return
         # Standard local report: LM-verdict AUROC on the locked test split.
         report, *_ = score_run(
             args.output,

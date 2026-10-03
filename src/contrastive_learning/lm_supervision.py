@@ -141,7 +141,13 @@ def prepare_features(config, cache_path, *, device, batch_size, image_cache_dir)
     root = Path(__file__).resolve().parents[2]
     groups, targets, masks, population = load_population(config, root)
     checkpoint = root / config["checkpoint"]
-    backbone, run_config, adaptation = load_encoder(checkpoint)
+    # image_baseline: the checkpoint's pretrained image tower, before contrastive adaptation
+    baseline = bool(config.get("image_baseline"))
+    backbone, run_config, adaptation = (load_encoder(checkpoint, baseline=True) if baseline
+                                        else load_encoder(checkpoint))
+    if baseline:
+        # the exported bundle member must rebuild the plain pretrained tower, not the checkpoint's LoRA layout
+        adaptation = {**adaptation, "use_lora": False, "image_unfreeze_last": 0}
     _, own_metadata = read_cohort_manifest(root / run_config.cohort_manifest)
     if own_metadata["manifest_sha256"] != config["manifest_sha256"]:
         raise ValueError(
@@ -165,6 +171,8 @@ def prepare_features(config, cache_path, *, device, batch_size, image_cache_dir)
         },
         "encoder_state_sha256": digest,
     }
+    if baseline:
+        identity["image_baseline"] = True
     # JSON stores tuples (notably slice_band) as lists; compare canonical values.
     identity = json.loads(json.dumps(identity, sort_keys=True))
     if cache_path.exists():
