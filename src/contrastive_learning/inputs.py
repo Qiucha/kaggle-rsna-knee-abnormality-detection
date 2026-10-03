@@ -138,6 +138,7 @@ def make_loader(
     *,
     training: bool = False,
     generator: torch.Generator | None = None,
+    label_table: Any | None = None,
 ) -> DataLoader:
     """Build paired batches of studies and tokenized reports.
 
@@ -147,6 +148,11 @@ def make_loader(
     retrieval runs against the complete candidate pool.
 
     Pass the training ``generator`` so a resumed run continues the same shuffle.
+
+    ``label_table`` is supplied only for training: it adds the LM finding vectors
+    to each batch so the loss can soften its target. Evaluation leaves it None and
+    is scored on the unmodified diagonal, which is what keeps retrieval metrics
+    comparable between runs trained with and without it.
     """
     return DataLoader(
         KneeReportDataset(
@@ -154,6 +160,7 @@ def make_loader(
             config.image_kwargs,
             image_cache_dir=config.image_cache_dir,
             memory_cache_size=config.memory_cache_size,
+            label_table=label_table,
         ),
         batch_size=config.batch_size,
         shuffle=training,

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "requires_cuda": true,
+  "experiment_version": "image-block-cohort-compare-v1",
+  "purpose": "Two full-cohort image-block runs that differ only in the report text policy: the original multilingual reports versus the Claude-translated English reports. Both unfreeze the final DINOv2 block; the text tower stays frozen in both.",
+  "output_root": "checkpoints/contrastive/image-block-cohort-compare-v1",
+  "shared_args": [
+    "--text-model", "multilingual-e5",
+    "--text-model-revision", "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "--text-pooling", "mean",
+    "--text-prefix", "query: ",
+    "--image-model", "facebook/dinov2-small",
+    "--image-model-revision", "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+    "--max-text-length", "512",
+    "--report-view", "full",
+    "--image-unfreeze-last", "1",
+    "--text-unfreeze-last", "0",
+    "--lr-image", "1e-5",
+    "--epochs", "20",
+    "--batch-size", "32",
+    "--num-workers", "4",
+    "--image-cache-dir", "checkpoints/contrastive/full-multilingual-v1/image-cache",
+    "--image-memory-cache-size", "16",
+    "--trainable-checkpoints",
+    "--local-files-only",
+    "--seed", "2026"
+  ],
+  "arms": [
+    {
+      "name": "original-multilingual-seed2026",
+      "text_policy": "multilingual_raw",
+      "cohort_manifest": "data/processed/contrastive-cohort.jsonl",
+      "manifest_sha256": "54bd803e23acf3299daeb815d651a34249c736689e20d790f862fc71c0520b63",
+      "cohort_rows": 4407
+    },
+    {
+      "name": "translated-english-seed2026",
+      "text_policy": "translated_english",
+      "cohort_manifest": "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
+      "manifest_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+      "cohort_rows": 4405
+    }
+  ],
+  "selection_policy": "mean_r@1 descending, validation_loss ascending, earliest epoch",
+  "locked_test": "never evaluated by this experiment",
+  "known_confound": "The two cohorts are not row-identical. The translated (q2) manifest drops two studies quarantined for identical decoded pixels with incompatible paired reports; the base multilingual manifest retains them. The original arm therefore trains on two studies the translated arm never sees. The 56-study gold probe population is identical under both manifests, verified before launch.",
+  "downstream_check": "configs/downstream/gold-probe-cohort-compare-v1.json"
+}

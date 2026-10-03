@@ -127,3 +127,17 @@ def test_centre_to_extent_keeps_the_centre_and_pads_with_zeros():
     assert padded.sum() == 100.0                       # no signal invented
     assert padded[0, 5:15, 5:15].sum() == 100.0        # original sits centred
     assert padded[0, 0, 0] == 0.0                      # and the margin is air
+
+
+def test_crop_mm_is_settable_from_the_command_line():
+    # The re-baseline changes this constant, so it must be reachable without editing code.
+    import sys
+    from contrastive_learning import cli
+    argv = ['train', '--data-root', '/tmp', '--crop-mm', '150', '--output-dir', '/tmp/out']
+    saved, sys.argv = sys.argv, argv
+    try:
+        config = cli.config_from_args(argv[1:])
+    finally:
+        sys.argv = saved
+    assert config.crop_mm == 150.0
+    assert config.image_kwargs['crop_mm'] == 150.0

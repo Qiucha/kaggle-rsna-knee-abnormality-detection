@@ -92,6 +92,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="Trust that every indexed study decodes instead of reading its pixels now",
     )
 
+    labels = parser.add_argument_group("label-similarity targets")
+    labels.add_argument(
+        "--lm-label-csv",
+        type=Path,
+        help="LM-extracted finding labels used to soften the contrastive target",
+    )
+    labels.add_argument(
+        "--label-similarity-weight",
+        type=float,
+        default=0.0,
+        help="Fraction of the target taken from label agreement; 0.0 is plain CLIP-style training",
+    )
+
+    labels.add_argument(
+        "--label-findings",
+        nargs="+",
+        metavar="FINDING",
+        help="Restrict the label target to these findings; default uses every finding in the CSV",
+    )
+
     text = parser.add_argument_group("text tower")
     text.add_argument(
         "--text-model",
@@ -114,6 +134,13 @@ def build_parser() -> argparse.ArgumentParser:
     image.add_argument("--image-model", default="facebook/dinov2-small")
     image.add_argument("--image-model-revision")
     image.add_argument("--image-unfreeze-last", type=int, default=3)
+    image.add_argument(
+        "--image-plane-pooling", choices=("attention", "uniform"), default="attention"
+    )
+    image.add_argument("--image-drop-path-rate", type=float, default=0.0)
+    # Physical extent of the centre crop. read_slot crops or pads to exactly this,
+    # so every series lands at crop_mm / image_size millimetres per pixel.
+    image.add_argument("--crop-mm", type=float, default=130.0)
 
     optimization = parser.add_argument_group("optimization")
     optimization.add_argument("--embedding-dim", type=int, default=256)
@@ -122,14 +149,74 @@ def build_parser() -> argparse.ArgumentParser:
     optimization.add_argument("--lr-image", type=float, default=1e-5)
     optimization.add_argument("--lr-text", type=float, default=2e-5)
     optimization.add_argument("--lr-projection", type=float, default=1e-3)
+    optimization.add_argument(
+        "--max-inverse-temperature",
+        type=float,
+        default=100.0,
+        help="Upper clamp on learnable inverse temperature; default 100.0",
+    )
+    optimization.add_argument(
+        "--freeze-temperature",
+        action="store_true",
+        help="Keep inverse temperature frozen at initial value (~14.28, tau=0.07)",
+    )
     optimization.add_argument("--seed", type=int, default=2026)
     optimization.add_argument("--no-amp", action="store_true")
 
-    lora = parser.add_argument_group("LoRA adaptation")
-    lora.add_argument("--use-lora", action="store_true")
-    lora.add_argument("--lora-rank", type=int, default=16)
-    lora.add_argument("--lora-alpha", type=float, default=32.0)
-    lora.add_argument("--lora-dropout", type=float, default=0.0)
+    lora = parser.add_argument_group("lora adaptation")
+    lora.add_argument("--use-lora", action="store_true", help="Apply LoRA adapters to backbones")
+    lora.add_argument("--lora-rank", type=int, default=16, help="LoRA rank dimension")
+    lora.add_argument("--lora-alpha", type=float, default=32.0, help="LoRA scaling factor alpha")
+    lora.add_argument("--lora-dropout", type=float, default=0.0, help="LoRA dropout probability")
+
+    memory = parser.add_argument_group("memory optimization")
+    memory.add_argument(
+        "--gradient-checkpointing",
+        action="store_true",
+        help="Enable gradient checkpointing on backbones to trade compute for memory",
+    )
+    memory.add_argument(
+        "--save-on-cpu",
+        action="store_true",
+        help="Offload backward activations to host RAM using torch.autograd.graph.save_on_cpu",
+    )
+
+    declip = parser.add_argument_group("declip based alignment")
+    declip.add_argument(
+        "--use-declip",
+        action="store_true",
+        help="Enable DeCLIP multi-view, nearest-neighbour report, and unimodal supervision",
+    )
+    declip.add_argument(
+        "--declip-mv-weight",
+        type=float,
+        default=1.0,
+        help="Weight for multi-view cross-modal InfoNCE loss L_MV",
+    )
+    declip.add_argument(
+        "--declip-nn-weight",
+        type=float,
+        default=0.5,
+        help="Weight for nearest-neighbour report contrastive loss L_NN",
+    )
+    declip.add_argument(
+        "--declip-image-ss-weight",
+        type=float,
+        default=0.5,
+        help="Weight for image self-supervision (SimCLR) loss L_I",
+    )
+    declip.add_argument(
+        "--declip-queue-size",
+        type=int,
+        default=512,
+        help="Capacity of the FIFO queue for nearest-neighbour report embeddings",
+    )
+    declip.add_argument(
+        "--declip-text-mask-prob",
+        type=float,
+        default=0.15,
+        help="Token masking probability for report augmentation R'",
+    )
 
     splitting = parser.add_argument_group("splitting (ignored with --cohort-manifest)")
     splitting.add_argument("--val-fraction", type=float, default=0.10)

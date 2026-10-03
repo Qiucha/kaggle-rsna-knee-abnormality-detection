@@ -360,8 +360,12 @@ class KneeReportDataset(Dataset):
         *,
         image_cache_dir: Path | None = None,
         memory_cache_size: int = 0,
+        label_table: Any | None = None,
     ):
         self.records = list(records)
+        # Optional: a contrastive_learning.labels.LabelTable. Typed loosely to
+        # keep this module free of the import, which would otherwise be circular.
+        self.label_table = label_table
         self.image_kwargs = dict(image_kwargs)
         self.image_cache_dir = Path(image_cache_dir) if image_cache_dir is not None else None
         if self.image_cache_dir is not None:
@@ -467,7 +471,11 @@ class KneeReportDataset(Dataset):
         if images is None:
             images = self._load_images(record)
             self.image_cache.put(record.study_uid, images)
-        return {"images": images, "report": record.report, "study_uid": record.study_uid}
+        item = {"images": images, "report": record.report, "study_uid": record.study_uid}
+        if self.label_table is not None:
+            values, mask = self.label_table.get(record.study_uid)
+            item["label_values"], item["label_mask"] = values, mask
+        return item
 
 
 def collate_image_reports(
@@ -490,12 +498,16 @@ def collate_image_reports(
         max_length=max_text_length,
         return_tensors="pt",
     )
-    return {
+    collated = {
         "images": torch.stack([item["images"] for item in batch]),
         "input_ids": tokens["input_ids"],
         "attention_mask": tokens["attention_mask"],
         "study_uid": [item["study_uid"] for item in batch],
     }
+    if "label_values" in batch[0]:
+        collated["label_values"] = torch.stack([item["label_values"] for item in batch])
+        collated["label_mask"] = torch.stack([item["label_mask"] for item in batch])
+    return collated
 
 
 def make_collator(

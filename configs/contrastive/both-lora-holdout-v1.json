@@ -57,6 +57,50 @@
         "--lora-alpha",
         "128"
       ]
+    },
+    {
+      "name": "holdout-both-lora-depth8-r64-seed2026",
+      "purpose": "LoRA rank 64 on 8 blocks of both towers with gradient checkpointing, trained with 56 gold cases held out to evaluate generalizability",
+      "args": [
+        "--image-unfreeze-last",
+        "8",
+        "--text-unfreeze-last",
+        "8",
+        "--lora-rank",
+        "64",
+        "--lora-alpha",
+        "128",
+        "--gradient-checkpointing"
+      ]
+    },
+    {
+      "name": "holdout-both-lora-depth6-r64-bs64-reg-seed2026",
+      "purpose": "LoRA rank 64 on 6 blocks of both towers at BS=64 with gradient checkpointing, finding similarity soft targets, LoRA dropout, stochastic depth, and temperature cap, trained with 56 gold cases held out",
+      "args": [
+        "--image-unfreeze-last",
+        "6",
+        "--text-unfreeze-last",
+        "6",
+        "--lora-rank",
+        "64",
+        "--lora-alpha",
+        "128",
+        "--batch-size",
+        "64",
+        "--epochs",
+        "40",
+        "--gradient-checkpointing",
+        "--label-similarity-weight",
+        "0.1",
+        "--lm-label-csv",
+        "data/lm_label/lm_labels_kaggle.csv",
+        "--lora-dropout",
+        "0.1",
+        "--image-drop-path-rate",
+        "0.05",
+        "--max-inverse-temperature",
+        "16.0"
+      ]
     }
   ],
   "experiment_version": "both-lora-holdout-v1",

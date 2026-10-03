@@ -21,6 +21,7 @@ The design commitments worth knowing before reading the code:
 
 from __future__ import annotations
 
+import contextlib
 import json
 import math
 import random
@@ -30,6 +31,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from contrastive_learning.artifacts import append_jsonl, jsonl_line
 from contrastive_learning.checkpoints import (
     initialize_run,
     is_better,
@@ -41,7 +43,18 @@ from contrastive_learning.config import TrainConfig
 from contrastive_learning.data import move_batch
 from contrastive_learning.evaluation import evaluate
 from contrastive_learning.inputs import load_cohort, make_loader
-from contrastive_learning.model import build_model, symmetric_contrastive_loss
+from contrastive_learning.labels import read_lm_labels
+from contrastive_learning.declip import (
+    ReportEmbeddingQueue,
+    augment_report_tokens,
+    compute_declip_loss,
+)
+from contrastive_learning.model import (
+    build_model,
+    label_similarity_targets,
+    soft_target_contrastive_loss,
+    symmetric_contrastive_loss,
+)
 from contrastive_learning.preprocessing import augment_study_images
 
 
@@ -124,6 +137,9 @@ def _train_epoch(
     scheduler: torch.optim.lr_scheduler.LambdaLR,
     scaler: torch.amp.GradScaler,
     config: TrainConfig,
+    *,
+    declip_queue: ReportEmbeddingQueue | None = None,
+    mask_token_id: int | None = None,
 ) -> dict[str, float]:
     """Optimize for one epoch and return its loss, gradient norm, and learning rates.
 
@@ -135,29 +151,101 @@ def _train_epoch(
     model.train()
     total_loss = 0.0
     total_grad_norm = 0.0
+    total_loss_mv = 0.0
+    total_loss_nn = 0.0
+    total_loss_img_ss = 0.0
     for batch in loader:
         images, input_ids, attention_mask = move_batch(batch, device)
-        images = augment_study_images(images)
         optimizer.zero_grad(set_to_none=True)
-        with torch.autocast(device_type=device.type, enabled=use_amp):
-            logits, _, _ = model(images, input_ids, attention_mask)
-            loss = symmetric_contrastive_loss(logits)
+        save_ctx = (
+            torch.autograd.graph.save_on_cpu(pin_memory=True)
+            if (config.save_on_cpu and device.type == "cuda")
+            else contextlib.nullcontext()
+        )
+        if config.use_declip and declip_queue is not None:
+            images_aug = augment_study_images(images)
+            input_ids_aug = augment_report_tokens(
+                input_ids,
+                attention_mask,
+                mask_token_id=mask_token_id,
+                mask_prob=config.declip_text_mask_prob,
+            )
+            with torch.autocast(device_type=device.type, enabled=use_amp):
+                with save_ctx:
+                    z_I = model.encode_images(images)
+                    z_I_aug = model.encode_images(images_aug)
+                    z_T = model.encode_text(input_ids, attention_mask)
+                    z_T_aug = model.encode_text(input_ids_aug, attention_mask)
+
+                z_T_nn = declip_queue.get_nearest_neighbours(z_T)
+                targets = None
+                if config.label_similarity_weight > 0.0:
+                    targets = label_similarity_targets(
+                        batch["label_values"].to(device, non_blocking=True),
+                        batch["label_mask"].to(device, non_blocking=True),
+                        config.label_similarity_weight,
+                    )
+
+                image_ss_weight = (
+                    config.declip_image_ss_weight
+                    if (config.image_unfreeze_last > 0 or config.use_lora)
+                    else 0.0
+                )
+                loss, breakdown = compute_declip_loss(
+                    z_I=z_I,
+                    z_I_aug=z_I_aug,
+                    z_T=z_T,
+                    z_T_aug=z_T_aug,
+                    z_T_nn=z_T_nn,
+                    logit_scale=model.logit_scale,
+                    targets=targets,
+                    mv_weight=config.declip_mv_weight,
+                    nn_weight=config.declip_nn_weight,
+                    image_ss_weight=image_ss_weight,
+                )
+            declip_queue.enqueue(z_T)
+            total_loss_mv += breakdown["loss_mv"]
+            total_loss_nn += breakdown["loss_nn"]
+            total_loss_img_ss += breakdown["loss_img_ss"]
+        else:
+            images = augment_study_images(images)
+            with torch.autocast(device_type=device.type, enabled=use_amp):
+                with save_ctx:
+                    logits, _, _ = model(images, input_ids, attention_mask)
+                if config.label_similarity_weight > 0.0:
+                    # Built in float32 outside the autocast dtype's reach: the target
+                    # is a normalized probability row, and halving its precision would
+                    # distort small off-diagonal mass more than it costs to compute.
+                    targets = label_similarity_targets(
+                        batch["label_values"].to(device, non_blocking=True),
+                        batch["label_mask"].to(device, non_blocking=True),
+                        config.label_similarity_weight,
+                    )
+                    loss = soft_target_contrastive_loss(logits.float(), targets)
+                else:
+                    loss = symmetric_contrastive_loss(logits)
         scaler.scale(loss).backward()
         scaler.unscale_(optimizer)
         grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.grad_clip_norm)
         scaler.step(optimizer)
         scaler.update()
         with torch.no_grad():
-            model.logit_scale.clamp_(max=MAX_LOGIT_SCALE)
+            max_scale = math.log(config.max_inverse_temperature)
+            model.logit_scale.clamp_(max=max_scale)
         scheduler.step()
         total_loss += float(loss.detach())
         total_grad_norm += float(grad_norm)
 
-    return {
+    out = {
         "train_loss": total_loss / len(loader),
         "train_grad_norm": total_grad_norm / len(loader),
         **{f"lr_{group['group_name']}": float(group["lr"]) for group in optimizer.param_groups},
     }
+    if config.use_declip and declip_queue is not None:
+        out["train_loss_mv"] = total_loss_mv / len(loader)
+        out["train_loss_nn"] = total_loss_nn / len(loader)
+        out["train_loss_img_ss"] = total_loss_img_ss / len(loader)
+    return out
 
 
 def run_training(config: TrainConfig) -> dict[str, Any]:
@@ -194,10 +282,13 @@ def run_training(config: TrainConfig) -> dict[str, Any]:
         image_model_revision=config.image_model_revision,
         text_model_revision=config.text_model_revision,
         text_pooling=config.text_pooling,
+        image_plane_pooling=config.image_plane_pooling,
+        image_drop_path_rate=config.image_drop_path_rate,
         use_lora=config.use_lora,
         lora_rank=config.lora_rank,
         lora_alpha=config.lora_alpha,
         lora_dropout=config.lora_dropout,
+        gradient_checkpointing=config.gradient_checkpointing,
         local_files_only=config.local_files_only,
     )
     print(f"Transformer blocks: {block_info}; text={config.text_model}; image={config.image_model}")
@@ -205,13 +296,28 @@ def run_training(config: TrainConfig) -> dict[str, Any]:
     # reload of a compact checkpoint needs.
     update_run_manifest(config.output_dir, {"resolved_models": block_info})
 
+    label_table = None
+    if config.label_similarity_weight > 0.0:
+        label_table = read_lm_labels(config.lm_label_csv, config.label_findings)
+        coverage = label_table.coverage([record.study_uid for record in train_records])
+        # Recorded rather than enforced: an unlabelled study falls back to the
+        # one-hot target, so partial coverage weakens the experiment instead of
+        # invalidating it, and the manifest is where that gets noticed.
+        coverage["finding_names"] = list(label_table.findings)
+        print(json.dumps({"label_similarity": {**coverage, "source": str(config.lm_label_csv)}}))
+        update_run_manifest(config.output_dir, {"label_similarity_coverage": coverage})
+
     generator = torch.Generator().manual_seed(config.seed)
-    train_loader = make_loader(train_records, tokenizer, config, training=True, generator=generator)
+    train_loader = make_loader(
+        train_records, tokenizer, config, training=True, generator=generator, label_table=label_table
+    )
     val_loader = make_loader(val_records, tokenizer, config)
     if len(train_loader) == 0:
         raise ValueError("Training split is smaller than batch_size; lower --batch-size")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if config.freeze_temperature:
+        model.logit_scale.requires_grad = False
     model.to(device)
     optimizer = _optimizer(model, config)
     scheduler = _scheduler(optimizer, config.epochs * len(train_loader), config.warmup_fraction)
@@ -229,15 +335,38 @@ def run_training(config: TrainConfig) -> dict[str, Any]:
     history_path = config.output_dir / "metrics.jsonl"
     best_score = run_context.best_score
     best_metrics = run_context.best_metrics
+    declip_queue = None
+    mask_token_id = None
+    if config.use_declip:
+        declip_queue = ReportEmbeddingQueue(
+            capacity=config.declip_queue_size,
+            embedding_dim=config.embedding_dim,
+            device=device,
+        )
+        mask_token_id = getattr(tokenizer, "mask_token_id", None)
+        if mask_token_id is None:
+            mask_token_id = tokenizer.convert_tokens_to_ids("[MASK]")
+        if mask_token_id is None or mask_token_id == getattr(tokenizer, "unk_token_id", None):
+            mask_token_id = getattr(tokenizer, "pad_token_id", 0)
+
     for epoch in range(run_context.start_epoch, config.epochs + 1):
-        train_metrics = _train_epoch(model, train_loader, device, optimizer, scheduler, scaler, config)
+        train_metrics = _train_epoch(
+            model,
+            train_loader,
+            device,
+            optimizer,
+            scheduler,
+            scaler,
+            config,
+            declip_queue=declip_queue,
+            mask_token_id=mask_token_id,
+        )
         metrics = evaluate(model, val_loader, device)
         metrics.update(epoch=epoch, **train_metrics)
         # Append before checkpointing: history must never be missing an epoch that
         # a checkpoint claims, which is what resume verification checks.
-        with history_path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(metrics, sort_keys=True) + "\n")
-        print(json.dumps(metrics, sort_keys=True))
+        append_jsonl(history_path, metrics)
+        print(jsonl_line(metrics), end="")
 
         is_best = is_better(metrics, best_metrics)
         if is_best:
