@@ -1,0 +1,6 @@
+# Machine-written results: collapsed in GitHub diffs, still committed.
+# The Markdown reports under digest/ stay expanded for review.
+digest/**/*.json   linguist-generated=true
+digest/**/*.jsonl  linguist-generated=true
+digest/**/*.svg    linguist-generated=true
+digest/**/*.html   linguist-generated=true
