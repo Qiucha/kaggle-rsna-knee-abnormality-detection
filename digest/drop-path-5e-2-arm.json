@@ -1,0 +1,231 @@
+{
+  "resamples": 2000,
+  "rng_seed": 20260914,
+  "seeds": {
+    "2026": {
+      "epoch": {
+        "baseline": 19,
+        "drop_path": 15
+      },
+      "inverse_temperature": {
+        "baseline": 20.385719299316406,
+        "drop_path": 18.12635612487793,
+        "matched": 19.256037712097168
+      },
+      "validation_r@1": {
+        "baseline": 0.13832199573516846,
+        "drop_path": 0.12244898080825806,
+        "difference": -0.01587301678955555,
+        "paired_query_bootstrap_95_ci": [
+          -0.04195011407136917,
+          0.010204081423580647
+        ],
+        "share_of_resamples_favouring_drop_path": 0.0995
+      },
+      "validation_loss_at_own_tau": {
+        "baseline": 3.702519655227661,
+        "drop_path": 3.328319549560547
+      },
+      "validation_loss_at_matched_tau": {
+        "baseline": 3.6319310665130615,
+        "drop_path": 3.3616490364074707
+      },
+      "matched_n": {
+        "baseline": {
+          "n": 441,
+          "train_loss_mean": 1.7985805583000183,
+          "train_r@1_mean": 0.43124289222061635,
+          "validation_loss": 3.6319310665130615,
+          "validation_r@1": 0.13832199573516846,
+          "loss_gap": -1.8333505082130432,
+          "r@1_gap": 0.2929208964854479
+        },
+        "drop_path": {
+          "n": 441,
+          "train_loss_mean": 2.378530877828598,
+          "train_r@1_mean": 0.263918975032866,
+          "validation_loss": 3.3616490364074707,
+          "validation_r@1": 0.12244898080825806,
+          "loss_gap": -0.9831181585788729,
+          "r@1_gap": 0.14146999422460793
+        },
+        "baseline_at_own_tau": {
+          "n": 441,
+          "train_loss_mean": 1.7708663630485535,
+          "train_r@1_mean": 0.4321537368744612,
+          "validation_loss": 3.702519655227661,
+          "validation_r@1": 0.13832199573516846,
+          "loss_gap": -1.9316532921791076,
+          "r@1_gap": 0.2938317411392927
+        },
+        "drop_path_at_own_tau": {
+          "n": 441,
+          "train_loss_mean": 2.3925602114200593,
+          "train_r@1_mean": 0.26566206391900776,
+          "validation_loss": 3.328319549560547,
+          "validation_r@1": 0.12244898080825806,
+          "loss_gap": -0.9357593381404876,
+          "r@1_gap": 0.1432130831107497
+        },
+        "loss_gap_change": 0.8502323496341704,
+        "r@1_gap_change": -0.15145090226083996
+      }
+    },
+    "2027": {
+      "epoch": {
+        "baseline": 18,
+        "drop_path": 19
+      },
+      "inverse_temperature": {
+        "baseline": 20.361515045166016,
+        "drop_path": 18.427213668823242,
+        "matched": 19.39436435699463
+      },
+      "validation_r@1": {
+        "baseline": 0.14342403411865234,
+        "drop_path": 0.12244898080825806,
+        "difference": -0.020975057035684586,
+        "paired_query_bootstrap_95_ci": [
+          -0.04818594083189964,
+          0.0062500000931322575
+        ],
+        "share_of_resamples_favouring_drop_path": 0.07
+      },
+      "validation_loss_at_own_tau": {
+        "baseline": 3.7686262130737305,
+        "drop_path": 3.436877727508545
+      },
+      "validation_loss_at_matched_tau": {
+        "baseline": 3.7036280632019043,
+        "drop_path": 3.479156970977783
+      },
+      "matched_n": {
+        "baseline": {
+          "n": 441,
+          "train_loss_mean": 1.8035568052530289,
+          "train_r@1_mean": 0.42257458753883836,
+          "validation_loss": 3.7036280632019043,
+          "validation_r@1": 0.14342404156923294,
+          "loss_gap": -1.9000712579488754,
+          "r@1_gap": 0.2791505459696054
+        },
+        "drop_path": {
+          "n": 441,
+          "train_loss_mean": 2.1674537658691406,
+          "train_r@1_mean": 0.3133188620954752,
+          "validation_loss": 3.479156970977783,
+          "validation_r@1": 0.12244898453354836,
+          "loss_gap": -1.3117032051086426,
+          "r@1_gap": 0.19086987756192686
+        },
+        "baseline_at_own_tau": {
+          "n": 441,
+          "train_loss_mean": 1.7813177478313447,
+          "train_r@1_mean": 0.4235098470002413,
+          "validation_loss": 3.7686262130737305,
+          "validation_r@1": 0.14342404156923294,
+          "loss_gap": -1.9873084652423858,
+          "r@1_gap": 0.28008580543100836
+        },
+        "drop_path_at_own_tau": {
+          "n": 441,
+          "train_loss_mean": 2.1843186819553377,
+          "train_r@1_mean": 0.31256623186171056,
+          "validation_loss": 3.436877727508545,
+          "validation_r@1": 0.12244898453354836,
+          "loss_gap": -1.2525590455532072,
+          "r@1_gap": 0.1901172473281622
+        },
+        "loss_gap_change": 0.5883680528402329,
+        "r@1_gap_change": -0.08828066840767856
+      }
+    },
+    "2028": {
+      "epoch": {
+        "baseline": 15,
+        "drop_path": 15
+      },
+      "inverse_temperature": {
+        "baseline": 19.49085235595703,
+        "drop_path": 17.797807693481445,
+        "matched": 18.64433002471924
+      },
+      "validation_r@1": {
+        "baseline": 0.12018140405416489,
+        "drop_path": 0.1111111119389534,
+        "difference": -0.00907029490917921,
+        "paired_query_bootstrap_95_ci": [
+          -0.03630952537059784,
+          0.017006803303956985
+        ],
+        "share_of_resamples_favouring_drop_path": 0.2425
+      },
+      "validation_loss_at_own_tau": {
+        "baseline": 3.6582159996032715,
+        "drop_path": 3.4553418159484863
+      },
+      "validation_loss_at_matched_tau": {
+        "baseline": 3.609133005142212,
+        "drop_path": 3.4879956245422363
+      },
+      "matched_n": {
+        "baseline": {
+          "n": 441,
+          "train_loss_mean": 2.0540614676475526,
+          "train_r@1_mean": 0.35184089735150337,
+          "validation_loss": 3.609133005142212,
+          "validation_r@1": 0.12018140777945518,
+          "loss_gap": -1.5550715374946593,
+          "r@1_gap": 0.23165948957204818
+        },
+        "drop_path": {
+          "n": 441,
+          "train_loss_mean": 2.4096207559108733,
+          "train_r@1_mean": 0.2524161736294627,
+          "validation_loss": 3.4879956245422363,
+          "validation_r@1": 0.1111111119389534,
+          "loss_gap": -1.078374868631363,
+          "r@1_gap": 0.14130506169050933
+        },
+        "baseline_at_own_tau": {
+          "n": 441,
+          "train_loss_mean": 2.037956529855728,
+          "train_r@1_mean": 0.35249630942940713,
+          "validation_loss": 3.6582159996032715,
+          "validation_r@1": 0.12018140777945518,
+          "loss_gap": -1.6202594697475434,
+          "r@1_gap": 0.23231490164995194
+        },
+        "drop_path_at_own_tau": {
+          "n": 441,
+          "train_loss_mean": 2.419437961578369,
+          "train_r@1_mean": 0.25386886652559043,
+          "validation_loss": 3.4553418159484863,
+          "validation_r@1": 0.1111111119389534,
+          "loss_gap": -1.0359038543701171,
+          "r@1_gap": 0.14275775458663703
+        },
+        "loss_gap_change": 0.4766966688632963,
+        "r@1_gap_change": -0.09035442788153886
+      }
+    }
+  },
+  "note": "Validation R@1 is over 441 candidates (exposed cohort). Never place these beside the 433-candidate gold-holdout figures.",
+  "pooled": {
+    "estimand": "pooled across-seed paired difference in validation Recall@1, drop-path minus baseline, bootstrapped over validation queries within each seed",
+    "per_seed_differences": [
+      -0.01587301678955555,
+      -0.020975057035684586,
+      -0.00907029490917921
+    ],
+    "mean_difference": -0.015306122911473116,
+    "per_seed_sd": 0.005972592973234046,
+    "same_sign_across_seeds": true,
+    "bootstrap_95_ci": [
+      -0.030801208689808846,
+      0.0003779289254453033
+    ],
+    "share_of_resamples_favouring_drop_path": 0.0285,
+    "prediction_was": "+0.005 to +0.015; null below +0.005"
+  }
+}

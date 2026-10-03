@@ -1,0 +1,1489 @@
+{
+  "experiment": "codec-declip-v1",
+  "matrix": "configs/contrastive/codec-declip-v1.json",
+  "source": "fix/kaggle-dicom-codecs @ 35dfa0e (run from the codec worktree)",
+  "gold_studies": 58,
+  "lm_test_studies": 432,
+  "contrastive_seed": 2026,
+  "head_seeds": [
+    2026,
+    2027,
+    2028
+  ],
+  "gold_interval": "paired study bootstrap, 5,000 resamples, seed 2030",
+  "lm_test_interval": "paired study bootstrap, 2,000 resamples, seed 2030",
+  "pending_arms": [],
+  "replicate_noise": {
+    "epochs_compared": 20,
+    "median_abs_epoch_delta_mean_r1": 0.0034642070531845093,
+    "max_abs_epoch_delta_mean_r1": 0.012702073901891708,
+    "median_abs_epoch_delta_validation_loss": 0.05389666557312012,
+    "epoch1_abs_delta_train_loss": 0.00023374292585565115,
+    "selected_mean_r1_gap": 0.002309463918209076
+  },
+  "gold_positives": {
+    "ACL": 24,
+    "MCL": 9,
+    "Medial Meniscus": 26,
+    "Lateral Meniscus": 23,
+    "Medial OA": 15,
+    "Lateral OA": 11,
+    "PF OA": 21,
+    "Effusion": 35,
+    "Synovitis": 27,
+    "Baker's": 12,
+    "Contusion": 19,
+    "Fracture": 18
+  },
+  "unadapted": {
+    "DINOv2-small": {
+      "label": "Unadapted DINOv2-small",
+      "head_run": "checkpoints/kaggle/lm-mlp-codec-declip-58-unadapted-dinov2-small",
+      "gold_macro_auroc": {
+        "linear": 0.7395281782794654,
+        "mlp": 0.7224876522960342
+      },
+      "gold_per_label_auroc": {
+        "linear": {
+          "ACL": 0.7218137254901962,
+          "Baker's": 0.7826086956521738,
+          "Contusion": 0.7233468286099864,
+          "Effusion": 0.8894409937888199,
+          "Fracture": 0.5430555555555556,
+          "Lateral Meniscus": 0.7180124223602484,
+          "Lateral OA": 0.7079303675048356,
+          "MCL": 0.6689342403628118,
+          "Medial Meniscus": 0.7283653846153846,
+          "Medial OA": 0.8775193798449613,
+          "PF OA": 0.7773487773487774,
+          "Synovitis": 0.7359617682198326
+        },
+        "mlp": {
+          "ACL": 0.633578431372549,
+          "Baker's": 0.7047101449275361,
+          "Contusion": 0.6963562753036437,
+          "Effusion": 0.8807453416149068,
+          "Fracture": 0.5625,
+          "Lateral Meniscus": 0.7204968944099378,
+          "Lateral OA": 0.7408123791102514,
+          "MCL": 0.63718820861678,
+          "Medial Meniscus": 0.7103365384615384,
+          "Medial OA": 0.8976744186046511,
+          "PF OA": 0.7387387387387387,
+          "Synovitis": 0.7467144563918758
+        }
+      }
+    },
+    "RAD-DINO": {
+      "label": "Unadapted RAD-DINO",
+      "head_run": "checkpoints/kaggle/lm-mlp-codec-declip-58-unadapted-rad-dino",
+      "gold_macro_auroc": {
+        "linear": 0.7280360813327396,
+        "mlp": 0.7272628047490239
+      },
+      "gold_per_label_auroc": {
+        "linear": {
+          "ACL": 0.7316176470588236,
+          "Baker's": 0.7336956521739131,
+          "Contusion": 0.6572199730094467,
+          "Effusion": 0.9043478260869565,
+          "Fracture": 0.6041666666666667,
+          "Lateral Meniscus": 0.7180124223602484,
+          "Lateral OA": 0.8085106382978724,
+          "MCL": 0.5918367346938775,
+          "Medial Meniscus": 0.7115384615384616,
+          "Medial OA": 0.8077519379844962,
+          "PF OA": 0.8082368082368083,
+          "Synovitis": 0.6594982078853047
+        },
+        "mlp": {
+          "ACL": 0.7512254901960784,
+          "Baker's": 0.713768115942029,
+          "Contusion": 0.6612685560053981,
+          "Effusion": 0.8708074534161491,
+          "Fracture": 0.6208333333333332,
+          "Lateral Meniscus": 0.698136645962733,
+          "Lateral OA": 0.7736943907156673,
+          "MCL": 0.6462585034013606,
+          "Medial Meniscus": 0.6790865384615385,
+          "Medial OA": 0.8170542635658915,
+          "PF OA": 0.7722007722007721,
+          "Synovitis": 0.7228195937873358
+        }
+      }
+    }
+  },
+  "arms": {
+    "reference": {
+      "image": "DINOv2-small",
+      "text": "E5-base",
+      "objective": "CLIP",
+      "contrastive_run": "checkpoints/contrastive/both-lora-holdout-v1/holdout-both-lora-depth6-r64-seed2026",
+      "head_run": "checkpoints/kaggle/lm-mlp-tower-size-58-dinov2-small-e5-base",
+      "git": {
+        "branch": "contrastive-learning",
+        "commit": "62a2a8fefd700c6626d0b80053869f199d9aef2b",
+        "dirty": true
+      },
+      "checkpoint_sha256": "c3de2f76fe9b10306fd423759f9e80b8076b9cafdd121f4fcc2650fc870dbdfa",
+      "contrastive": {
+        "epochs": 20,
+        "selected_epoch": 17,
+        "train_loss": 0.17065243495421278,
+        "validation_loss": 4.038600921630859,
+        "validation_loss_min": 3.4458045959472656,
+        "validation_loss_final": 4.053892135620117,
+        "image_to_text_r1": 0.13972286880016327,
+        "text_to_image_r1": 0.12702079117298126,
+        "mean_r1": 0.13337182998657227,
+        "elapsed_hours": null,
+        "peak_allocated_gb": null
+      },
+      "gold_macro_auroc": {
+        "linear": 0.7336017379286952,
+        "mlp": 0.7659297454363796
+      },
+      "gold_per_label_auroc": {
+        "linear": {
+          "ACL": 0.6862745098039216,
+          "Baker's": 0.8713768115942029,
+          "Contusion": 0.7031039136302293,
+          "Effusion": 0.8844720496894409,
+          "Fracture": 0.5402777777777779,
+          "Lateral Meniscus": 0.6720496894409937,
+          "Lateral OA": 0.6808510638297872,
+          "MCL": 0.5102040816326531,
+          "Medial Meniscus": 0.7343750000000001,
+          "Medial OA": 0.9255813953488372,
+          "PF OA": 0.8120978120978121,
+          "Synovitis": 0.7825567502986857
+        },
+        "mlp": {
+          "ACL": 0.6973039215686274,
+          "Baker's": 0.838768115942029,
+          "Contusion": 0.777327935222672,
+          "Effusion": 0.9080745341614906,
+          "Fracture": 0.6597222222222222,
+          "Lateral Meniscus": 0.7130434782608696,
+          "Lateral OA": 0.7059961315280464,
+          "MCL": 0.6122448979591837,
+          "Medial Meniscus": 0.7608173076923077,
+          "Medial OA": 0.9348837209302325,
+          "PF OA": 0.7824967824967825,
+          "Synovitis": 0.8004778972520907
+        }
+      },
+      "lm_test_macro_auroc": {
+        "linear": 0.8140361584451812,
+        "mlp": 0.8335950492697523
+      },
+      "head_selection": {
+        "linear": {
+          "epochs": [
+            15,
+            18,
+            14
+          ],
+          "validation_masked_bce": [
+            0.5192208290100098,
+            0.5176228880882263,
+            0.5151983499526978
+          ]
+        },
+        "mlp": {
+          "epochs": [
+            3,
+            2,
+            2
+          ],
+          "validation_masked_bce": [
+            0.47088631987571716,
+            0.4718892574310303,
+            0.4695234000682831
+          ]
+        }
+      },
+      "gold_delta_vs_reference": null,
+      "lm_test_delta_vs_reference": null,
+      "gold_delta_vs_replicate": {
+        "linear": {
+          "difference": -0.0024547576904296875,
+          "ci95": [
+            -0.025331443548202513,
+            0.01949273943901063
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": -0.0010866522789001465,
+          "ci95": [
+            -0.016357460618019105,
+            0.014268034696578983
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      },
+      "lm_test_delta_vs_replicate": {
+        "linear": {
+          "difference": -0.00013324768279165955,
+          "ci95": [
+            -0.007810445874064811,
+            0.007875393820860374
+          ]
+        },
+        "mlp": {
+          "difference": 0.003257812225031076,
+          "ci95": [
+            -0.003033726312598861,
+            0.00946595911582826
+          ]
+        }
+      },
+      "unadapted": "DINOv2-small",
+      "gold_delta_vs_unadapted": {
+        "linear": {
+          "difference": -0.0059264302253723145,
+          "ci95": [
+            -0.04140109121799469,
+            0.02909296751022339
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": 0.04344207048416138,
+          "ci95": [
+            0.016623938083648683,
+            0.07223507463932037
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      }
+    },
+    "replicate": {
+      "image": "DINOv2-small",
+      "text": "E5-base",
+      "objective": "CLIP \u00b7 codec pipeline",
+      "contrastive_run": "checkpoints/contrastive/codec-declip-v1/dinov2-small-e5-base-512-codec-seed2026",
+      "head_run": "checkpoints/kaggle/lm-mlp-codec-declip-58-dinov2-small-e5-base-512-codec",
+      "git": {
+        "branch": "fix/kaggle-dicom-codecs",
+        "commit": "35dfa0e6e41ba9816d688a38ec9d2d41d41720f2",
+        "dirty": true
+      },
+      "checkpoint_sha256": "d6c4174a34aa1bb1e4a175dc48cf5ffd434d7fdfc8ff1774647033674ac6de71",
+      "contrastive": {
+        "epochs": 20,
+        "selected_epoch": 19,
+        "train_loss": 0.1435068428205947,
+        "validation_loss": 4.023622989654541,
+        "validation_loss_min": 3.4138681888580322,
+        "validation_loss_final": 4.024778366088867,
+        "image_to_text_r1": 0.14434179663658142,
+        "text_to_image_r1": 0.12702079117298126,
+        "mean_r1": 0.13568129390478134,
+        "elapsed_hours": 0.8629034521411166,
+        "peak_allocated_gb": 7.520275456
+      },
+      "gold_macro_auroc": {
+        "linear": 0.7360564488026817,
+        "mlp": 0.7670163217549798
+      },
+      "gold_per_label_auroc": {
+        "linear": {
+          "ACL": 0.6568627450980392,
+          "Baker's": 0.842391304347826,
+          "Contusion": 0.7112010796221322,
+          "Effusion": 0.8770186335403727,
+          "Fracture": 0.5513888888888889,
+          "Lateral Meniscus": 0.7006211180124223,
+          "Lateral OA": 0.6750483558994197,
+          "MCL": 0.5147392290249433,
+          "Medial Meniscus": 0.7560096153846154,
+          "Medial OA": 0.9085271317829458,
+          "PF OA": 0.8455598455598455,
+          "Synovitis": 0.7933094384707288
+        },
+        "mlp": {
+          "ACL": 0.6740196078431373,
+          "Baker's": 0.8333333333333333,
+          "Contusion": 0.7759784075573549,
+          "Effusion": 0.8807453416149069,
+          "Fracture": 0.6569444444444444,
+          "Lateral Meniscus": 0.7254658385093168,
+          "Lateral OA": 0.7388781431334623,
+          "MCL": 0.6281179138321995,
+          "Medial Meniscus": 0.7596153846153846,
+          "Medial OA": 0.9348837209302325,
+          "PF OA": 0.8005148005148005,
+          "Synovitis": 0.7956989247311828
+        }
+      },
+      "lm_test_macro_auroc": {
+        "linear": 0.8141694061279728,
+        "mlp": 0.8303372370447212
+      },
+      "head_selection": {
+        "linear": {
+          "epochs": [
+            15,
+            14,
+            17
+          ],
+          "validation_masked_bce": [
+            0.5158988237380981,
+            0.5140897631645203,
+            0.510581374168396
+          ]
+        },
+        "mlp": {
+          "epochs": [
+            3,
+            2,
+            2
+          ],
+          "validation_masked_bce": [
+            0.4726329743862152,
+            0.4727989435195923,
+            0.47109177708625793
+          ]
+        }
+      },
+      "gold_delta_vs_reference": {
+        "linear": {
+          "difference": 0.0024547576904296875,
+          "ci95": [
+            -0.01949273943901062,
+            0.025331443548202527
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": 0.0010866522789001465,
+          "ci95": [
+            -0.01426803469657898,
+            0.01635746061801911
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      },
+      "lm_test_delta_vs_reference": {
+        "linear": {
+          "difference": 0.00013324768279165955,
+          "ci95": [
+            -0.007875393820860398,
+            0.0078104458740648084
+          ]
+        },
+        "mlp": {
+          "difference": -0.003257812225031076,
+          "ci95": [
+            -0.00946595911582826,
+            0.0030337263125988436
+          ]
+        }
+      },
+      "gold_delta_vs_replicate": null,
+      "lm_test_delta_vs_replicate": null,
+      "unadapted": "DINOv2-small",
+      "gold_delta_vs_unadapted": {
+        "linear": {
+          "difference": -0.003471672534942627,
+          "ci95": [
+            -0.040621551871299746,
+            0.03282827436923983
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": 0.04452872276306152,
+          "ci95": [
+            0.014681437611579896,
+            0.0736769735813141
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      }
+    },
+    "rad_dino": {
+      "image": "RAD-DINO",
+      "text": "E5-base",
+      "objective": "CLIP",
+      "contrastive_run": "checkpoints/contrastive/next-model-pairs-v1/rad-dino-e5-base-512-seed2026",
+      "head_run": "checkpoints/kaggle/lm-mlp-next-pairs-58-rad-dino-e5-base-512",
+      "git": {
+        "branch": "submission",
+        "commit": "3e9ec06df9ee4662835cd90e575ac27734eeb8dd",
+        "dirty": true
+      },
+      "checkpoint_sha256": "ad58f5f1c1fe760c90856f28048c97693ccf7abf2cf29a5997e62626e79fd774",
+      "contrastive": {
+        "epochs": 20,
+        "selected_epoch": 19,
+        "train_loss": 0.16485406006513922,
+        "validation_loss": 4.763014316558838,
+        "validation_loss_min": 3.7935779094696045,
+        "validation_loss_final": 4.764243125915527,
+        "image_to_text_r1": 0.11662817746400833,
+        "text_to_image_r1": 0.12009237706661224,
+        "mean_r1": 0.11836027726531029,
+        "elapsed_hours": 3.68196046294444,
+        "peak_allocated_gb": 10.162041344
+      },
+      "gold_macro_auroc": {
+        "linear": 0.7272378118260941,
+        "mlp": 0.7245782499786181
+      },
+      "gold_per_label_auroc": {
+        "linear": {
+          "ACL": 0.7205882352941176,
+          "Baker's": 0.7844202898550724,
+          "Contusion": 0.5452091767881242,
+          "Effusion": 0.9329192546583851,
+          "Fracture": 0.6236111111111111,
+          "Lateral Meniscus": 0.6919254658385093,
+          "Lateral OA": 0.6634429400386848,
+          "MCL": 0.6235827664399094,
+          "Medial Meniscus": 0.7704326923076923,
+          "Medial OA": 0.875968992248062,
+          "PF OA": 0.8018018018018018,
+          "Synovitis": 0.6929510155316607
+        },
+        "mlp": {
+          "ACL": 0.7732843137254902,
+          "Baker's": 0.6576086956521738,
+          "Contusion": 0.6356275303643725,
+          "Effusion": 0.9043478260869565,
+          "Fracture": 0.5972222222222222,
+          "Lateral Meniscus": 0.7018633540372671,
+          "Lateral OA": 0.7195357833655706,
+          "MCL": 0.6326530612244897,
+          "Medial Meniscus": 0.7728365384615385,
+          "Medial OA": 0.827906976744186,
+          "PF OA": 0.8018018018018017,
+          "Synovitis": 0.6702508960573477
+        }
+      },
+      "lm_test_macro_auroc": {
+        "linear": 0.788179860285764,
+        "mlp": 0.8026577485845618
+      },
+      "head_selection": {
+        "linear": {
+          "epochs": [
+            14,
+            12,
+            11
+          ],
+          "validation_masked_bce": [
+            0.552117645740509,
+            0.5494334101676941,
+            0.5531104207038879
+          ]
+        },
+        "mlp": {
+          "epochs": [
+            2,
+            2,
+            2
+          ],
+          "validation_masked_bce": [
+            0.4973917305469513,
+            0.5026360750198364,
+            0.5011827945709229
+          ]
+        }
+      },
+      "gold_delta_vs_reference": {
+        "linear": {
+          "difference": -0.006363809108734131,
+          "ci95": [
+            -0.04533427357673645,
+            0.03244655132293706
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": -0.041351497173309326,
+          "ci95": [
+            -0.07502826154232026,
+            -0.008545795083045952
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      },
+      "lm_test_delta_vs_reference": {
+        "linear": {
+          "difference": -0.025856298159417146,
+          "ci95": [
+            -0.04161617190773933,
+            -0.009703419695782102
+          ]
+        },
+        "mlp": {
+          "difference": -0.030937300685190405,
+          "ci95": [
+            -0.045144178918284,
+            -0.016382147614597754
+          ]
+        }
+      },
+      "gold_delta_vs_replicate": {
+        "linear": {
+          "difference": -0.008818566799163818,
+          "ci95": [
+            -0.052314752340316774,
+            0.033096811175346394
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": -0.04243814945220947,
+          "ci95": [
+            -0.07481472790241242,
+            -0.010598409175872786
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      },
+      "lm_test_delta_vs_replicate": {
+        "linear": {
+          "difference": -0.025989545842208805,
+          "ci95": [
+            -0.040309132777729254,
+            -0.009718285045725467
+          ]
+        },
+        "mlp": {
+          "difference": -0.02767948846015933,
+          "ci95": [
+            -0.0412622747173835,
+            -0.012320530302860006
+          ]
+        }
+      },
+      "unadapted": "RAD-DINO",
+      "gold_delta_vs_unadapted": {
+        "linear": {
+          "difference": -0.0007982254028320312,
+          "ci95": [
+            -0.030587214231491088,
+            0.029257488250732426
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": -0.0026845932006835938,
+          "ci95": [
+            -0.028712984919548035,
+            0.023194816708564762
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      }
+    },
+    "bge_m3_512": {
+      "image": "DINOv2-small",
+      "text": "BGE-M3 \u00b7 512",
+      "objective": "CLIP",
+      "contrastive_run": "checkpoints/contrastive/next-model-pairs-v1/dinov2-small-bge-m3-512-seed2026",
+      "head_run": "checkpoints/kaggle/lm-mlp-next-pairs-58-dinov2-small-bge-m3-512",
+      "git": {
+        "branch": "submission",
+        "commit": "3e9ec06df9ee4662835cd90e575ac27734eeb8dd",
+        "dirty": true
+      },
+      "checkpoint_sha256": "253a7d4bd3a1e5029dac3d3e2643f2d91d0662c8dc9cd58bc870dfab571ae73e",
+      "contrastive": {
+        "epochs": 20,
+        "selected_epoch": 17,
+        "train_loss": 0.1589412131105308,
+        "validation_loss": 3.950977087020874,
+        "validation_loss_min": 3.3428306579589844,
+        "validation_loss_final": 3.9573521614074707,
+        "image_to_text_r1": 0.15319475531578064,
+        "text_to_image_r1": 0.15473441779613495,
+        "mean_r1": 0.1539645865559578,
+        "elapsed_hours": 2.402093120765276,
+        "peak_allocated_gb": 9.8788608
+      },
+      "gold_macro_auroc": {
+        "linear": 0.7572758768643637,
+        "mlp": 0.7746494880135376
+      },
+      "gold_per_label_auroc": {
+        "linear": {
+          "ACL": 0.6348039215686275,
+          "Baker's": 0.9166666666666667,
+          "Contusion": 0.7570850202429149,
+          "Effusion": 0.8745341614906832,
+          "Fracture": 0.5597222222222222,
+          "Lateral Meniscus": 0.6869565217391305,
+          "Lateral OA": 0.7253384912959381,
+          "MCL": 0.6077097505668934,
+          "Medial Meniscus": 0.7307692307692308,
+          "Medial OA": 0.9426356589147287,
+          "PF OA": 0.8326898326898327,
+          "Synovitis": 0.8183990442054958
+        },
+        "mlp": {
+          "ACL": 0.6776960784313726,
+          "Baker's": 0.8713768115942029,
+          "Contusion": 0.8110661268556005,
+          "Effusion": 0.893167701863354,
+          "Fracture": 0.6625,
+          "Lateral Meniscus": 0.6608695652173913,
+          "Lateral OA": 0.7640232108317215,
+          "MCL": 0.6326530612244898,
+          "Medial Meniscus": 0.734375,
+          "Medial OA": 0.9488372093023256,
+          "PF OA": 0.8172458172458172,
+          "Synovitis": 0.8219832735961767
+        }
+      },
+      "lm_test_macro_auroc": {
+        "linear": 0.8252425769131668,
+        "mlp": 0.8414827123092423
+      },
+      "head_selection": {
+        "linear": {
+          "epochs": [
+            15,
+            14,
+            10
+          ],
+          "validation_masked_bce": [
+            0.5164082050323486,
+            0.5171889066696167,
+            0.5166835784912109
+          ]
+        },
+        "mlp": {
+          "epochs": [
+            3,
+            2,
+            2
+          ],
+          "validation_masked_bce": [
+            0.4732065200805664,
+            0.47408097982406616,
+            0.47060367465019226
+          ]
+        }
+      },
+      "gold_delta_vs_reference": {
+        "linear": {
+          "difference": 0.023674070835113525,
+          "ci95": [
+            -0.0058914005756378176,
+            0.057361176609992987
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": 0.00871974229812622,
+          "ci95": [
+            -0.010519543290138244,
+            0.029013982415199282
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      },
+      "lm_test_delta_vs_reference": {
+        "linear": {
+          "difference": 0.011206418467985646,
+          "ci95": [
+            -0.0007272957263726065,
+            0.02311968270863667
+          ]
+        },
+        "mlp": {
+          "difference": 0.007887663039490067,
+          "ci95": [
+            -0.00021630856083732213,
+            0.015546323445436262
+          ]
+        }
+      },
+      "gold_delta_vs_replicate": {
+        "linear": {
+          "difference": 0.021219313144683838,
+          "ci95": [
+            -0.012589439749717712,
+            0.058429628610610976
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": 0.007633090019226074,
+          "ci95": [
+            -0.012230765819549561,
+            0.028623133897781396
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      },
+      "lm_test_delta_vs_replicate": {
+        "linear": {
+          "difference": 0.011073170785193986,
+          "ci95": [
+            4.542486828099381e-05,
+            0.022597370609200987
+          ]
+        },
+        "mlp": {
+          "difference": 0.011145475264521143,
+          "ci95": [
+            0.002285013826648222,
+            0.019581445021487644
+          ]
+        }
+      },
+      "unadapted": "DINOv2-small",
+      "gold_delta_vs_unadapted": {
+        "linear": {
+          "difference": 0.01774764060974121,
+          "ci95": [
+            -0.02263410687446594,
+            0.05995230972766876
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": 0.0521618127822876,
+          "ci95": [
+            0.01909741759300232,
+            0.08587525188922883
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      }
+    },
+    "declip_dinov2": {
+      "image": "DINOv2-small",
+      "text": "E5-base",
+      "objective": "DeCLIP",
+      "contrastive_run": "checkpoints/contrastive/codec-declip-v1/declip-dinov2-small-e5-base-512-seed2026",
+      "head_run": "checkpoints/kaggle/lm-mlp-codec-declip-58-declip-dinov2-small-e5-base-512",
+      "git": {
+        "branch": "fix/kaggle-dicom-codecs",
+        "commit": "35dfa0e6e41ba9816d688a38ec9d2d41d41720f2",
+        "dirty": true
+      },
+      "checkpoint_sha256": "bf52a55c56d65459d1f9ba05763b62e9fac464ac826cd9ce5665587bf9fbce8c",
+      "contrastive": {
+        "epochs": 20,
+        "selected_epoch": 18,
+        "train_loss": 0.3338063640726937,
+        "validation_loss": 3.9654767513275146,
+        "validation_loss_min": 3.4751944541931152,
+        "validation_loss_final": 3.9628889560699463,
+        "image_to_text_r1": 0.1339491903781891,
+        "text_to_image_r1": 0.12933024764060974,
+        "mean_r1": 0.13163971900939941,
+        "elapsed_hours": 1.3192466538641667,
+        "peak_allocated_gb": 4.684195328
+      },
+      "gold_macro_auroc": {
+        "linear": 0.7485798191306948,
+        "mlp": 0.768621340360841
+      },
+      "gold_per_label_auroc": {
+        "linear": {
+          "ACL": 0.6887254901960784,
+          "Baker's": 0.8967391304347826,
+          "Contusion": 0.6680161943319838,
+          "Effusion": 0.9118012422360249,
+          "Fracture": 0.5430555555555555,
+          "Lateral Meniscus": 0.6993788819875776,
+          "Lateral OA": 0.7388781431334623,
+          "MCL": 0.6326530612244898,
+          "Medial Meniscus": 0.7524038461538461,
+          "Medial OA": 0.9131782945736435,
+          "PF OA": 0.7902187902187902,
+          "Synovitis": 0.7479091995221028
+        },
+        "mlp": {
+          "ACL": 0.6887254901960784,
+          "Baker's": 0.8605072463768118,
+          "Contusion": 0.7557354925775979,
+          "Effusion": 0.8683229813664597,
+          "Fracture": 0.6486111111111111,
+          "Lateral Meniscus": 0.7267080745341615,
+          "Lateral OA": 0.7214700193423598,
+          "MCL": 0.6598639455782312,
+          "Medial Meniscus": 0.7740384615384615,
+          "Medial OA": 0.951937984496124,
+          "PF OA": 0.7837837837837837,
+          "Synovitis": 0.7837514934289127
+        }
+      },
+      "lm_test_macro_auroc": {
+        "linear": 0.804981783150757,
+        "mlp": 0.8314593039617134
+      },
+      "head_selection": {
+        "linear": {
+          "epochs": [
+            20,
+            18,
+            18
+          ],
+          "validation_masked_bce": [
+            0.5146313309669495,
+            0.5145983695983887,
+            0.5146126747131348
+          ]
+        },
+        "mlp": {
+          "epochs": [
+            2,
+            2,
+            2
+          ],
+          "validation_masked_bce": [
+            0.4768045246601105,
+            0.47847995162010193,
+            0.47523099184036255
+          ]
+        }
+      },
+      "gold_delta_vs_reference": {
+        "linear": {
+          "difference": 0.014977991580963135,
+          "ci95": [
+            -0.01244899034500122,
+            0.04245727062225343
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": 0.0026915669441223145,
+          "ci95": [
+            -0.013371497392654419,
+            0.01936018764972687
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      },
+      "lm_test_delta_vs_reference": {
+        "linear": {
+          "difference": -0.00905437529442421,
+          "ci95": [
+            -0.020119933804274456,
+            0.0019084523204731538
+          ]
+        },
+        "mlp": {
+          "difference": -0.002135745308038839,
+          "ci95": [
+            -0.010061328318313306,
+            0.005559311539399255
+          ]
+        }
+      },
+      "gold_delta_vs_replicate": {
+        "linear": {
+          "difference": 0.012523233890533447,
+          "ci95": [
+            -0.018937957286834717,
+            0.04512141048908235
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": 0.001604914665222168,
+          "ci95": [
+            -0.015729761123657225,
+            0.019433334469795227
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      },
+      "lm_test_delta_vs_replicate": {
+        "linear": {
+          "difference": -0.00918762297721587,
+          "ci95": [
+            -0.021484703663628053,
+            0.003122502292771502
+          ]
+        },
+        "mlp": {
+          "difference": 0.001122066916992237,
+          "ci95": [
+            -0.006775063931532796,
+            0.009656939396598367
+          ]
+        }
+      },
+      "clip_counterpart": "reference",
+      "gold_delta_vs_clip_counterpart": {
+        "linear": {
+          "difference": 0.014977991580963135,
+          "ci95": [
+            -0.01244899034500122,
+            0.04245727062225343
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": 0.0026915669441223145,
+          "ci95": [
+            -0.013371497392654419,
+            0.01936018764972687
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      },
+      "lm_test_delta_vs_clip_counterpart": {
+        "linear": {
+          "difference": -0.00905437529442421,
+          "ci95": [
+            -0.020119933804274456,
+            0.0019084523204731538
+          ]
+        },
+        "mlp": {
+          "difference": -0.002135745308038839,
+          "ci95": [
+            -0.010061328318313306,
+            0.005559311539399255
+          ]
+        }
+      },
+      "unadapted": "DINOv2-small",
+      "gold_delta_vs_unadapted": {
+        "linear": {
+          "difference": 0.00905156135559082,
+          "ci95": [
+            -0.030259430408477783,
+            0.04809555709362034
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": 0.04613363742828369,
+          "ci95": [
+            0.016327008605003357,
+            0.07711558938026429
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      }
+    },
+    "declip_rad_e5": {
+      "image": "RAD-DINO",
+      "text": "E5-base",
+      "objective": "DeCLIP",
+      "contrastive_run": "checkpoints/contrastive/codec-declip-v1/declip-rad-dino-e5-base-512-seed2026",
+      "head_run": "checkpoints/kaggle/lm-mlp-codec-declip-58-declip-rad-dino-e5-base-512",
+      "git": {
+        "branch": "fix/kaggle-dicom-codecs",
+        "commit": "35dfa0e6e41ba9816d688a38ec9d2d41d41720f2",
+        "dirty": true
+      },
+      "checkpoint_sha256": "1c1270f3c9fa1d499ce9a7aef067d2ad45e94dcaa2e77a540c6b314e32e1cde2",
+      "contrastive": {
+        "epochs": 20,
+        "selected_epoch": 19,
+        "train_loss": 0.38228660932293645,
+        "validation_loss": 4.402108192443848,
+        "validation_loss_min": 3.629856586456299,
+        "validation_loss_final": 4.40308141708374,
+        "image_to_text_r1": 0.10161662846803665,
+        "text_to_image_r1": 0.1062355637550354,
+        "mean_r1": 0.10392609611153603,
+        "elapsed_hours": 2.122111136963326,
+        "peak_allocated_gb": 6.013909504
+      },
+      "gold_macro_auroc": {
+        "linear": 0.719105288182952,
+        "mlp": 0.7188844090289847
+      },
+      "gold_per_label_auroc": {
+        "linear": {
+          "ACL": 0.6985294117647058,
+          "Baker's": 0.7155797101449275,
+          "Contusion": 0.582995951417004,
+          "Effusion": 0.8869565217391304,
+          "Fracture": 0.6152777777777778,
+          "Lateral Meniscus": 0.7006211180124223,
+          "Lateral OA": 0.7040618955512572,
+          "MCL": 0.6235827664399094,
+          "Medial Meniscus": 0.7716346153846153,
+          "Medial OA": 0.8496124031007751,
+          "PF OA": 0.7850707850707851,
+          "Synovitis": 0.6953405017921147
+        },
+        "mlp": {
+          "ACL": 0.7708333333333334,
+          "Baker's": 0.6413043478260869,
+          "Contusion": 0.6126855600539811,
+          "Effusion": 0.8881987577639752,
+          "Fracture": 0.6152777777777778,
+          "Lateral Meniscus": 0.6807453416149069,
+          "Lateral OA": 0.7350096711798839,
+          "MCL": 0.6326530612244898,
+          "Medial Meniscus": 0.765625,
+          "Medial OA": 0.8108527131782945,
+          "PF OA": 0.7876447876447876,
+          "Synovitis": 0.6857825567502986
+        }
+      },
+      "lm_test_macro_auroc": {
+        "linear": 0.7848677915418719,
+        "mlp": 0.8030725277522114
+      },
+      "head_selection": {
+        "linear": {
+          "epochs": [
+            8,
+            12,
+            11
+          ],
+          "validation_masked_bce": [
+            0.5559965372085571,
+            0.5564267039299011,
+            0.5579859614372253
+          ]
+        },
+        "mlp": {
+          "epochs": [
+            2,
+            2,
+            2
+          ],
+          "validation_masked_bce": [
+            0.5006024837493896,
+            0.5045088529586792,
+            0.5005717873573303
+          ]
+        }
+      },
+      "gold_delta_vs_reference": {
+        "linear": {
+          "difference": -0.01449650526046753,
+          "ci95": [
+            -0.053067299723625186,
+            0.024674373865127566
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": -0.047045230865478516,
+          "ci95": [
+            -0.08243745267391205,
+            -0.012188377976417534
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      },
+      "lm_test_delta_vs_reference": {
+        "linear": {
+          "difference": -0.029168366903309262,
+          "ci95": [
+            -0.04528115135193944,
+            -0.01274821315700972
+          ]
+        },
+        "mlp": {
+          "difference": -0.030522521517540868,
+          "ci95": [
+            -0.04553853378635588,
+            -0.015557011261294277
+          ]
+        }
+      },
+      "gold_delta_vs_replicate": {
+        "linear": {
+          "difference": -0.016951262950897217,
+          "ci95": [
+            -0.061052489280700686,
+            0.02565254867076874
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": -0.04813188314437866,
+          "ci95": [
+            -0.08227085769176483,
+            -0.015151768922805781
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      },
+      "lm_test_delta_vs_replicate": {
+        "linear": {
+          "difference": -0.02930161458610092,
+          "ci95": [
+            -0.04505424882075691,
+            -0.012803825416516333
+          ]
+        },
+        "mlp": {
+          "difference": -0.027264709292509792,
+          "ci95": [
+            -0.04153842772786562,
+            -0.012202495750745088
+          ]
+        }
+      },
+      "clip_counterpart": "rad_dino",
+      "gold_delta_vs_clip_counterpart": {
+        "linear": {
+          "difference": -0.008132696151733398,
+          "ci95": [
+            -0.027255138754844664,
+            0.010383999347686771
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": -0.0056937336921691895,
+          "ci95": [
+            -0.021634307503700257,
+            0.010331711173057565
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      },
+      "lm_test_delta_vs_clip_counterpart": {
+        "linear": {
+          "difference": -0.003312068743892116,
+          "ci95": [
+            -0.012672606626397817,
+            0.005707813044303723
+          ]
+        },
+        "mlp": {
+          "difference": 0.00041477916764953715,
+          "ci95": [
+            -0.0063747935879306244,
+            0.006538997408152535
+          ]
+        }
+      },
+      "unadapted": "RAD-DINO",
+      "gold_delta_vs_unadapted": {
+        "linear": {
+          "difference": -0.00893092155456543,
+          "ci95": [
+            -0.037101611495018005,
+            0.020029816031455996
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": -0.008378326892852783,
+          "ci95": [
+            -0.03467108905315399,
+            0.018417876958847057
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      }
+    },
+    "declip_rad_bge": {
+      "image": "RAD-DINO",
+      "text": "BGE-M3 \u00b7 512",
+      "objective": "DeCLIP",
+      "contrastive_run": "checkpoints/contrastive/codec-declip-v1/declip-rad-dino-bge-m3-512-seed2026",
+      "head_run": "checkpoints/kaggle/lm-mlp-codec-declip-58-declip-rad-dino-bge-m3-512",
+      "git": {
+        "branch": "fix/kaggle-dicom-codecs",
+        "commit": "35dfa0e6e41ba9816d688a38ec9d2d41d41720f2",
+        "dirty": true
+      },
+      "checkpoint_sha256": "485273aadba3e13dba1ed592c6493b998f1c05c74e048e0b30a5a90c50de779b",
+      "contrastive": {
+        "epochs": 20,
+        "selected_epoch": 17,
+        "train_loss": 0.3851964842114184,
+        "validation_loss": 4.586380481719971,
+        "validation_loss_min": 3.805330991744995,
+        "validation_loss_final": 4.617550849914551,
+        "image_to_text_r1": 0.11316397041082382,
+        "text_to_image_r1": 0.11778291314840317,
+        "mean_r1": 0.1154734417796135,
+        "elapsed_hours": 10.24449897032362,
+        "peak_allocated_gb": 9.528809984
+      },
+      "gold_macro_auroc": {
+        "linear": 0.7298222221731931,
+        "mlp": 0.7338731527139556
+      },
+      "gold_per_label_auroc": {
+        "linear": {
+          "ACL": 0.7450980392156863,
+          "Baker's": 0.7065217391304347,
+          "Contusion": 0.5937921727395412,
+          "Effusion": 0.9279503105590061,
+          "Fracture": 0.5972222222222222,
+          "Lateral Meniscus": 0.7031055900621118,
+          "Lateral OA": 0.7040618955512572,
+          "MCL": 0.655328798185941,
+          "Medial Meniscus": 0.7620192307692307,
+          "Medial OA": 0.8356589147286821,
+          "PF OA": 0.8198198198198198,
+          "Synovitis": 0.7072879330943846
+        },
+        "mlp": {
+          "ACL": 0.7806372549019608,
+          "Baker's": 0.6829710144927537,
+          "Contusion": 0.6491228070175439,
+          "Effusion": 0.9043478260869565,
+          "Fracture": 0.5958333333333333,
+          "Lateral Meniscus": 0.6993788819875777,
+          "Lateral OA": 0.7408123791102514,
+          "MCL": 0.6507936507936508,
+          "Medial Meniscus": 0.7764423076923077,
+          "Medial OA": 0.8294573643410853,
+          "PF OA": 0.7953667953667953,
+          "Synovitis": 0.7013142174432497
+        }
+      },
+      "lm_test_macro_auroc": {
+        "linear": 0.7909311199384096,
+        "mlp": 0.8027242855595306
+      },
+      "head_selection": {
+        "linear": {
+          "epochs": [
+            9,
+            5,
+            5
+          ],
+          "validation_masked_bce": [
+            0.5662559866905212,
+            0.5659141540527344,
+            0.5696235299110413
+          ]
+        },
+        "mlp": {
+          "epochs": [
+            2,
+            2,
+            2
+          ],
+          "validation_masked_bce": [
+            0.5087900161743164,
+            0.5099135041236877,
+            0.5075218677520752
+          ]
+        }
+      },
+      "gold_delta_vs_reference": {
+        "linear": {
+          "difference": -0.0037795305252075195,
+          "ci95": [
+            -0.04377373456954956,
+            0.036802610754966734
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": -0.03205651044845581,
+          "ci95": [
+            -0.06648524105548859,
+            0.002024009823799136
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      },
+      "lm_test_delta_vs_reference": {
+        "linear": {
+          "difference": -0.02310503850677159,
+          "ci95": [
+            -0.039007625016691846,
+            -0.006313644884971597
+          ]
+        },
+        "mlp": {
+          "difference": -0.030870763710221683,
+          "ci95": [
+            -0.04519632664250174,
+            -0.015832733194593263
+          ]
+        }
+      },
+      "gold_delta_vs_replicate": {
+        "linear": {
+          "difference": -0.006234288215637207,
+          "ci95": [
+            -0.050033402442932126,
+            0.03708844780921936
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": -0.03314316272735596,
+          "ci95": [
+            -0.06598117053508759,
+            -0.0005356937646865776
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      },
+      "lm_test_delta_vs_replicate": {
+        "linear": {
+          "difference": -0.02323828618956325,
+          "ci95": [
+            -0.03880146033973497,
+            -0.0064908170868047755
+          ]
+        },
+        "mlp": {
+          "difference": -0.027612951485190607,
+          "ci95": [
+            -0.0417504617711568,
+            -0.012645727313259155
+          ]
+        }
+      },
+      "unadapted": "RAD-DINO",
+      "gold_delta_vs_unadapted": {
+        "linear": {
+          "difference": 0.00178605318069458,
+          "ci95": [
+            -0.026386523246765138,
+            0.03225217461585999
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        },
+        "mlp": {
+          "difference": 0.006610393524169922,
+          "ci95": [
+            -0.01654157042503357,
+            0.03083795309066773
+          ],
+          "valid_resamples": 4999,
+          "resamples": 5000,
+          "unit": "study",
+          "seed": 2030
+        }
+      }
+    }
+  }
+}

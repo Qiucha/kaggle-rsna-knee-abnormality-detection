@@ -1,0 +1,77 @@
+{
+  "n_gold": 58,
+  "n_all": 4407,
+  "resamples": 10000,
+  "series_count": {
+    "median": 5.0,
+    "min": 3,
+    "max": 14
+  },
+  "primary": {
+    "ACL": {
+      "auroc": 0.48284313725490197,
+      "n_pos": 24,
+      "permutation_p": 0.8265
+    },
+    "MCL": {
+      "auroc": 0.36394557823129253,
+      "n_pos": 9,
+      "permutation_p": 0.1857
+    },
+    "Medial Meniscus": {
+      "auroc": 0.5036057692307693,
+      "n_pos": 26,
+      "permutation_p": 0.9624
+    },
+    "Lateral Meniscus": {
+      "auroc": 0.4751552795031056,
+      "n_pos": 23,
+      "permutation_p": 0.7514
+    },
+    "Medial OA": {
+      "auroc": 0.5775193798449613,
+      "n_pos": 15,
+      "permutation_p": 0.3723
+    },
+    "Lateral OA": {
+      "auroc": 0.52321083172147,
+      "n_pos": 11,
+      "permutation_p": 0.8128
+    },
+    "PF OA": {
+      "auroc": 0.5926640926640927,
+      "n_pos": 21,
+      "permutation_p": 0.2271
+    },
+    "Effusion": {
+      "auroc": 0.468944099378882,
+      "n_pos": 35,
+      "permutation_p": 0.6801
+    },
+    "Synovitis": {
+      "auroc": 0.546594982078853,
+      "n_pos": 27,
+      "permutation_p": 0.5343
+    },
+    "Baker's": {
+      "auroc": 0.45652173913043476,
+      "n_pos": 12,
+      "permutation_p": 0.6412
+    },
+    "Contusion": {
+      "auroc": 0.393387314439946,
+      "n_pos": 19,
+      "permutation_p": 0.1719
+    },
+    "Fracture": {
+      "auroc": 0.40694444444444444,
+      "n_pos": 18,
+      "permutation_p": 0.2508
+    }
+  },
+  "proxy": {
+    "spearman_series_vs_report_length": -0.03186073022353814,
+    "permutation_p": 0.04,
+    "n": 4407
+  }
+}

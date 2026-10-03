@@ -1,0 +1,409 @@
+{
+  "experiment_version": "label-similarity-v1",
+  "config": "configs/contrastive/label-similarity-v1.json",
+  "comparability": {
+    "train_loss": "NOT comparable between arms: the weighted arm's cross entropy is taken against a softened target with nonzero entropy, which raises its floor irrespective of fit. Read each arm's train_loss only against its own earlier epochs.",
+    "validation_loss": "Comparable: computed against the unmodified hard diagonal for both arms, over the full 433-study validation split. Not comparable to train_loss in either arm.",
+    "mean_r@1": "Comparable: full-split retrieval, identical candidate pool for both arms."
+  },
+  "arms": {
+    "lambda00-seed2026": {
+      "directory": "checkpoints/contrastive/label-similarity-v1/lambda00-seed2026",
+      "label_similarity_weight": 0.0,
+      "lm_label_csv": null,
+      "epochs_recorded": 20,
+      "curves": {
+        "train_loss": [
+          2.628656,
+          1.771084,
+          1.387857,
+          1.21396,
+          1.071293,
+          1.002505,
+          0.92102,
+          0.843099,
+          0.793894,
+          0.697648,
+          0.659617,
+          0.584547,
+          0.536512,
+          0.453104,
+          0.391055,
+          0.35298,
+          0.324073,
+          0.293247,
+          0.282827,
+          0.272297
+        ],
+        "validation_loss": [
+          4.437414,
+          4.121478,
+          3.873052,
+          3.617504,
+          4.10543,
+          3.669657,
+          3.588955,
+          3.560808,
+          3.483849,
+          3.570374,
+          3.643898,
+          3.582557,
+          3.601985,
+          3.648464,
+          3.835593,
+          3.765288,
+          3.800297,
+          3.816776,
+          3.824561,
+          3.823839
+        ],
+        "mean_r@1": [
+          0.033487,
+          0.045035,
+          0.051963,
+          0.069284,
+          0.057159,
+          0.076212,
+          0.08545,
+          0.093533,
+          0.093533,
+          0.08545,
+          0.096998,
+          0.084873,
+          0.110855,
+          0.099885,
+          0.106236,
+          0.117206,
+          0.1097,
+          0.10739,
+          0.108545,
+          0.103926
+        ]
+      },
+      "inverse_temperature": [
+        14.444,
+        14.7409,
+        15.0969,
+        15.2859,
+        15.5676,
+        15.7945,
+        16.037,
+        16.4574,
+        16.8786,
+        17.4475,
+        17.9453,
+        18.4939,
+        19.0128,
+        19.5487,
+        19.9969,
+        20.3153,
+        20.5085,
+        20.6326,
+        20.6798,
+        20.6868
+      ],
+      "selected_epoch": 16,
+      "selected": {
+        "train_loss": 0.35298,
+        "validation_loss": 3.765288,
+        "mean_r@1": 0.117206
+      },
+      "final": {
+        "train_loss": 0.272297,
+        "validation_loss": 3.823839,
+        "mean_r@1": 0.103926
+      },
+      "best_validation_loss": {
+        "epoch": 9,
+        "value": 3.483849
+      },
+      "overfitting_gap": 0.33999
+    },
+    "lambda03-seed2026": {
+      "directory": "checkpoints/contrastive/label-similarity-v1/lambda03-seed2026",
+      "label_similarity_weight": 0.3,
+      "lm_label_csv": "/home/q/Projects/novo-project/data/lm_label/lm_labels_kaggle.csv",
+      "epochs_recorded": 20,
+      "curves": {
+        "train_loss": [
+          3.05351,
+          2.669527,
+          2.471502,
+          2.36239,
+          2.276887,
+          2.223746,
+          2.181111,
+          2.140309,
+          2.112906,
+          2.066452,
+          2.037154,
+          1.999491,
+          1.971566,
+          1.930785,
+          1.90057,
+          1.873639,
+          1.853403,
+          1.844087,
+          1.837644,
+          1.834142
+        ],
+        "validation_loss": [
+          4.582531,
+          4.402098,
+          4.116913,
+          3.922958,
+          3.994081,
+          3.799412,
+          3.816082,
+          3.708786,
+          3.683035,
+          3.751518,
+          3.642626,
+          3.737682,
+          3.756341,
+          3.735196,
+          3.780688,
+          3.826018,
+          3.859633,
+          3.871685,
+          3.879378,
+          3.878839
+        ],
+        "mean_r@1": [
+          0.040416,
+          0.047344,
+          0.047344,
+          0.06351,
+          0.061778,
+          0.077367,
+          0.092956,
+          0.083718,
+          0.105081,
+          0.10739,
+          0.120092,
+          0.113164,
+          0.113164,
+          0.1097,
+          0.106236,
+          0.124711,
+          0.13164,
+          0.122402,
+          0.123557,
+          0.125866
+        ]
+      },
+      "inverse_temperature": [
+        14.3118,
+        14.0313,
+        13.536,
+        12.9986,
+        12.5605,
+        12.2187,
+        11.8745,
+        11.6545,
+        11.4672,
+        11.3062,
+        11.2179,
+        11.1374,
+        11.0836,
+        11.0449,
+        11.0153,
+        10.9976,
+        10.9896,
+        10.9861,
+        10.9846,
+        10.9845
+      ],
+      "selected_epoch": 17,
+      "selected": {
+        "train_loss": 1.853403,
+        "validation_loss": 3.859633,
+        "mean_r@1": 0.13164
+      },
+      "final": {
+        "train_loss": 1.834142,
+        "validation_loss": 3.878839,
+        "mean_r@1": 0.125866
+      },
+      "best_validation_loss": {
+        "epoch": 11,
+        "value": 3.642626
+      },
+      "overfitting_gap": 0.236213
+    }
+  },
+  "comparison": {
+    "arms_differ_only_in_label_similarity": true,
+    "unintended_differences": {},
+    "epochs_compared": 20,
+    "per_epoch_difference": {
+      "validation_loss": [
+        0.145117,
+        0.28062,
+        0.243861,
+        0.305454,
+        -0.111349,
+        0.129755,
+        0.227127,
+        0.147978,
+        0.199186,
+        0.181144,
+        -0.001272,
+        0.155125,
+        0.154356,
+        0.086732,
+        -0.054905,
+        0.06073,
+        0.059336,
+        0.054909,
+        0.054817,
+        0.055
+      ],
+      "mean_r@1": [
+        0.006929,
+        0.002309,
+        -0.004619,
+        -0.005774,
+        0.004619,
+        0.001155,
+        0.007506,
+        -0.009815,
+        0.011548,
+        0.02194,
+        0.023094,
+        0.028291,
+        0.002309,
+        0.009815,
+        0.0,
+        0.007505,
+        0.02194,
+        0.015012,
+        0.015012,
+        0.02194
+      ]
+    },
+    "selected_mean_r@1_difference": 0.014434,
+    "best_validation_loss_difference": 0.158777,
+    "epochs_treatment_ahead_on_mean_r@1": 16,
+    "epochs_treatment_ahead_on_validation_loss": 3
+  },
+  "comparisons": {
+    "lambda03-seed2026": {
+      "arms_differ_only_in_label_similarity": true,
+      "unintended_differences": {},
+      "epochs_compared": 20,
+      "per_epoch_difference": {
+        "validation_loss": [
+          0.145117,
+          0.28062,
+          0.243861,
+          0.305454,
+          -0.111349,
+          0.129755,
+          0.227127,
+          0.147978,
+          0.199186,
+          0.181144,
+          -0.001272,
+          0.155125,
+          0.154356,
+          0.086732,
+          -0.054905,
+          0.06073,
+          0.059336,
+          0.054909,
+          0.054817,
+          0.055
+        ],
+        "mean_r@1": [
+          0.006929,
+          0.002309,
+          -0.004619,
+          -0.005774,
+          0.004619,
+          0.001155,
+          0.007506,
+          -0.009815,
+          0.011548,
+          0.02194,
+          0.023094,
+          0.028291,
+          0.002309,
+          0.009815,
+          0.0,
+          0.007505,
+          0.02194,
+          0.015012,
+          0.015012,
+          0.02194
+        ]
+      },
+      "selected_mean_r@1_difference": 0.014434,
+      "best_validation_loss_difference": 0.158777,
+      "epochs_treatment_ahead_on_mean_r@1": 16,
+      "epochs_treatment_ahead_on_validation_loss": 3
+    }
+  },
+  "noise_floor": {
+    "control_run": "checkpoints/contrastive/gold-holdout-v1/holdout-unfreeze4-seed2026",
+    "what_it_is": "A second run of the BASELINE configuration at the same seed, differing from it only by CUDA nondeterminism. Its distance from the baseline is how far two identical runs drift, which is the smallest difference this experiment can resolve.",
+    "baseline_selected_mean_r@1": 0.117206,
+    "control_selected_mean_r@1": 0.140878,
+    "treatment_selected_mean_r@1": 0.13164,
+    "noise_floor_mean_r@1": 0.023672,
+    "treatment_effect_mean_r@1": 0.014434,
+    "treatment_effect_exceeds_noise_floor": false,
+    "per_epoch_absolute_difference": {
+      "nondeterminism_only": {
+        "epochs": 20,
+        "median": 0.008661,
+        "mean": 0.010845,
+        "max": 0.034642
+      },
+      "treatment_versus_baseline": {
+        "epochs": 20,
+        "median": 0.008661,
+        "mean": 0.011057,
+        "max": 0.028291
+      }
+    },
+    "treatment_within_control_spread": true
+  },
+  "downstream_probe": {
+    "source": "digest/downstream-probe-label-similarity-v1.json",
+    "population": 56,
+    "macro_auroc": {
+      "before_cl/dinov2-unadapted/uniform_mean_768": 0.643817,
+      "lambda00/lambda00-seed2026/plane_attention_768": 0.685798,
+      "lambda00/lambda00-seed2026/projection_256": 0.678763,
+      "lambda00/lambda00-seed2026/uniform_mean_768": 0.705586,
+      "lambda03/lambda03-seed2026/plane_attention_768": 0.700622,
+      "lambda03/lambda03-seed2026/projection_256": 0.657691,
+      "lambda03/lambda03-seed2026/uniform_mean_768": 0.709599
+    },
+    "macro_auprc": {
+      "before_cl/dinov2-unadapted/uniform_mean_768": 0.528102,
+      "lambda00/lambda00-seed2026/plane_attention_768": 0.554837,
+      "lambda00/lambda00-seed2026/projection_256": 0.547589,
+      "lambda00/lambda00-seed2026/uniform_mean_768": 0.570863,
+      "lambda03/lambda03-seed2026/plane_attention_768": 0.563922,
+      "lambda03/lambda03-seed2026/projection_256": 0.527703,
+      "lambda03/lambda03-seed2026/uniform_mean_768": 0.574552
+    }
+  },
+  "paired_auroc": {
+    "source": "digest/label-similarity-paired-v1.json",
+    "comparisons": {
+      "lambda03/lambda03-seed2026/uniform_mean_768 vs lambda00/lambda00-seed2026/uniform_mean_768": {
+        "macro_auroc_baseline": 0.7055861629251327,
+        "macro_auroc_candidate": 0.7095985276893334,
+        "difference": 0.004015430897552751,
+        "ci95": [
+          -0.009986810453081101,
+          0.017031675581203956
+        ],
+        "fraction_favouring_candidate": 0.7264
+      }
+    }
+  }
+}

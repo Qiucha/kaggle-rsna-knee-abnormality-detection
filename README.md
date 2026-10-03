@@ -17,6 +17,14 @@ The [pipeline code guide](src/contrastive_learning/README.md) explains the modul
 and what each one hides. Older translated-English pilot notes in `digest/` describe
 historical experiments and are not current instructions.
 
+For offline Kaggle inference, supervised label-head fitting, and current checkpoint
+selection, see the [submission and benchmark guide](digest/kaggle-submission-pipeline.md).
+The default candidate is the gold-holdout LoRA encoder; build with
+`scripts/build_kaggle_bundle.py` and run with `scripts/predict_kaggle.py`.
+
+For the next image and text tower runs, read the prioritized
+[model candidate and comparison note](digest/next-model-candidates.md) before deploying an experiment.
+
 ---
 
 ## Contents
@@ -44,7 +52,7 @@ detail is in the [pipeline code guide](src/contrastive_learning/README.md).
 | `training.py` | Run lifecycle: optimizer groups, schedule, epoch loop, resume, checkpointing |
 | `inputs.py` | Cohort loading, split policy, and loaders shared by training and evaluation |
 | `data.py` | Study/report pairing, dataset, image caches, batch collation |
-| `manifest.py` | Building and reading frozen, patient-grouped cohorts |
+| `manifest.py` | Building and reading frozen, study-grouped cohorts (the grouping key is one study per group — see the [integrity audit](digest/integrity-coverage-audit.md)) |
 | `preprocessing.py` | DICOM ordering, cropping, normalization, orientation, augmentation |
 | `text.py` | Report views: full, impression, findings+impression, impression-first |
 | `model.py` | Image and text towers, plane attention pooling, contrastive loss |
@@ -60,7 +68,7 @@ configurations resolve consistently.
 
 | Script | What it does |
 | --- | --- |
-| `build_contrastive_manifest.py` | Freeze a cohort: pair reports with DICOM series, resolve the text policy, assign patient-grouped train/validation/test splits, and write the manifest with checksums. Run once per cohort version. |
+| `build_contrastive_manifest.py` | Freeze a cohort: pair reports with DICOM series, resolve the text policy, assign study-grouped train/validation/test splits, and write the manifest with checksums. Run once per cohort version. |
 | `train_contrastive.py` | Train one run. The single training entry point; every flag is listed by `--help`. |
 | `run_measured_training.py` | Wrap `train_contrastive.py` unchanged and additionally record elapsed time and peak CUDA memory to a telemetry file. Requires CUDA. |
 | `run_contrastive_matrix.py` | Run a frozen experiment matrix, or (`--dry-run`) print the exact command for each experiment without executing it. |
@@ -68,6 +76,8 @@ configurations resolve consistently.
 | `evaluate_contrastive.py` | Score one saved checkpoint on a split; write its metrics report and per-query rankings. |
 | `rescore_contrastive_checkpoints.py` | Re-evaluate every saved `best.pt` under current metric definitions and summarize which checkpoints actually moved. |
 | `build_project_digest.py` | Rebuild `digest/project-state.html` from local experiment artifacts. Takes no arguments. |
+| `evaluate_downstream_probe.py` | Score representations on the downstream label-extraction task before and after contrastive learning: cross-validated per-label logistic probes over the gold cohort, pooled out-of-fold AUROC, paired bootstrap intervals. Read-only; never loads the locked test split. |
+| `analyze_plane_pooling.py` | Decompose why the image tower's learned plane attention reads labels worse than averaging the same three planes: per-plane probes, the attention weights, and the pooling with and without its plane-embedding term. Reuses the downstream probe's contract by import, not by copy. |
 | `translate_reports_claude.py` | Prepare, run, and merge report translations used by the `translated_english` cohorts. Only `run --execute` calls out to Claude; everything else is offline. |
 | `templates/` | HTML template used by `build_project_digest.py`. |
 

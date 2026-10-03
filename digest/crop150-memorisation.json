@@ -1,0 +1,109 @@
+{
+  "note": "crop130 (recorded baseline) vs crop150 (re-baseline). Different pixels: this is a preprocessing comparison, not an arm. Validation R@1 is over 441 candidates in both.",
+  "seeds": {
+    "2026": {
+      "tau": {
+        "crop130": 20.385719299316406,
+        "crop150": 19.410263061523438
+      },
+      "matched_n": {
+        "crop130": {
+          "n": 441,
+          "train_loss_mean": 1.7828169178962707,
+          "train_r@1_mean": 0.43099668152630327,
+          "validation_loss": 3.671495199203491,
+          "validation_r@1": 0.13832199573516846,
+          "loss_gap": -1.8886782813072205,
+          "r@1_gap": 0.2926746857911348
+        },
+        "crop150": {
+          "n": 441,
+          "train_loss_mean": 2.137784581184387,
+          "train_r@1_mean": 0.3251461630314589,
+          "validation_loss": 3.6732802391052246,
+          "validation_r@1": 0.11564625799655914,
+          "loss_gap": -1.5354956579208374,
+          "r@1_gap": 0.20949990503489974
+        }
+      },
+      "val_loss_at_matched_tau": {
+        "crop130": 3.671495199203491,
+        "crop150": 3.6732802391052246
+      }
+    },
+    "2027": {
+      "tau": {
+        "crop130": 20.361515045166016,
+        "crop150": 19.305082321166992
+      },
+      "matched_n": {
+        "crop130": {
+          "n": 441,
+          "train_loss_mean": 1.794635922908783,
+          "train_r@1_mean": 0.42316327258944514,
+          "validation_loss": 3.732712984085083,
+          "validation_r@1": 0.14342404156923294,
+          "loss_gap": -1.9380770611763,
+          "r@1_gap": 0.2797392310202122
+        },
+        "crop150": {
+          "n": 441,
+          "train_loss_mean": 2.078587225675583,
+          "train_r@1_mean": 0.3373225586116314,
+          "validation_loss": 3.5997776985168457,
+          "validation_r@1": 0.12018140405416489,
+          "loss_gap": -1.5211904728412629,
+          "r@1_gap": 0.21714115455746652
+        }
+      },
+      "val_loss_at_matched_tau": {
+        "crop130": 3.732712984085083,
+        "crop150": 3.5997776985168457
+      }
+    },
+    "2028": {
+      "tau": {
+        "crop130": 19.49085235595703,
+        "crop150": 20.12617301940918
+      },
+      "matched_n": {
+        "crop130": {
+          "n": 441,
+          "train_loss_mean": 2.0399135404825213,
+          "train_r@1_mean": 0.3498744048178196,
+          "validation_loss": 3.677340030670166,
+          "validation_r@1": 0.12018140777945518,
+          "loss_gap": -1.6374264901876447,
+          "r@1_gap": 0.22969299703836443
+        },
+        "crop150": {
+          "n": 441,
+          "train_loss_mean": 1.9021265602111816,
+          "train_r@1_mean": 0.3908584125339985,
+          "validation_loss": 3.641889810562134,
+          "validation_r@1": 0.12131519243121147,
+          "loss_gap": -1.7397632503509521,
+          "r@1_gap": 0.26954322010278703
+        }
+      },
+      "val_loss_at_matched_tau": {
+        "crop130": 3.677340030670166,
+        "crop150": 3.641889810562134
+      }
+    }
+  },
+  "pooled": {
+    "crop130": {
+      "train_r@1": 0.40134478631118936,
+      "validation_r@1": 0.1339758150279522,
+      "r@1_gap": 0.26736897128323717,
+      "loss_gap_at_matched_tau": -1.821393944223722
+    },
+    "crop150": {
+      "train_r@1": 0.3511090447256962,
+      "validation_r@1": 0.11904761816064517,
+      "r@1_gap": 0.2320614265650511,
+      "loss_gap_at_matched_tau": -1.5988164603710173
+    }
+  }
+}

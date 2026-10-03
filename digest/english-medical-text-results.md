@@ -84,7 +84,7 @@ Each slice keeps all 441 retrieval candidates. Length/heading groups use that ca
 | pubmedbert-base-embeddings / 2026 | retained-heading | 260 | 9.6154 | 10.5769 | +0.9615 |
 | pubmedbert-base-embeddings / 2026 | no-heading | 177 | 11.8644 | 7.9096 | -3.9548 |
 
-Full metrics, twenty worst direction/query pairs per run and paired report text are in [the JSON audit](english-medical-text-results.json). Automated extraction alone is not qualitative error review.
+Full metrics, twenty worst direction/query pairs per run and paired report text are in [the JSON audit](english-medical-text-results.json). Automated extraction alone is not qualitative error review; the completed reading of all forty pairs is in [the error review](english-medical-text-error-review.md).
 
 No test or downstream evaluation. Validation selection, two-candidate screening, report duplication, unknown repeated patients and weak labels limit inference. Study-paired bootstrap intervals are descriptive, not multiplicity- or patient-corrected. Runtime includes sharing the GPU with authorized baseCaps jobs and is not an isolated throughput benchmark. Existing AMP behavior is retained; skipped-step counts are unavailable.
 

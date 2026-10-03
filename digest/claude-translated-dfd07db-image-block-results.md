@@ -61,9 +61,10 @@ Reproduce with `.venv/bin/python checkpoints/contrastive/claude-translated-dfd07
 Image adaptation is promising: positive differences at all three matched seeds,
 mean +1.2094 percentage points, sample SD 0.6643 points, range +0.4535 to +1.7007.
 Every descriptive paired-query interval includes zero. Selection and unresolved
-patient overlap limit inference. Detailed image-adaptation candidate error and
-subgroup review remains before the next experiment; no new experiment is launched.
-The earlier impression-first error review is not an image-adaptation error review.
+patient overlap limit inference. The detailed image-adaptation candidate error and
+subgroup review is complete — see the continuation below and
+[the review](claude-translated-dfd07db-image-block-error-review.md). The earlier
+impression-first error review is not an image-adaptation error review.
 
 ## Error review completed — continuation
 

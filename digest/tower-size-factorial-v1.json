@@ -1,0 +1,519 @@
+{
+  "schema_version": 1,
+  "population": {
+    "manifest_sha256": "d104337696a19d52d12480c1cfaae30c937916102e36a67e3124755fa20123f5",
+    "gold_studies": 58,
+    "split_counts": {
+      "train": 0,
+      "validation": 0,
+      "test": 2,
+      "excluded": 56,
+      "absent": 0
+    },
+    "population_splits": [
+      "excluded"
+    ],
+    "population_size": 56
+  },
+  "labels": [
+    "ACL",
+    "MCL",
+    "Medial Meniscus",
+    "Lateral Meniscus",
+    "Medial OA",
+    "Lateral OA",
+    "PF OA",
+    "Effusion",
+    "Synovitis",
+    "Baker's",
+    "Contusion",
+    "Fracture"
+  ],
+  "probe": {
+    "estimator": "sklearn.linear_model.LogisticRegression",
+    "penalty": "l2",
+    "C": 1.0,
+    "solver": "lbfgs",
+    "max_iter": 5000,
+    "class_weight": null,
+    "standardize": "StandardScaler fitted inside each training fold",
+    "folds": 8,
+    "fold": "StratifiedKFold(shuffle=True), stratification computed inside the per-label fold loop",
+    "fold_seed": 2026,
+    "predictions": "exactly one held-out decision_function score per study per label",
+    "tuning": "none; every hyperparameter is fixed here before the first fit"
+  },
+  "bootstrap": {
+    "resamples": 5000,
+    "seed": 2029,
+    "unit": "study",
+    "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable"
+  },
+  "arms": {
+    "small_image_base_text": {
+      "image": "facebook/dinov2-small",
+      "text": "intfloat/multilingual-e5-base",
+      "feature_dimensions": 768,
+      "checkpoint": "/home/q/Projects/novo-project/checkpoints/contrastive/both-lora-holdout-v1/holdout-both-lora-depth6-r64-seed2026/best.pt",
+      "checkpoint_sha256": "c3de2f76fe9b10306fd423759f9e80b8076b9cafdd121f4fcc2650fc870dbdfa",
+      "features": "/home/q/Projects/novo-project/digest/lora-holdout-features.npz",
+      "best_epoch": 17,
+      "best_mean_r1": 0.13337182998657227,
+      "best_image_to_text_r1": 0.13972286880016327,
+      "best_text_to_image_r1": 0.12702079117298126,
+      "best_image_to_text_r5": 0.4526558816432953,
+      "best_text_to_image_r5": 0.44803693890571594,
+      "best_image_to_text_r10": 0.6420323252677917,
+      "best_text_to_image_r10": 0.6720554232597351,
+      "minimum_validation_loss": 3.4458045959472656,
+      "minimum_validation_loss_epoch": 6,
+      "final_validation_loss": 4.053892135620117,
+      "final_training_loss": 0.1348988714420961,
+      "gold_macro_auroc": 0.7593615004455258,
+      "gold_macro_auprc": 0.6341739129351546,
+      "gold_per_label": {
+        "ACL": {
+          "positives": 23,
+          "negatives": 33,
+          "auroc": 0.7404479578392622,
+          "auprc": 0.6176598577124975
+        },
+        "MCL": {
+          "positives": 8,
+          "negatives": 48,
+          "auroc": 0.7005208333333334,
+          "auprc": 0.32388026435757167
+        },
+        "Medial Meniscus": {
+          "positives": 26,
+          "negatives": 30,
+          "auroc": 0.7371794871794872,
+          "auprc": 0.7078446585640426
+        },
+        "Lateral Meniscus": {
+          "positives": 22,
+          "negatives": 34,
+          "auroc": 0.6858288770053476,
+          "auprc": 0.6418012722490363
+        },
+        "Medial OA": {
+          "positives": 14,
+          "negatives": 42,
+          "auroc": 0.9421768707482994,
+          "auprc": 0.8516223597769375
+        },
+        "Lateral OA": {
+          "positives": 11,
+          "negatives": 45,
+          "auroc": 0.8282828282828283,
+          "auprc": 0.6043702461221643
+        },
+        "PF OA": {
+          "positives": 20,
+          "negatives": 36,
+          "auroc": 0.6638888888888889,
+          "auprc": 0.5199787011619246
+        },
+        "Effusion": {
+          "positives": 33,
+          "negatives": 23,
+          "auroc": 0.9051383399209487,
+          "auprc": 0.9310570168968939
+        },
+        "Synovitis": {
+          "positives": 26,
+          "negatives": 30,
+          "auroc": 0.5948717948717949,
+          "auprc": 0.6060068733149437
+        },
+        "Baker's": {
+          "positives": 12,
+          "negatives": 44,
+          "auroc": 0.7708333333333333,
+          "auprc": 0.4566959211639338
+        },
+        "Contusion": {
+          "positives": 19,
+          "negatives": 37,
+          "auroc": 0.871977240398293,
+          "auprc": 0.7812726912220348
+        },
+        "Fracture": {
+          "positives": 17,
+          "negatives": 39,
+          "auroc": 0.6711915535444947,
+          "auprc": 0.567897092679875
+        }
+      }
+    },
+    "small_image_small_text": {
+      "image": "facebook/dinov2-small",
+      "text": "intfloat/multilingual-e5-small",
+      "feature_dimensions": 768,
+      "checkpoint": "/home/q/Projects/novo-project/checkpoints/contrastive/tower-size-factorial-v1/dinov2-small-e5-small-depth6-r64-seed2026/best.pt",
+      "checkpoint_sha256": "d468c9564cf1f22c2016d38b2f9ada53bdb70a92ad5d02c3146a47c7012e7522",
+      "features": "/home/q/Projects/novo-project/digest/tower-size-text-small-features.npz",
+      "best_epoch": 15,
+      "best_mean_r1": 0.15473441034555435,
+      "best_image_to_text_r1": 0.14549653232097626,
+      "best_text_to_image_r1": 0.16397228837013245,
+      "best_image_to_text_r5": 0.44187837839126587,
+      "best_text_to_image_r5": 0.4249422550201416,
+      "best_image_to_text_r10": 0.6489607095718384,
+      "best_text_to_image_r10": 0.6581985950469971,
+      "minimum_validation_loss": 3.4405224323272705,
+      "minimum_validation_loss_epoch": 6,
+      "final_validation_loss": 4.119161128997803,
+      "final_training_loss": 0.1274700253960435,
+      "gold_macro_auroc": 0.7381545946090449,
+      "gold_macro_auprc": 0.5927785172752421,
+      "gold_per_label": {
+        "ACL": {
+          "positives": 23,
+          "negatives": 33,
+          "auroc": 0.7180500658761528,
+          "auprc": 0.6147128040678385
+        },
+        "MCL": {
+          "positives": 8,
+          "negatives": 48,
+          "auroc": 0.734375,
+          "auprc": 0.34947198534155055
+        },
+        "Medial Meniscus": {
+          "positives": 26,
+          "negatives": 30,
+          "auroc": 0.641025641025641,
+          "auprc": 0.5966705897822056
+        },
+        "Lateral Meniscus": {
+          "positives": 22,
+          "negatives": 34,
+          "auroc": 0.6711229946524063,
+          "auprc": 0.6601697175037138
+        },
+        "Medial OA": {
+          "positives": 14,
+          "negatives": 42,
+          "auroc": 0.9727891156462586,
+          "auprc": 0.9070312623884053
+        },
+        "Lateral OA": {
+          "positives": 11,
+          "negatives": 45,
+          "auroc": 0.7313131313131314,
+          "auprc": 0.41370949181953964
+        },
+        "PF OA": {
+          "positives": 20,
+          "negatives": 36,
+          "auroc": 0.6458333333333334,
+          "auprc": 0.4632424458950215
+        },
+        "Effusion": {
+          "positives": 33,
+          "negatives": 23,
+          "auroc": 0.8919631093544137,
+          "auprc": 0.9167546933719889
+        },
+        "Synovitis": {
+          "positives": 26,
+          "negatives": 30,
+          "auroc": 0.5884615384615385,
+          "auprc": 0.5636947344510908
+        },
+        "Baker's": {
+          "positives": 12,
+          "negatives": 44,
+          "auroc": 0.7727272727272727,
+          "auprc": 0.40684697855750485
+        },
+        "Contusion": {
+          "positives": 19,
+          "negatives": 37,
+          "auroc": 0.8250355618776671,
+          "auprc": 0.6875610266065717
+        },
+        "Fracture": {
+          "positives": 17,
+          "negatives": 39,
+          "auroc": 0.665158371040724,
+          "auprc": 0.5334764775174742
+        }
+      }
+    },
+    "base_image_base_text": {
+      "image": "facebook/dinov2-base",
+      "text": "intfloat/multilingual-e5-base",
+      "feature_dimensions": 1536,
+      "checkpoint": "/home/q/Projects/novo-project/checkpoints/contrastive/tower-size-factorial-v1/dinov2-base-e5-base-depth6-r64-seed2026/best.pt",
+      "checkpoint_sha256": "165e0e9b3a43ed9e5b569ebd505de3690ce8088d48ba9c640f5d563f046812ed",
+      "features": "/home/q/Projects/novo-project/digest/tower-size-image-base-features.npz",
+      "best_epoch": 14,
+      "best_mean_r1": 0.14260970056056976,
+      "best_image_to_text_r1": 0.13510392606258392,
+      "best_text_to_image_r1": 0.1501154750585556,
+      "best_image_to_text_r5": 0.42263278365135193,
+      "best_text_to_image_r5": 0.42956119775772095,
+      "best_image_to_text_r10": 0.6397228837013245,
+      "best_text_to_image_r10": 0.6397228837013245,
+      "minimum_validation_loss": 3.4336557388305664,
+      "minimum_validation_loss_epoch": 5,
+      "final_validation_loss": 4.294907569885254,
+      "final_training_loss": 0.12537063808283871,
+      "gold_macro_auroc": 0.6999065479405555,
+      "gold_macro_auprc": 0.5696520067181766,
+      "gold_per_label": {
+        "ACL": {
+          "positives": 23,
+          "negatives": 33,
+          "auroc": 0.69433465085639,
+          "auprc": 0.5883405856812074
+        },
+        "MCL": {
+          "positives": 8,
+          "negatives": 48,
+          "auroc": 0.41666666666666663,
+          "auprc": 0.1806708736277361
+        },
+        "Medial Meniscus": {
+          "positives": 26,
+          "negatives": 30,
+          "auroc": 0.6935897435897436,
+          "auprc": 0.604281646437068
+        },
+        "Lateral Meniscus": {
+          "positives": 22,
+          "negatives": 34,
+          "auroc": 0.6737967914438502,
+          "auprc": 0.6275414728257395
+        },
+        "Medial OA": {
+          "positives": 14,
+          "negatives": 42,
+          "auroc": 0.9251700680272108,
+          "auprc": 0.8035183544888513
+        },
+        "Lateral OA": {
+          "positives": 11,
+          "negatives": 45,
+          "auroc": 0.7777777777777778,
+          "auprc": 0.6003658378658379
+        },
+        "PF OA": {
+          "positives": 20,
+          "negatives": 36,
+          "auroc": 0.5527777777777778,
+          "auprc": 0.46758348108565917
+        },
+        "Effusion": {
+          "positives": 33,
+          "negatives": 23,
+          "auroc": 0.8563899868247694,
+          "auprc": 0.9019945506788248
+        },
+        "Synovitis": {
+          "positives": 26,
+          "negatives": 30,
+          "auroc": 0.6307692307692307,
+          "auprc": 0.6091876597005865
+        },
+        "Baker's": {
+          "positives": 12,
+          "negatives": 44,
+          "auroc": 0.7840909090909091,
+          "auprc": 0.4530029195663871
+        },
+        "Contusion": {
+          "positives": 19,
+          "negatives": 37,
+          "auroc": 0.7524893314366998,
+          "auprc": 0.5401868631762888
+        },
+        "Fracture": {
+          "positives": 17,
+          "negatives": 39,
+          "auroc": 0.641025641025641,
+          "auprc": 0.4591498354839324
+        }
+      }
+    },
+    "base_image_small_text": {
+      "image": "facebook/dinov2-base",
+      "text": "intfloat/multilingual-e5-small",
+      "feature_dimensions": 1536,
+      "checkpoint": "/home/q/Projects/novo-project/checkpoints/contrastive/size-matched-holdout-v1/dinov2-base-e5-small-depth6-r64-seed2026/best.pt",
+      "checkpoint_sha256": "58a9367e925317d72c88cd20520cd734cb3be9fca1784cfd3f865e638fab426d",
+      "features": "/home/q/Projects/novo-project/digest/size-matched-holdout-features.npz",
+      "best_epoch": 18,
+      "best_mean_r1": 0.1466512754559517,
+      "best_image_to_text_r1": 0.13856813311576843,
+      "best_text_to_image_r1": 0.15473441779613495,
+      "best_image_to_text_r5": 0.480369508266449,
+      "best_text_to_image_r5": 0.49191686511039734,
+      "best_image_to_text_r10": 0.6743649244308472,
+      "best_text_to_image_r10": 0.6697459816932678,
+      "minimum_validation_loss": 3.4157471656799316,
+      "minimum_validation_loss_epoch": 8,
+      "final_validation_loss": 4.097379684448242,
+      "final_training_loss": 0.11940413668613743,
+      "gold_macro_auroc": 0.6968687165569286,
+      "gold_macro_auprc": 0.570756040328998,
+      "gold_per_label": {
+        "ACL": {
+          "positives": 23,
+          "negatives": 33,
+          "auroc": 0.6297760210803689,
+          "auprc": 0.49475296237176436
+        },
+        "MCL": {
+          "positives": 8,
+          "negatives": 48,
+          "auroc": 0.453125,
+          "auprc": 0.2144916450798804
+        },
+        "Medial Meniscus": {
+          "positives": 26,
+          "negatives": 30,
+          "auroc": 0.7153846153846155,
+          "auprc": 0.6447524208063953
+        },
+        "Lateral Meniscus": {
+          "positives": 22,
+          "negatives": 34,
+          "auroc": 0.6470588235294118,
+          "auprc": 0.6440532857333753
+        },
+        "Medial OA": {
+          "positives": 14,
+          "negatives": 42,
+          "auroc": 0.8673469387755102,
+          "auprc": 0.7055787690570299
+        },
+        "Lateral OA": {
+          "positives": 11,
+          "negatives": 45,
+          "auroc": 0.8282828282828283,
+          "auprc": 0.68297422274695
+        },
+        "PF OA": {
+          "positives": 20,
+          "negatives": 36,
+          "auroc": 0.5875,
+          "auprc": 0.528005684742502
+        },
+        "Effusion": {
+          "positives": 33,
+          "negatives": 23,
+          "auroc": 0.8300395256916997,
+          "auprc": 0.8635977261825875
+        },
+        "Synovitis": {
+          "positives": 26,
+          "negatives": 30,
+          "auroc": 0.6384615384615385,
+          "auprc": 0.5947911631516007
+        },
+        "Baker's": {
+          "positives": 12,
+          "negatives": 44,
+          "auroc": 0.7992424242424242,
+          "auprc": 0.47823843644277086
+        },
+        "Contusion": {
+          "positives": 19,
+          "negatives": 37,
+          "auroc": 0.8051209103840683,
+          "auprc": 0.6510873752787926
+        },
+        "Fracture": {
+          "positives": 17,
+          "negatives": 39,
+          "auroc": 0.5610859728506787,
+          "auprc": 0.34674879235432665
+        }
+      }
+    }
+  },
+  "contrasts": {
+    "text_small_minus_base_at_small_image": {
+      "left": "small_image_base_text",
+      "right": "small_image_small_text",
+      "point_difference": -0.021206905836480883,
+      "paired_bootstrap": {
+        "macro_auroc_difference_mean": -0.021031481015919673,
+        "macro_auroc_difference_ci95": [
+          -0.0480256553776871,
+          0.007331370442841876
+        ],
+        "fraction_of_replicates_favouring_right": 0.07,
+        "single_class_label_replicates_dropped": 1,
+        "resamples": 5000,
+        "unit": "study",
+        "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable"
+      }
+    },
+    "text_small_minus_base_at_base_image": {
+      "left": "base_image_base_text",
+      "right": "base_image_small_text",
+      "point_difference": -0.003037831383626899,
+      "paired_bootstrap": {
+        "macro_auroc_difference_mean": -0.002885009017082427,
+        "macro_auroc_difference_ci95": [
+          -0.028252583167221065,
+          0.022750825449969127
+        ],
+        "fraction_of_replicates_favouring_right": 0.411,
+        "single_class_label_replicates_dropped": 1,
+        "resamples": 5000,
+        "unit": "study",
+        "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable"
+      }
+    },
+    "image_base_minus_small_at_base_text": {
+      "left": "small_image_base_text",
+      "right": "base_image_base_text",
+      "point_difference": -0.05945495250497024,
+      "paired_bootstrap": {
+        "macro_auroc_difference_mean": -0.05921316847012081,
+        "macro_auroc_difference_ci95": [
+          -0.10167136617138729,
+          -0.016727530658712873
+        ],
+        "fraction_of_replicates_favouring_right": 0.0052,
+        "single_class_label_replicates_dropped": 1,
+        "resamples": 5000,
+        "unit": "study",
+        "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable"
+      }
+    },
+    "image_base_minus_small_at_small_text": {
+      "left": "small_image_small_text",
+      "right": "base_image_small_text",
+      "point_difference": -0.041285878052116254,
+      "paired_bootstrap": {
+        "macro_auroc_difference_mean": -0.04106669647128356,
+        "macro_auroc_difference_ci95": [
+          -0.086912132913962,
+          0.003318142433562989
+        ],
+        "fraction_of_replicates_favouring_right": 0.0334,
+        "single_class_label_replicates_dropped": 1,
+        "resamples": 5000,
+        "unit": "study",
+        "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable"
+      }
+    }
+  },
+  "interaction": {
+    "definition": "(E5-small minus E5-base at DINOv2-base) minus (E5-small minus E5-base at DINOv2-small)",
+    "point_difference": 0.018169074452853984,
+    "ci95": [
+      -0.020689296483637466,
+      0.0547735577143932
+    ],
+    "bootstrap_mean": 0.018146471998837243,
+    "resamples": 5000,
+    "unit": "study"
+  }
+}

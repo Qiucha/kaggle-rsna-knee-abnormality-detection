@@ -1,0 +1,221 @@
+<!doctype html><meta charset="utf-8"><title>Convergence audit · drop-path and crop150</title>
+<style>body{font:16px/1.55 system-ui;color:#18313c;background:#f5f7f8;max-width:900px;margin:0 auto;padding:28px 18px}
+h1{font-size:26px;margin:0 0 6px}h2{font-size:19px;margin:34px 0 10px}h3{font-size:16px;margin:22px 0 8px}
+figure{margin:0 0 26px;background:#fff;border:1px solid #e3eaee;border-radius:10px;padding:14px}
+figcaption{font-weight:600;margin-bottom:8px}svg{width:100%;height:auto;display:block}
+.ax{font-size:11px;fill:#6c8390}.legend{margin-top:8px;font-size:12px;color:#4a5f6b}
+.key{margin-right:14px;white-space:nowrap}.key i{display:inline-block;width:12px;height:3px;vertical-align:middle;margin-right:5px}
+table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}
+th,td{border:1px solid #e3eaee;padding:6px 9px;text-align:left}th{background:#eef3f5}
+.muted{color:#6c8390}.note{background:#fff;border-left:4px solid #d9a441;padding:12px 14px;border-radius:6px;margin:18px 0}
+.stop{background:#fff;border-left:4px solid #c0392b;padding:12px 14px;border-radius:6px;margin:18px 0}
+.ok{background:#fff;border-left:4px solid #2e8b57;padding:12px 14px;border-radius:6px;margin:18px 0}
+.tiny{font-size:12.5px}.table-wrap{overflow-x:auto}</style>
+
+<h1>Did the regularised and crop150 arms converge?</h1>
+<p class="muted tiny">Generated 2026-09-15 15:03 CST by <code>scripts/build_convergence_curves.py</code>
+from local run artifacts. Evidence: <code>digest/convergence-audit.json</code>.</p>
+
+<p>Two results were recorded without looking at the shape of the training curve:
+<a href="drop-path-sweep-v1.md">the stochastic-depth sweep</a> and
+<a href="crop150-rebaseline-v1.md">the 150&nbsp;mm crop re-baseline</a>. Both were read as
+&ldquo;this lever costs retrieval&rdquo;. Neither reading could separate two different
+explanations:</p>
+<ol class="tiny" style="padding-left:20px">
+<li>the lever makes the representation <strong>worse</strong>; or</li>
+<li>the lever <strong>slows optimisation</strong>, and a fixed 20-epoch budget stopped the run
+before it finished improving.</li>
+</ol>
+<p>The epoch histories already on disk distinguish them, and <strong>they give different answers for
+the two levers</strong>.</p>
+
+<div class="ok"><strong>Answer, in one line each.</strong>
+<strong>Drop-path: the hypothesis holds</strong> &mdash; at rate 0.1 the run is still sitting
+<em>at</em> its own validation minimum when the budget ends (rise from minimum <strong>+0.010</strong>,
+against the baseline&rsquo;s +0.259), with the tail slope still negative in 3 of 3 seeds. Those arms
+had not finished improving, so the sweep compared rates at unequal degrees of completion.
+<strong>crop150: the hypothesis fails</strong> &mdash; it reached its validation minimum
+<em>earlier</em> than the baseline (epoch 9.0 vs 11.3) and then overfit at least as hard, so its
+lower retrieval is not a truncation artifact.</div>
+
+<h2>The diagnostic table</h2>
+<p>Two diagnostics per run, both from <code>metrics.jsonl</code>: how far validation loss drifted
+<em>up</em> from its own minimum by the last epoch (the overfitting signature), and whether it was
+still falling at the end (the under-training signature).</p>
+
+<div class="table-wrap"><table><thead><tr><th>Arm</th><th>best R@1<br><span class="tiny">mean of 3 seeds</span></th><th>val-loss<br>min epoch</th><th>val-loss rise<br><span class="tiny">from its own min</span></th><th>still falling<br><span class="tiny">at epoch 20</span><br><span class="tiny muted">weaker &mdash; two-point sign test</span></th><th>best epoch<br><span class="tiny">at boundary</span></th><th>final<br>train loss</th></tr></thead><tbody><tr><td>baseline (crop130, 4 blocks)</td><td>0.1340</td><td>11.3</td><td>+0.259</td><td>1/3</td><td>1/3</td><td>0.284</td></tr><tr><td>drop-path 0.005</td><td>0.1202</td><td>10.3</td><td>+0.184</td><td>0/3</td><td>0/3</td><td>0.321</td></tr><tr><td>drop-path 0.01</td><td>0.1264</td><td>10.3</td><td>+0.125</td><td>1/3</td><td>1/3</td><td>0.353</td></tr><tr><td>drop-path 0.02</td><td>0.1238</td><td>14.0</td><td>+0.102</td><td>1/3</td><td>2/3</td><td>0.396</td></tr><tr><td><strong>drop-path 0.05</strong></td><td>0.1187</td><td>14.0</td><td><strong>+0.057</strong></td><td>2/3</td><td>1/3</td><td>0.488</td></tr><tr><td><strong>drop-path 0.1</strong></td><td>0.1085</td><td>16.0</td><td><strong>+0.010</strong></td><td>3/3</td><td>0/3</td><td>0.596</td></tr><tr><td>crop150mm</td><td>0.1190</td><td>9.0</td><td>+0.280</td><td>1/3</td><td>0/3</td><td>0.283</td></tr></tbody></table></div>
+<p class="tiny muted"><strong>The fourth column is the load-bearing one, not the fifth.</strong>
+&ldquo;Still falling at epoch 20&rdquo; is a two-point sign test on tail differences of roughly
+0.001&ndash;0.015 &mdash; at the low rates that is noise around zero, so its 1/3, 0/3, 1/3, 1/3
+counts should <em>not</em> be read as a dose-response. The <strong>rise from each arm&rsquo;s own
+minimum</strong> is monotone across all six rates and is the column the finding rests on.</p>
+
+<p><strong>Read the fourth column down the drop-path rows.</strong> The validation-loss rise collapses
+monotonically &mdash; <strong>+0.259 &rarr; +0.184 &rarr; +0.125 &rarr; +0.102 &rarr; +0.057 &rarr;
++0.010</strong> &mdash; and from rate 0.01 upward the validation minimum moves steadily later,
+10.3 &rarr; 14.0 &rarr; 14.0 &rarr; <strong>16.0</strong> at rate 0.1. (The two lowest rates sit at
+10.3, marginally <em>earlier</em> than the baseline&rsquo;s 11.3, so the minimum-epoch column is
+monotone only over the upper four rates; the rise column is monotone over all six.) The regulariser
+is doing exactly what a regulariser
+does: it delays the onset of overfitting and it slows optimisation. At rate 0.1 the run has barely
+begun to overfit when the budget ends.</p>
+
+<div class="stop"><strong>This is a confound in the sweep, not a correction to its arithmetic.</strong>
+Every rate was trained for the same 20 epochs, but the higher rates need more epochs to reach their
+own optimum. So the sweep did not compare six rates at convergence &mdash; it compared six rates at
+<em>progressively earlier points along their own trajectories</em>. The measured retrieval deficit at
+high rates is therefore a mixture of a genuine effect and a truncation artifact, and these runs
+cannot say how much of it is which.</div>
+
+<h2>Training loss &mdash; drop-path arms</h2>
+<figure><figcaption>Training loss per epoch, seed-averaged</figcaption><svg viewBox="0 0 760 300" role="img" aria-label="Training loss per epoch, seed-averaged"><line x1="58" y1="260.0" x2="742" y2="260.0" stroke="#dfe6ea"/><text x="50" y="264.0" text-anchor="end" class="ax">0.05</text><line x1="58" y1="199.0" x2="742" y2="199.0" stroke="#dfe6ea"/><text x="50" y="203.0" text-anchor="end" class="ax">0.87</text><line x1="58" y1="138.0" x2="742" y2="138.0" stroke="#dfe6ea"/><text x="50" y="142.0" text-anchor="end" class="ax">1.69</text><line x1="58" y1="77.0" x2="742" y2="77.0" stroke="#dfe6ea"/><text x="50" y="81.0" text-anchor="end" class="ax">2.51</text><line x1="58" y1="16.0" x2="742" y2="16.0" stroke="#dfe6ea"/><text x="50" y="20.0" text-anchor="end" class="ax">3.33</text><text x="94.0" y="278" text-anchor="middle" class="ax">2</text><text x="166.0" y="278" text-anchor="middle" class="ax">4</text><text x="238.0" y="278" text-anchor="middle" class="ax">6</text><text x="310.0" y="278" text-anchor="middle" class="ax">8</text><text x="382.0" y="278" text-anchor="middle" class="ax">10</text><text x="454.0" y="278" text-anchor="middle" class="ax">12</text><text x="526.0" y="278" text-anchor="middle" class="ax">14</text><text x="598.0" y="278" text-anchor="middle" class="ax">16</text><text x="670.0" y="278" text-anchor="middle" class="ax">18</text><text x="742.0" y="278" text-anchor="middle" class="ax">20</text><text x="400" y="296" text-anchor="middle" class="ax">epoch</text><text x="14" y="150" text-anchor="middle" class="ax" transform="rotate(-90 14 150)">train loss</text><path d="M58.0,65.4 L94.0,132.1 L130.0,156.4 L166.0,171.7 L202.0,182.3 L238.0,189.5 L274.0,196.0 L310.0,202.0 L346.0,206.0 L382.0,209.4 L418.0,215.8 L454.0,219.4 L490.0,224.3 L526.0,228.5 L562.0,233.6 L598.0,236.7 L634.0,239.8 L670.0,241.7 L706.0,243.2 L742.0,242.9" fill="none" stroke="#111111" stroke-width="2"/><path d="M58.0,61.8 L94.0,128.3 L130.0,152.4 L166.0,168.6 L202.0,179.4 L238.0,187.0 L274.0,195.2 L310.0,199.1 L346.0,203.4 L382.0,208.6 L418.0,213.1 L454.0,217.9 L490.0,222.5 L526.0,225.7 L562.0,230.5 L598.0,233.9 L634.0,236.7 L670.0,239.0 L706.0,240.4 L742.0,240.2" fill="none" stroke="#cfe3f5" stroke-width="2"/><path d="M58.0,60.2 L94.0,126.3 L130.0,149.9 L166.0,168.2 L202.0,177.5 L238.0,185.0 L274.0,192.6 L310.0,197.3 L346.0,202.7 L382.0,206.7 L418.0,211.6 L454.0,215.2 L490.0,220.3 L526.0,224.1 L562.0,228.4 L598.0,231.7 L634.0,234.8 L670.0,236.8 L706.0,238.4 L742.0,237.8" fill="none" stroke="#9ec8e8" stroke-width="2"/><path d="M58.0,56.9 L94.0,121.7 L130.0,144.4 L166.0,164.8 L202.0,174.4 L238.0,181.8 L274.0,189.5 L310.0,195.0 L346.0,199.9 L382.0,203.9 L418.0,209.0 L454.0,212.8 L490.0,217.0 L526.0,220.9 L562.0,225.3 L598.0,228.9 L634.0,231.5 L670.0,233.7 L706.0,235.2 L742.0,234.6" fill="none" stroke="#5fa5d6" stroke-width="2"/><path d="M58.0,47.2 L94.0,108.0 L130.0,135.6 L166.0,156.0 L202.0,165.6 L238.0,175.1 L274.0,182.8 L310.0,189.8 L346.0,193.7 L382.0,198.4 L418.0,202.5 L454.0,206.5 L490.0,210.8 L526.0,214.5 L562.0,218.8 L598.0,222.0 L634.0,224.5 L670.0,226.9 L706.0,228.6 L742.0,227.8" fill="none" stroke="#2b7cb8" stroke-width="2"/><path d="M58.0,32.8 L94.0,89.8 L130.0,119.6 L166.0,141.8 L202.0,154.1 L238.0,165.5 L274.0,173.2 L310.0,179.5 L346.0,185.7 L382.0,190.1 L418.0,195.4 L454.0,198.6 L490.0,203.5 L526.0,207.1 L562.0,210.9 L598.0,214.5 L634.0,216.1 L670.0,219.2 L706.0,220.5 L742.0,219.7" fill="none" stroke="#0b4f7d" stroke-width="2"/></svg><div class="legend"><span class="key"><i style="background:#111111"></i>baseline (crop130, 4 blocks) (mean of 3)</span> <span class="key"><i style="background:#cfe3f5"></i>drop-path 0.005 (mean of 3)</span> <span class="key"><i style="background:#9ec8e8"></i>drop-path 0.01 (mean of 3)</span> <span class="key"><i style="background:#5fa5d6"></i>drop-path 0.02 (mean of 3)</span> <span class="key"><i style="background:#2b7cb8"></i>drop-path 0.05 (mean of 3)</span> <span class="key"><i style="background:#0b4f7d"></i>drop-path 0.1 (mean of 3)</span></div></figure>
+<div class="stop"><strong>Do not compare these levels across arms, and do not read the distance to
+the validation panel as a generalisation gap.</strong> Two separate reasons, both of which have
+produced a wrong claim in this project before:
+<ul class="tiny">
+<li><code>train_loss</code> is computed in-batch over 32 with augmentation on, in <em>train mode</em>
+(<code>training.py:158</code>). <code>validation_loss</code> is the full 441-candidate matrix,
+unaugmented, in <em>eval mode</em> (<code>evaluation.py:200</code>). They are different quantities on
+different denominators.</li>
+<li>Drop-path is <strong>active</strong> in the arm&rsquo;s train-mode forward pass and
+<strong>identity</strong> in the baseline&rsquo;s, so any forward-pass noise raises the arm&rsquo;s
+train loss regardless of what it memorised. The higher final train loss at higher rates is
+<em>partly</em> this artifact and partly real slower optimisation.</li>
+</ul>
+<strong>The curve&rsquo;s shape is readable; its level against another arm is not.</strong> The
+admissible memorisation route is the matched-N eval-mode gap in
+<a href="drop-path-sweep-v1.md">drop-path-sweep-v1.md</a>.</div>
+
+<h2>Validation loss &mdash; drop-path arms</h2>
+<figure><figcaption>Validation loss per epoch, seed-averaged</figcaption><svg viewBox="0 0 760 300" role="img" aria-label="Validation loss per epoch, seed-averaged"><line x1="58" y1="260.0" x2="742" y2="260.0" stroke="#dfe6ea"/><text x="50" y="264.0" text-anchor="end" class="ax">3.27</text><line x1="58" y1="199.0" x2="742" y2="199.0" stroke="#dfe6ea"/><text x="50" y="203.0" text-anchor="end" class="ax">3.66</text><line x1="58" y1="138.0" x2="742" y2="138.0" stroke="#dfe6ea"/><text x="50" y="142.0" text-anchor="end" class="ax">4.05</text><line x1="58" y1="77.0" x2="742" y2="77.0" stroke="#dfe6ea"/><text x="50" y="81.0" text-anchor="end" class="ax">4.45</text><line x1="58" y1="16.0" x2="742" y2="16.0" stroke="#dfe6ea"/><text x="50" y="20.0" text-anchor="end" class="ax">4.84</text><text x="94.0" y="278" text-anchor="middle" class="ax">2</text><text x="166.0" y="278" text-anchor="middle" class="ax">4</text><text x="238.0" y="278" text-anchor="middle" class="ax">6</text><text x="310.0" y="278" text-anchor="middle" class="ax">8</text><text x="382.0" y="278" text-anchor="middle" class="ax">10</text><text x="454.0" y="278" text-anchor="middle" class="ax">12</text><text x="526.0" y="278" text-anchor="middle" class="ax">14</text><text x="598.0" y="278" text-anchor="middle" class="ax">16</text><text x="670.0" y="278" text-anchor="middle" class="ax">18</text><text x="742.0" y="278" text-anchor="middle" class="ax">20</text><text x="400" y="296" text-anchor="middle" class="ax">epoch</text><text x="14" y="150" text-anchor="middle" class="ax" transform="rotate(-90 14 150)">validation loss</text><path d="M58.0,78.7 L94.0,124.5 L130.0,150.7 L166.0,166.9 L202.0,186.5 L238.0,195.2 L274.0,208.2 L310.0,201.4 L346.0,208.9 L382.0,216.0 L418.0,215.0 L454.0,215.0 L490.0,212.8 L526.0,205.2 L562.0,193.5 L598.0,182.1 L634.0,188.1 L670.0,185.9 L706.0,184.4 L742.0,184.5" fill="none" stroke="#111111" stroke-width="2"/><path d="M58.0,71.3 L94.0,115.1 L130.0,153.3 L166.0,182.6 L202.0,203.2 L238.0,202.4 L274.0,199.2 L310.0,215.3 L346.0,217.9 L382.0,213.5 L418.0,211.6 L454.0,218.8 L490.0,216.0 L526.0,210.2 L562.0,208.3 L598.0,203.9 L634.0,197.7 L670.0,197.3 L706.0,196.9 L742.0,197.2" fill="none" stroke="#cfe3f5" stroke-width="2"/><path d="M58.0,63.8 L94.0,120.1 L130.0,162.9 L166.0,173.8 L202.0,198.8 L238.0,197.4 L274.0,207.9 L310.0,215.9 L346.0,215.7 L382.0,220.8 L418.0,224.5 L454.0,217.5 L490.0,212.7 L526.0,218.5 L562.0,218.9 L598.0,212.2 L634.0,208.4 L670.0,210.1 L706.0,208.6 L742.0,209.3" fill="none" stroke="#9ec8e8" stroke-width="2"/><path d="M58.0,62.4 L94.0,112.3 L130.0,154.6 L166.0,175.9 L202.0,195.5 L238.0,209.9 L274.0,211.4 L310.0,218.5 L346.0,220.6 L382.0,230.1 L418.0,226.2 L454.0,227.9 L490.0,225.4 L526.0,230.2 L562.0,220.7 L598.0,221.6 L634.0,217.7 L670.0,217.5 L706.0,217.2 L742.0,217.9" fill="none" stroke="#5fa5d6" stroke-width="2"/><path d="M58.0,41.3 L94.0,103.2 L130.0,153.9 L166.0,182.2 L202.0,185.9 L238.0,203.7 L274.0,213.4 L310.0,217.8 L346.0,210.3 L382.0,225.6 L418.0,229.1 L454.0,230.6 L490.0,238.8 L526.0,240.3 L562.0,235.9 L598.0,235.7 L634.0,234.7 L670.0,236.3 L706.0,235.4 L742.0,235.7" fill="none" stroke="#2b7cb8" stroke-width="2"/><path d="M58.0,32.8 L94.0,74.1 L130.0,127.8 L166.0,170.8 L202.0,192.1 L238.0,211.4 L274.0,196.9 L310.0,218.2 L346.0,218.3 L382.0,230.2 L418.0,230.5 L454.0,232.8 L490.0,232.3 L526.0,239.3 L562.0,241.6 L598.0,241.2 L634.0,242.8 L670.0,243.0 L706.0,242.9 L742.0,243.2" fill="none" stroke="#0b4f7d" stroke-width="2"/></svg><div class="legend"><span class="key"><i style="background:#111111"></i>baseline (crop130, 4 blocks) (mean of 3)</span> <span class="key"><i style="background:#cfe3f5"></i>drop-path 0.005 (mean of 3)</span> <span class="key"><i style="background:#9ec8e8"></i>drop-path 0.01 (mean of 3)</span> <span class="key"><i style="background:#5fa5d6"></i>drop-path 0.02 (mean of 3)</span> <span class="key"><i style="background:#2b7cb8"></i>drop-path 0.05 (mean of 3)</span> <span class="key"><i style="background:#0b4f7d"></i>drop-path 0.1 (mean of 3)</span></div></figure>
+<p>This is the panel that answers the question. The baseline turns upward around epoch 11 and climbs
+for the rest of the run. Each successive rate turns later and more shallowly, and
+<strong>rate 0.1 has essentially not turned at all</strong> by epoch 20.</p>
+
+<div class="note"><strong>Part of the vertical separation here is temperature, not representation
+quality.</strong> The learned &tau;&#8315;&sup1; drifts downward with rate, toward the
+validation-optimal value of 11.50 &mdash; and rescaling &tau; at evaluation time changes retrieval by
+<em>exactly zero</em>. So a lower validation-loss curve is not by itself a better representation. The
+next panel shows the drift so it can be discounted by eye; the sweep&rsquo;s own analysis recomputes
+the loss gap at matched &tau;.</div>
+
+<h2>Learned inverse temperature</h2>
+<figure><figcaption>Learned inverse temperature per epoch, seed-averaged</figcaption><svg viewBox="0 0 760 300" role="img" aria-label="Learned inverse temperature per epoch, seed-averaged"><line x1="58" y1="260.0" x2="742" y2="260.0" stroke="#dfe6ea"/><text x="50" y="264.0" text-anchor="end" class="ax">13.9</text><line x1="58" y1="199.0" x2="742" y2="199.0" stroke="#dfe6ea"/><text x="50" y="203.0" text-anchor="end" class="ax">15.6</text><line x1="58" y1="138.0" x2="742" y2="138.0" stroke="#dfe6ea"/><text x="50" y="142.0" text-anchor="end" class="ax">17.3</text><line x1="58" y1="77.0" x2="742" y2="77.0" stroke="#dfe6ea"/><text x="50" y="81.0" text-anchor="end" class="ax">19.1</text><line x1="58" y1="16.0" x2="742" y2="16.0" stroke="#dfe6ea"/><text x="50" y="20.0" text-anchor="end" class="ax">20.8</text><text x="94.0" y="278" text-anchor="middle" class="ax">2</text><text x="166.0" y="278" text-anchor="middle" class="ax">4</text><text x="238.0" y="278" text-anchor="middle" class="ax">6</text><text x="310.0" y="278" text-anchor="middle" class="ax">8</text><text x="382.0" y="278" text-anchor="middle" class="ax">10</text><text x="454.0" y="278" text-anchor="middle" class="ax">12</text><text x="526.0" y="278" text-anchor="middle" class="ax">14</text><text x="598.0" y="278" text-anchor="middle" class="ax">16</text><text x="670.0" y="278" text-anchor="middle" class="ax">18</text><text x="742.0" y="278" text-anchor="middle" class="ax">20</text><text x="400" y="296" text-anchor="middle" class="ax">epoch</text><text x="14" y="150" text-anchor="middle" class="ax" transform="rotate(-90 14 150)">1/tau</text><path d="M58.0,240.8 L94.0,230.4 L130.0,221.2 L166.0,216.3 L202.0,207.9 L238.0,199.0 L274.0,186.2 L310.0,170.6 L346.0,156.8 L382.0,142.4 L418.0,122.7 L454.0,105.5 L490.0,89.4 L526.0,72.8 L562.0,57.8 L598.0,46.5 L634.0,39.0 L670.0,34.7 L706.0,33.1 L742.0,32.8" fill="none" stroke="#111111" stroke-width="2"/><path d="M58.0,241.1 L94.0,230.2 L130.0,224.2 L166.0,219.2 L202.0,212.0 L238.0,203.9 L274.0,187.8 L310.0,175.6 L346.0,160.2 L382.0,141.3 L418.0,125.8 L454.0,109.7 L490.0,93.2 L526.0,78.6 L562.0,65.5 L598.0,55.1 L634.0,48.1 L670.0,44.1 L706.0,42.5 L742.0,42.3" fill="none" stroke="#cfe3f5" stroke-width="2"/><path d="M58.0,241.0 L94.0,231.1 L130.0,224.2 L166.0,218.5 L202.0,212.6 L238.0,204.0 L274.0,192.6 L310.0,180.9 L346.0,165.6 L382.0,149.4 L418.0,133.5 L454.0,118.3 L490.0,102.8 L526.0,88.2 L562.0,76.3 L598.0,66.7 L634.0,59.8 L670.0,56.0 L706.0,54.5 L742.0,54.3" fill="none" stroke="#9ec8e8" stroke-width="2"/><path d="M58.0,241.0 L94.0,231.5 L130.0,226.7 L166.0,219.8 L202.0,215.5 L238.0,208.3 L274.0,197.3 L310.0,184.7 L346.0,170.1 L382.0,157.6 L418.0,141.1 L454.0,125.7 L490.0,111.8 L526.0,98.2 L562.0,86.0 L598.0,76.5 L634.0,70.2 L670.0,66.6 L706.0,65.1 L742.0,64.9" fill="none" stroke="#5fa5d6" stroke-width="2"/><path d="M58.0,241.6 L94.0,234.8 L130.0,232.0 L166.0,227.2 L202.0,224.2 L238.0,218.0 L274.0,209.1 L310.0,197.4 L346.0,188.5 L382.0,175.1 L418.0,163.6 L454.0,150.8 L490.0,138.4 L526.0,126.9 L562.0,116.6 L598.0,108.6 L634.0,103.0 L670.0,99.7 L706.0,98.4 L742.0,98.2" fill="none" stroke="#2b7cb8" stroke-width="2"/><path d="M58.0,243.2 L94.0,239.7 L130.0,238.3 L166.0,235.8 L202.0,232.9 L238.0,227.1 L274.0,219.9 L310.0,211.7 L346.0,201.8 L382.0,193.0 L418.0,181.4 L454.0,172.2 L490.0,161.3 L526.0,151.3 L562.0,143.2 L598.0,136.4 L634.0,132.0 L670.0,129.0 L706.0,127.8 L742.0,127.7" fill="none" stroke="#0b4f7d" stroke-width="2"/></svg><div class="legend"><span class="key"><i style="background:#111111"></i>baseline (crop130, 4 blocks) (mean of 3)</span> <span class="key"><i style="background:#cfe3f5"></i>drop-path 0.005 (mean of 3)</span> <span class="key"><i style="background:#9ec8e8"></i>drop-path 0.01 (mean of 3)</span> <span class="key"><i style="background:#5fa5d6"></i>drop-path 0.02 (mean of 3)</span> <span class="key"><i style="background:#2b7cb8"></i>drop-path 0.05 (mean of 3)</span> <span class="key"><i style="background:#0b4f7d"></i>drop-path 0.1 (mean of 3)</span></div></figure>
+
+<h2>Retrieval Recall@1 &mdash; the selection metric</h2>
+<figure><figcaption>Validation mean Recall@1 per epoch, seed-averaged</figcaption><svg viewBox="0 0 760 300" role="img" aria-label="Validation mean Recall@1 per epoch, seed-averaged"><line x1="58" y1="260.0" x2="742" y2="260.0" stroke="#dfe6ea"/><text x="50" y="264.0" text-anchor="end" class="ax">0.024</text><line x1="58" y1="199.0" x2="742" y2="199.0" stroke="#dfe6ea"/><text x="50" y="203.0" text-anchor="end" class="ax">0.053</text><line x1="58" y1="138.0" x2="742" y2="138.0" stroke="#dfe6ea"/><text x="50" y="142.0" text-anchor="end" class="ax">0.082</text><line x1="58" y1="77.0" x2="742" y2="77.0" stroke="#dfe6ea"/><text x="50" y="81.0" text-anchor="end" class="ax">0.111</text><line x1="58" y1="16.0" x2="742" y2="16.0" stroke="#dfe6ea"/><text x="50" y="20.0" text-anchor="end" class="ax">0.140</text><text x="94.0" y="278" text-anchor="middle" class="ax">2</text><text x="166.0" y="278" text-anchor="middle" class="ax">4</text><text x="238.0" y="278" text-anchor="middle" class="ax">6</text><text x="310.0" y="278" text-anchor="middle" class="ax">8</text><text x="382.0" y="278" text-anchor="middle" class="ax">10</text><text x="454.0" y="278" text-anchor="middle" class="ax">12</text><text x="526.0" y="278" text-anchor="middle" class="ax">14</text><text x="598.0" y="278" text-anchor="middle" class="ax">16</text><text x="670.0" y="278" text-anchor="middle" class="ax">18</text><text x="742.0" y="278" text-anchor="middle" class="ax">20</text><text x="400" y="296" text-anchor="middle" class="ax">epoch</text><text x="14" y="150" text-anchor="middle" class="ax" transform="rotate(-90 14 150)">mean R@1</text><path d="M58.0,224.1 L94.0,197.8 L130.0,190.6 L166.0,200.2 L202.0,181.1 L238.0,166.0 L274.0,138.2 L310.0,136.6 L346.0,99.2 L382.0,110.8 L418.0,99.2 L454.0,82.4 L490.0,86.5 L526.0,59.1 L562.0,60.3 L598.0,59.9 L634.0,56.0 L670.0,47.9 L706.0,32.8 L742.0,35.6" fill="none" stroke="#111111" stroke-width="2"/><path d="M58.0,225.7 L94.0,209.4 L130.0,197.8 L166.0,179.6 L202.0,163.6 L238.0,166.0 L274.0,141.4 L310.0,136.6 L346.0,114.9 L382.0,118.7 L418.0,96.1 L454.0,88.5 L490.0,74.2 L526.0,63.0 L562.0,67.8 L598.0,79.3 L634.0,76.2 L670.0,64.2 L706.0,64.2 L742.0,65.4" fill="none" stroke="#cfe3f5" stroke-width="2"/><path d="M58.0,232.0 L94.0,202.6 L130.0,189.1 L166.0,183.9 L202.0,159.7 L238.0,159.3 L274.0,158.2 L310.0,148.1 L346.0,123.1 L382.0,125.9 L418.0,110.1 L454.0,97.8 L490.0,98.2 L526.0,65.0 L562.0,55.1 L598.0,70.2 L634.0,57.1 L670.0,55.1 L706.0,58.7 L742.0,52.7" fill="none" stroke="#9ec8e8" stroke-width="2"/><path d="M58.0,228.9 L94.0,205.0 L130.0,207.4 L166.0,190.7 L202.0,167.2 L238.0,147.7 L274.0,149.7 L310.0,146.9 L346.0,120.7 L382.0,121.1 L418.0,134.8 L454.0,119.1 L490.0,88.6 L526.0,68.6 L562.0,73.9 L598.0,75.4 L634.0,63.4 L670.0,68.7 L706.0,60.4 L742.0,53.9" fill="none" stroke="#5fa5d6" stroke-width="2"/><path d="M58.0,243.2 L94.0,209.0 L130.0,203.4 L166.0,177.2 L202.0,179.6 L238.0,170.0 L274.0,176.0 L310.0,132.4 L346.0,161.3 L382.0,129.1 L418.0,129.7 L454.0,125.9 L490.0,121.5 L526.0,85.3 L562.0,78.6 L598.0,71.8 L634.0,67.8 L670.0,73.1 L706.0,69.0 L742.0,69.8" fill="none" stroke="#2b7cb8" stroke-width="2"/><path d="M58.0,231.6 L94.0,226.1 L130.0,197.8 L166.0,202.6 L202.0,163.9 L238.0,170.8 L274.0,174.8 L310.0,144.2 L346.0,143.4 L382.0,149.1 L418.0,143.5 L454.0,132.6 L490.0,110.0 L526.0,115.9 L562.0,112.4 L598.0,99.0 L634.0,100.4 L670.0,90.6 L706.0,90.5 L742.0,92.2" fill="none" stroke="#0b4f7d" stroke-width="2"/></svg><div class="legend"><span class="key"><i style="background:#111111"></i>baseline (crop130, 4 blocks) (mean of 3)</span> <span class="key"><i style="background:#cfe3f5"></i>drop-path 0.005 (mean of 3)</span> <span class="key"><i style="background:#9ec8e8"></i>drop-path 0.01 (mean of 3)</span> <span class="key"><i style="background:#5fa5d6"></i>drop-path 0.02 (mean of 3)</span> <span class="key"><i style="background:#2b7cb8"></i>drop-path 0.05 (mean of 3)</span> <span class="key"><i style="background:#0b4f7d"></i>drop-path 0.1 (mean of 3)</span></div></figure>
+<p class="tiny muted">All curves here are over <strong>441</strong> validation candidates &mdash;
+<strong>verified, not assumed</strong>: all seven arms resolve the same cohort manifest
+(<code>contrastive-cohort.jsonl</code>, sha <code>54bd803e&hellip;</code>) and every run logs
+&ldquo;validation: 441 studies&rdquo; at startup, the crop150 arm included
+(<code>queue10.log:227,233,239</code>). The 433-candidate gold-holdout and data-size-control figures
+must never be placed on this axis.</p>
+
+<h2>The crop150 re-baseline is a different story</h2>
+<div class="stop"><strong>These curves share no axis with the drop-path panels above.</strong>
+<code>crop_mm</code> 130 &rarr; 150 changes the pixels, so the crop150 runs are not comparable to any
+crop130 run. They are drawn beside the baseline only to compare <em>curve shape</em>, which is a
+statement about optimisation, not about score.</div>
+
+<figure><figcaption>Validation loss per epoch, crop130 baseline vs crop150</figcaption><svg viewBox="0 0 760 300" role="img" aria-label="Validation loss per epoch, crop130 baseline vs crop150"><line x1="58" y1="260.0" x2="742" y2="260.0" stroke="#dfe6ea"/><text x="50" y="264.0" text-anchor="end" class="ax">3.43</text><line x1="58" y1="199.0" x2="742" y2="199.0" stroke="#dfe6ea"/><text x="50" y="203.0" text-anchor="end" class="ax">3.70</text><line x1="58" y1="138.0" x2="742" y2="138.0" stroke="#dfe6ea"/><text x="50" y="142.0" text-anchor="end" class="ax">3.97</text><line x1="58" y1="77.0" x2="742" y2="77.0" stroke="#dfe6ea"/><text x="50" y="81.0" text-anchor="end" class="ax">4.24</text><line x1="58" y1="16.0" x2="742" y2="16.0" stroke="#dfe6ea"/><text x="50" y="20.0" text-anchor="end" class="ax">4.51</text><text x="94.0" y="278" text-anchor="middle" class="ax">2</text><text x="166.0" y="278" text-anchor="middle" class="ax">4</text><text x="238.0" y="278" text-anchor="middle" class="ax">6</text><text x="310.0" y="278" text-anchor="middle" class="ax">8</text><text x="382.0" y="278" text-anchor="middle" class="ax">10</text><text x="454.0" y="278" text-anchor="middle" class="ax">12</text><text x="526.0" y="278" text-anchor="middle" class="ax">14</text><text x="598.0" y="278" text-anchor="middle" class="ax">16</text><text x="670.0" y="278" text-anchor="middle" class="ax">18</text><text x="742.0" y="278" text-anchor="middle" class="ax">20</text><text x="400" y="296" text-anchor="middle" class="ax">epoch</text><text x="14" y="150" text-anchor="middle" class="ax" transform="rotate(-90 14 150)">validation loss</text><path d="M58.0,32.8 L94.0,99.5 L130.0,137.8 L166.0,161.4 L202.0,189.9 L238.0,202.6 L274.0,221.5 L310.0,211.6 L346.0,222.5 L382.0,232.8 L418.0,231.3 L454.0,231.4 L490.0,228.1 L526.0,217.1 L562.0,200.0 L598.0,183.4 L634.0,192.1 L670.0,188.9 L706.0,186.9 L742.0,187.0" fill="none" stroke="#111111" stroke-width="2"/><path d="M58.0,43.1 L94.0,95.8 L130.0,128.7 L166.0,171.3 L202.0,197.5 L238.0,213.2 L274.0,232.1 L310.0,236.7 L346.0,221.5 L382.0,232.5 L418.0,243.2 L454.0,230.0 L490.0,229.1 L526.0,222.8 L562.0,200.0 L598.0,191.5 L634.0,194.2 L670.0,189.7 L706.0,189.0 L742.0,190.8" fill="none" stroke="#d95f02" stroke-width="2"/></svg><div class="legend"><span class="key"><i style="background:#111111"></i>baseline (crop130, 4 blocks) (mean of 3)</span> <span class="key"><i style="background:#d95f02"></i>crop150mm (mean of 3)</span></div></figure>
+<figure><figcaption>Validation mean Recall@1 per epoch, crop130 baseline vs crop150</figcaption><svg viewBox="0 0 760 300" role="img" aria-label="Validation mean Recall@1 per epoch, crop130 baseline vs crop150"><line x1="58" y1="260.0" x2="742" y2="260.0" stroke="#dfe6ea"/><text x="50" y="264.0" text-anchor="end" class="ax">0.028</text><line x1="58" y1="199.0" x2="742" y2="199.0" stroke="#dfe6ea"/><text x="50" y="203.0" text-anchor="end" class="ax">0.056</text><line x1="58" y1="138.0" x2="742" y2="138.0" stroke="#dfe6ea"/><text x="50" y="142.0" text-anchor="end" class="ax">0.084</text><line x1="58" y1="77.0" x2="742" y2="77.0" stroke="#dfe6ea"/><text x="50" y="81.0" text-anchor="end" class="ax">0.112</text><line x1="58" y1="16.0" x2="742" y2="16.0" stroke="#dfe6ea"/><text x="50" y="20.0" text-anchor="end" class="ax">0.139</text><text x="94.0" y="278" text-anchor="middle" class="ax">2</text><text x="166.0" y="278" text-anchor="middle" class="ax">4</text><text x="238.0" y="278" text-anchor="middle" class="ax">6</text><text x="310.0" y="278" text-anchor="middle" class="ax">8</text><text x="382.0" y="278" text-anchor="middle" class="ax">10</text><text x="454.0" y="278" text-anchor="middle" class="ax">12</text><text x="526.0" y="278" text-anchor="middle" class="ax">14</text><text x="598.0" y="278" text-anchor="middle" class="ax">16</text><text x="670.0" y="278" text-anchor="middle" class="ax">18</text><text x="742.0" y="278" text-anchor="middle" class="ax">20</text><text x="400" y="296" text-anchor="middle" class="ax">epoch</text><text x="14" y="150" text-anchor="middle" class="ax" transform="rotate(-90 14 150)">mean R@1</text><path d="M58.0,232.4 L94.0,205.0 L130.0,197.4 L166.0,207.5 L202.0,187.6 L238.0,171.8 L274.0,142.8 L310.0,141.1 L346.0,102.1 L382.0,114.1 L418.0,102.1 L454.0,84.5 L490.0,88.8 L526.0,60.2 L562.0,61.5 L598.0,61.0 L634.0,57.0 L670.0,48.6 L706.0,32.8 L742.0,35.7" fill="none" stroke="#111111" stroke-width="2"/><path d="M58.0,243.2 L94.0,209.6 L130.0,205.0 L166.0,200.0 L202.0,180.5 L238.0,184.4 L274.0,152.3 L310.0,161.0 L346.0,136.1 L382.0,134.2 L418.0,111.7 L454.0,95.8 L490.0,88.8 L526.0,71.4 L562.0,76.4 L598.0,89.8 L634.0,74.7 L670.0,76.4 L706.0,81.4 L742.0,77.2" fill="none" stroke="#d95f02" stroke-width="2"/></svg><div class="legend"><span class="key"><i style="background:#111111"></i>baseline (crop130, 4 blocks) (mean of 3)</span> <span class="key"><i style="background:#d95f02"></i>crop150mm (mean of 3)</span></div></figure>
+
+<p><strong>crop150 converged and then overfit; it was not truncated.</strong> Its validation minimum
+arrives at epoch <strong>9.0</strong> against the baseline&rsquo;s 11.3 &mdash; <em>earlier</em>, not
+later &mdash; and it then drifts up <strong>+0.280</strong>, slightly more than the baseline&rsquo;s
++0.259. Its best epoch is at the boundary in 0 of 3 seeds. Every signature points the same way:
+the 150&nbsp;mm crop is a harder optimisation problem that the model finishes early and then
+memorises. <strong>The user&rsquo;s hypothesis does not rescue this result</strong>, and
+<a href="crop150-rebaseline-v1.md">crop150-rebaseline-v1.md</a>&rsquo;s reading stands.</p>
+
+<h2>Would more epochs actually help? The one run that bears on it</h2>
+<p><code>image-block-epochs-v1/original-40ep-seed2026</code> is the project's only run at a budget
+other than 20 epochs. Its config-exact twin at 20 epochs is
+<code>image-block-cohort-compare-v1/original-multilingual-seed2026</code> &mdash; diffed field by
+field, <strong>zero</strong> differences apart from <code>epochs</code>.</p>
+
+<div class="table-wrap"><table><thead><tr><th>Run (seed 2026, 1 adapted block, unregularised)</th>
+<th>epochs</th><th>best R@1</th><th>at epoch</th><th>val loss, min &rarr; final</th></tr></thead><tbody>
+<tr><td><code>original-multilingual-seed2026</code></td><td>20</td><td>0.1111</td><td>19</td><td>3.666 (ep8) &rarr; 3.781</td></tr>
+<tr><td><code>original-40ep-seed2026</code></td><td>40</td><td><strong>0.1190</strong></td><td>33</td><td>3.687 (ep13) &rarr; <strong>4.752</strong></td></tr>
+</tbody></table></div>
+
+<p><strong>Doubling the budget improved retrieval by +0.0079 &mdash; while validation loss ran away
+from 3.687 to 4.752.</strong> That is a large divergence in the loss and a small gain in the
+selection metric, in the same run.</p>
+
+<div class="stop"><strong>This is the single most important caveat on this page, and it cuts against
+the diagnostic the rest of the page is built on.</strong> A rising validation loss does
+<em>not</em> imply that more epochs cannot help retrieval &mdash; here the loss nearly ran away and
+R@1 still improved for another 14 epochs. It is another instance of the dissociation in
+<a href="val-loss-vs-retrieval-audit.md">val-loss-vs-retrieval-audit.md</a>.
+<strong>So the convergence diagnostics above establish that the high-rate drop-path arms were still
+improving when the budget ended; they do not by themselves predict how much retrieval a longer budget
+would buy.</strong> Only a budget arm measures that, and it must be decided on R@1, not on
+validation loss.</div>
+
+<div class="note"><strong>Three reasons this run cannot settle the question on its own.</strong>
+It adapts <strong>1</strong> block, not 4, so it is not a comparator for any arm on this page &mdash;
+it is excluded from every panel and from the diagnostic table for that reason. The cosine schedule is
+stretched over the full 40 epochs, so this is a different learning-rate trajectory throughout rather
+than the 20-epoch run continued. And it is <strong>one seed</strong>, against a seed spread of 0.023.</div>
+
+<h2>What this page deliberately does not show</h2>
+<div class="stop"><strong>Per-class accuracy and AUROC cannot be curves here, and for the drop-path
+and crop150 arms they do not exist even as points.</strong>
+<ul class="tiny">
+<li>AUROC comes from <code>evaluate_downstream_probe.py</code> run against a saved checkpoint, and
+training keeps only <code>best.pt</code> and <code>last.pt</code>. There are no per-epoch checkpoints
+to probe, so an AUROC-versus-epoch curve would require <strong>retraining with per-epoch saves</strong>.
+<code>build_extended_curves.py</code> records the same limitation for the arms it covers.</li>
+<li><strong>No downstream probe has ever been run on the drop-path or crop150 checkpoints.</strong>
+The sweep&rsquo;s probe box is unchecked by decision (selection is retrieval R@1, and the arm lost on
+it), and the crop150 probe is flagged in the handoff as the first thing to run
+<em>with a human present</em> because it needs a hand-built config. So there is no macro AUROC, no
+per-class AUROC and no per-class accuracy for these arms at all &mdash; not a missing curve, a
+missing measurement.</li>
+<li>In place of &ldquo;accuracy&rdquo; this page reports <strong>Recall@1</strong>, which is the
+project&rsquo;s actual selection metric and is logged every epoch.</li>
+</ul>
+<strong>A probe pass on the crop150 checkpoints would produce the macro and per-class AUROC, and is
+the obvious next step &mdash; but it is a user decision, not something to launch unattended.</strong></div>
+
+<h2>Follow-up: the budget arm ran, and it half-confirms this page</h2>
+<div class="ok"><strong>Both arms retrained at 40 epochs, 3 seeds
+(<a href="budget-40ep-v1.md">budget-40ep-v1.md</a>).</strong> Both converged inside the new budget
+(best epochs 23&ndash;35 of 40), so the comparison is now at convergence rather than at a truncation.
+<strong>Drop-path 0.1 gained +0.0150 from the longer budget against the baseline&rsquo;s +0.0062</strong>
+&mdash; the asymmetry this page predicted &mdash; and the deficit fell from &minus;0.0255 to
+<strong>&minus;0.0167</strong>, its interval moving from [&minus;0.0421, &minus;0.0094] to
+<strong>[&minus;0.0337, +0.0005]</strong>, which now grazes zero instead of excluding it.
+<strong>But the deficit did not vanish</strong>, and the pre-registered rule returns
+<strong>ambiguous</strong>. Truncation was real and worth about a third of the measured harm; it was
+not the whole of it.</div>
+
+<div class="note"><strong>The caveat above was the right one.</strong> This page warned that its
+diagnostics establish only that the high-rate arms were <em>still improving</em> &mdash; not how much
+a longer budget would buy &mdash; because the 40-epoch precedent improved retrieval while validation
+loss ran away. That held: the arms were genuinely truncated, and the recovery was real but partial.</div>
+
+<h2>What follows from this</h2>
+<ol class="tiny" style="padding-left:20px">
+<li><strong>&ldquo;Stochastic depth is closed at 4 blocks&rdquo; is too strong &mdash; and so is
+&ldquo;it was all truncation&rdquo;.</strong> The budget arm settled this in part: a third of the
+measured harm was budget, and a directional deficit survives at convergence without excluding zero.
+Both clean stories fail, which is the honest result.</li>
+<li><strong>A fixed epoch budget is not a neutral choice when the lever is a regulariser.</strong>
+Projection-head dropout and random erasing are both still untested; either must train to a
+convergence criterion or report budget as a co-varying factor.</li>
+<li><strong>The recorded 0.1340 baseline is a 20-epoch number, not a ceiling</strong> &mdash; it
+gained +0.0062 at 40 epochs. Anything comparing against it should say which budget it means.</li>
+<li><strong>The &ldquo;every lever that removes information fails the same way&rdquo; through-line
+survives, but weakened on one leg.</strong> The crop leg is unaffected &mdash; crop150 converged. The
+stochastic-depth leg is now partly confounded with budget.</li>
+<li><strong>Selection stays retrieval R@1.</strong> Nothing here was selected on label AUROC, and
+nothing on this page changes that.</li>
+</ol>
+
+<p class="tiny muted">Runs identified from each checkpoint&rsquo;s own <code>config.json</code>
+(<code>seed</code>, <code>image_drop_path_rate</code>, <code>crop_mm</code>), never from a directory
+name. Curves are seed means over 3 seeds per arm. Nothing was committed; the test split was never
+loaded.</p>

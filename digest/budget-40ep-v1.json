@@ -1,0 +1,74 @@
+{
+  "resamples": 2000,
+  "rng_seed": 20260914,
+  "epochs": 40,
+  "estimand": "PRIMARY: pooled across-seed paired difference in validation Recall@1, rate 0.1 minus rate 0.0, BOTH retrained at 40 epochs, bootstrapped over validation queries within each seed. Both arms share the stretched cosine schedule, so the schedule change is common to both and cancels in the pair.",
+  "seeds": {
+    "2026": {
+      "rate0.0_run": "budget40-rate0-unfreeze4-seed2026",
+      "rate0.1_run": "budget40-rate010-unfreeze4-seed2026",
+      "rate0.0_epoch": 35,
+      "rate0.1_epoch": 25,
+      "rate0.0_r@1": 0.13605442643165588,
+      "rate0.1_r@1": 0.12244898080825806,
+      "difference": -0.013605441898107529,
+      "rate0.0_inverse_temperature": 28.915340423583984,
+      "rate0.1_inverse_temperature": 20.617042541503906
+    },
+    "2027": {
+      "rate0.0_run": "budget40-rate0-unfreeze4-seed2027",
+      "rate0.1_run": "budget40-rate010-unfreeze4-seed2027",
+      "rate0.0_epoch": 23,
+      "rate0.1_epoch": 32,
+      "rate0.0_r@1": 0.14342403411865234,
+      "rate0.1_r@1": 0.12169312685728073,
+      "difference": -0.02173091471195221,
+      "rate0.0_inverse_temperature": 23.761871337890625,
+      "rate0.1_inverse_temperature": 22.705978393554688
+    },
+    "2028": {
+      "rate0.0_run": "budget40-rate0-unfreeze4-seed2028",
+      "rate0.1_run": "budget40-rate010-unfreeze4-seed2028",
+      "rate0.0_epoch": 33,
+      "rate0.1_epoch": 27,
+      "rate0.0_r@1": 0.14115646481513977,
+      "rate0.1_r@1": 0.12641723453998566,
+      "difference": -0.01473922934383154,
+      "rate0.0_inverse_temperature": 28.293230056762695,
+      "rate0.1_inverse_temperature": 20.865217208862305
+    }
+  },
+  "pooled": {
+    "per_seed_differences": [
+      -0.013605441898107529,
+      -0.02173091471195221,
+      -0.01473922934383154
+    ],
+    "D40": -0.016691861984630425,
+    "per_seed_sd": 0.00440061447806635,
+    "same_sign_across_seeds": true,
+    "bootstrap_95_ci": [
+      -0.03370024263858795,
+      0.0005102045834064484
+    ],
+    "excludes_zero": false,
+    "share_of_resamples_favouring_rate0.1": 0.0295,
+    "pre_registered_rule": {
+      "harm_persists": "CI excludes zero AND D40 <= -0.015",
+      "harm_did_not_reproduce": "CI spans zero AND |D40| <= 0.010",
+      "otherwise": "partial or ambiguous"
+    },
+    "verdict": "PARTIAL OR AMBIGUOUS by the pre-registered rule. Record as such; do not round."
+  },
+  "secondary_difference_of_differences": {
+    "D20": -0.025510201851526897,
+    "D20_ci": [
+      -0.04213907942175865,
+      -0.009443499147891998
+    ],
+    "D40": -0.016691861984630425,
+    "shift": 0.008818339866896473,
+    "share_of_20ep_deficit_recovered": 0.34567895300164614,
+    "caveat": "UNDER-POWERED AND NOT A TEST. At three seeds the half-width of D40-D20 is about 0.023 (sqrt(2) x the 0.0163 half-width of a single paired difference), so this can only detect a near-total reversal. Quote it with that number attached."
+  }
+}

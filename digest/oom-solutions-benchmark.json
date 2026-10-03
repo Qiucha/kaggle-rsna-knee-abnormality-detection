@@ -1,0 +1,62 @@
+[
+  {
+    "status": "SUCCESS",
+    "solution": "Standard Full FT",
+    "layer_count": 8,
+    "use_lora": false,
+    "batch_size": 32,
+    "peak_allocated_mb": 8864.05,
+    "peak_reserved_mb": 9216.0,
+    "memory_headroom_mb": -1024.5,
+    "fits_in_8gb": false
+  },
+  {
+    "status": "SUCCESS",
+    "solution": "save_on_cpu (RAM Offload)",
+    "layer_count": 8,
+    "use_lora": false,
+    "batch_size": 32,
+    "peak_allocated_mb": 2321.49,
+    "peak_reserved_mb": 2416.0,
+    "memory_headroom_mb": 5775.5,
+    "fits_in_8gb": true
+  },
+  {
+    "status": "SUCCESS",
+    "solution": "Gradient Checkpointing",
+    "layer_count": 8,
+    "use_lora": false,
+    "batch_size": 32,
+    "peak_allocated_mb": 2924.11,
+    "peak_reserved_mb": 3282.0,
+    "memory_headroom_mb": 4909.5,
+    "fits_in_8gb": true
+  },
+  {
+    "status": "ERROR",
+    "solution": "LoRA 12-Blk save_on_cpu",
+    "error": "CUDA error: out of memory\nSearch for `cudaErrorMemoryAllocation' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.\nFor more detailed error information, run with CUDA_LOG_FILE=stderr\n"
+  },
+  {
+    "status": "SUCCESS",
+    "solution": "LoRA 12-Blk Grad Checkpointing",
+    "layer_count": 12,
+    "use_lora": true,
+    "batch_size": 32,
+    "peak_allocated_mb": 3112.48,
+    "peak_reserved_mb": 3494.0,
+    "memory_headroom_mb": 4697.5,
+    "fits_in_8gb": true
+  },
+  {
+    "status": "SUCCESS",
+    "solution": "LoRA 6-Blk Grad Checkpointing (BS=64)",
+    "layer_count": 6,
+    "use_lora": true,
+    "batch_size": 64,
+    "peak_allocated_mb": 4588.1,
+    "peak_reserved_mb": 5004.0,
+    "memory_headroom_mb": 3188.0,
+    "fits_in_8gb": true
+  }
+]

@@ -1,0 +1,55 @@
+{
+  "series": 1200,
+  "split": "train",
+  "candidates": {
+    "110": {
+      "mean_retained": 0.7098553910867,
+      "median_retained": 0.6974566578865051,
+      "p10_retained": 0.5067953109741211,
+      "share_of_series_keeping_95pct": 0.08916666666666667,
+      "share_of_series_keeping_99pct": 0.020833333333333332
+    },
+    "120": {
+      "mean_retained": 0.7917653733988603,
+      "median_retained": 0.7879596948623657,
+      "p10_retained": 0.6043681204319,
+      "share_of_series_keeping_95pct": 0.1925,
+      "share_of_series_keeping_99pct": 0.08166666666666667
+    },
+    "130": {
+      "mean_retained": 0.8606516181429227,
+      "median_retained": 0.8699204623699188,
+      "p10_retained": 0.7057172358036041,
+      "share_of_series_keeping_95pct": 0.3233333333333333,
+      "share_of_series_keeping_99pct": 0.19916666666666666
+    },
+    "140": {
+      "mean_retained": 0.9149655492479603,
+      "median_retained": 0.9293239712715149,
+      "p10_retained": 0.8032004952430725,
+      "share_of_series_keeping_95pct": 0.4425,
+      "share_of_series_keeping_99pct": 0.32
+    },
+    "150": {
+      "mean_retained": 0.9567707182094455,
+      "median_retained": 0.9791117310523987,
+      "p10_retained": 0.8836184561252594,
+      "share_of_series_keeping_95pct": 0.6683333333333333,
+      "share_of_series_keeping_99pct": 0.4625
+    },
+    "160": {
+      "mean_retained": 0.9840248685205976,
+      "median_retained": 1.0,
+      "p10_retained": 0.9434552133083344,
+      "share_of_series_keeping_95pct": 0.885,
+      "share_of_series_keeping_99pct": 0.7641666666666667
+    },
+    "180": {
+      "mean_retained": 0.9980217858900626,
+      "median_retained": 1.0,
+      "p10_retained": 1.0,
+      "share_of_series_keeping_95pct": 0.9925,
+      "share_of_series_keeping_99pct": 0.9708333333333333
+    }
+  }
+}

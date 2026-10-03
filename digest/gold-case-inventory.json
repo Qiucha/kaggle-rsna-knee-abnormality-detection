@@ -1,0 +1,861 @@
+{
+ "generated": "2026-09-11T15:41:23+0800",
+ "cohort": "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
+ "cohort_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+ "gate": "Test-split gold studies are reported as a count only. Their labels, report text and images are not read, and they are excluded from every feasibility count. Whether the probe may use them is a user protocol decision.",
+ "provenance": {
+  "files": {
+   "cleaned.csv": {
+    "sha256": "f4c2798f3207f27a867d086a19ffc56b2ea80d789d102cab7fc53aac6d8f9262",
+    "studies": 58,
+    "populated_label_cells": 696,
+    "carries_labels": true
+   },
+   "drop.csv": {
+    "sha256": "a7ea513ece55574608bb94871fdc2bafebc34de59dfc54f1e50ca0f457336262",
+    "studies": 58,
+    "populated_label_cells": 0,
+    "carries_labels": false
+   },
+   "gold_translated.csv": {
+    "sha256": "f111d544a9afea18c4db8dce0911c88003128284458a129a00458101c523890a",
+    "studies": 58,
+    "populated_label_cells": 696,
+    "carries_labels": true
+   }
+  },
+  "all_three_cover_the_same_studies": true,
+  "label_bearing_files": [
+   "cleaned.csv",
+   "gold_translated.csv"
+  ],
+  "label_agreement": {
+   "cleaned.csv vs gold_translated.csv": {
+    "cells_compared": 696,
+    "cells_differing": 0,
+    "identical": true
+   }
+  },
+  "authoritative": "cleaned.csv and gold_translated.csv carry identical labels; drop.csv has every label column empty and is the blank annotation template. Reading drop.csv as labels yields 58 studies with no positives and would fail silently -- it is a trap, not a second opinion.",
+  "labels_are_binary_and_complete": {
+   "distinct_values": [
+    0.0,
+    1.0
+   ],
+   "missing_cells": 0,
+   "uncertainty_encoding": "none: the labels are 0/1 with no missing cells, so the response's uncertainty-aware contract has nothing to read here. Absence of an 'unknown' code is not evidence every case was adjudicable."
+  }
+ },
+ "cohort_membership": {
+  "gold_studies": 58,
+  "present_in_cohort": 58,
+  "absent_from_cohort": 0,
+  "absent_uids": [],
+  "by_split": {
+   "test": 2,
+   "train": 48,
+   "validation": 8
+  },
+  "in_train_and_training_eligible": 48,
+  "quarantined_or_ineligible": []
+ },
+ "representation_exposure": {
+  "statement": "Every gold study in the train split with training_eligible true was a training pair for every completed contrastive run on this cohort. Holding such a case out of a later probe does not undo that exposure.",
+  "seen_in_representation_training": 48,
+  "in_validation_used_for_checkpoint_selection": 8,
+  "in_locked_test": 2,
+  "clean_of_all_exposure": 2,
+  "clean_and_usable_without_a_locked_test_decision": 0
+ },
+ "text_exposure": {
+  "question": "Is the report text the model trained on the same text the gold labels were adjudicated against?",
+  "compared": 56,
+  "matching": 27,
+  "mismatching": 29,
+  "mismatching_but_same_source_report": 29,
+  "mismatching_with_a_different_source_report": 0,
+  "different_document_uids": [],
+  "source_languages_of_retranslations": {
+   "bg": 3,
+   "de": 2,
+   "el": 3,
+   "es": 9,
+   "hr": 4,
+   "nl": 2,
+   "tr": 6
+  },
+  "note": "Compared whitespace-normalised. The severity depends on which kind of mismatch it is. Same source report through a second translation run is translation variance: the label was adjudicated from the same clinical document the model read, worded differently. A different source report would mean the label describes a document the model never saw, which is a provenance failure rather than a wording difference."
+ },
+ "per_label_feasibility": {
+  "population": "train+validation gold studies only",
+  "studies": 56,
+  "thresholds": {
+   "min_positives_for_any_estimate": 2,
+   "min_positives_for_grouped_folds": 5
+  },
+  "labels": {
+   "ACL": {
+    "positives": 23,
+    "negatives": 33,
+    "prevalence": 0.4107,
+    "positives_by_split": {
+     "train": 20,
+     "validation": 3
+    },
+    "verdict": "estimable under grouped folds"
+   },
+   "MCL": {
+    "positives": 8,
+    "negatives": 48,
+    "prevalence": 0.1429,
+    "positives_by_split": {
+     "train": 8,
+     "validation": 0
+    },
+    "verdict": "estimable under grouped folds"
+   },
+   "Medial Meniscus": {
+    "positives": 26,
+    "negatives": 30,
+    "prevalence": 0.4643,
+    "positives_by_split": {
+     "train": 24,
+     "validation": 2
+    },
+    "verdict": "estimable under grouped folds"
+   },
+   "Lateral Meniscus": {
+    "positives": 22,
+    "negatives": 34,
+    "prevalence": 0.3929,
+    "positives_by_split": {
+     "train": 18,
+     "validation": 4
+    },
+    "verdict": "estimable under grouped folds"
+   },
+   "Medial OA": {
+    "positives": 14,
+    "negatives": 42,
+    "prevalence": 0.25,
+    "positives_by_split": {
+     "train": 12,
+     "validation": 2
+    },
+    "verdict": "estimable under grouped folds"
+   },
+   "Lateral OA": {
+    "positives": 11,
+    "negatives": 45,
+    "prevalence": 0.1964,
+    "positives_by_split": {
+     "train": 7,
+     "validation": 4
+    },
+    "verdict": "estimable under grouped folds"
+   },
+   "PF OA": {
+    "positives": 20,
+    "negatives": 36,
+    "prevalence": 0.3571,
+    "positives_by_split": {
+     "train": 17,
+     "validation": 3
+    },
+    "verdict": "estimable under grouped folds"
+   },
+   "Effusion": {
+    "positives": 33,
+    "negatives": 23,
+    "prevalence": 0.5893,
+    "positives_by_split": {
+     "train": 27,
+     "validation": 6
+    },
+    "verdict": "estimable under grouped folds"
+   },
+   "Synovitis": {
+    "positives": 26,
+    "negatives": 30,
+    "prevalence": 0.4643,
+    "positives_by_split": {
+     "train": 23,
+     "validation": 3
+    },
+    "verdict": "estimable under grouped folds"
+   },
+   "Baker's": {
+    "positives": 12,
+    "negatives": 44,
+    "prevalence": 0.2143,
+    "positives_by_split": {
+     "train": 9,
+     "validation": 3
+    },
+    "verdict": "estimable under grouped folds"
+   },
+   "Contusion": {
+    "positives": 19,
+    "negatives": 37,
+    "prevalence": 0.3393,
+    "positives_by_split": {
+     "train": 16,
+     "validation": 3
+    },
+    "verdict": "estimable under grouped folds"
+   },
+   "Fracture": {
+    "positives": 17,
+    "negatives": 39,
+    "prevalence": 0.3036,
+    "positives_by_split": {
+     "train": 15,
+     "validation": 2
+    },
+    "verdict": "estimable under grouped folds"
+   }
+  },
+  "not_estimable": [],
+  "loo_only": []
+ },
+ "per_study": [
+  {
+   "study_uid": "study-7fbb2a5a8b0ff546",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "es",
+   "gold_original_language": "es",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-d0813d9eca8145d4",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-cca0a43fc967c76a",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-272de5042e60aaa8",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-4c7e2b92fbb2d4eb",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-5ffc80b393a2931f",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-03c02ad767162c8f",
+   "split": "validation",
+   "training_eligible": true,
+   "source_language": "es",
+   "gold_original_language": "es",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-80be32efbd79adf2",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-e3cd8ba7c4c33857",
+   "split": "validation",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-2901d9ea1a478fb2",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-f0d3a423cbc768e2",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "es",
+   "gold_original_language": "es",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-59bc3f5b594afd7d",
+   "split": "test",
+   "training_eligible": true,
+   "source_language": "es",
+   "gold_original_language": "es",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-726f60971f4c11da",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-916279b0b2496d0d",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "el",
+   "gold_original_language": "el",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-3f7449f6a4a3e22c",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "bg",
+   "gold_original_language": "bg",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-554d123984b6110b",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-a5ea720fb283ecd2",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "nl",
+   "gold_original_language": "nl",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-9d3ddff3ed1faa40",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "es",
+   "gold_original_language": "es",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-f31708002735adf9",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-bee8dca223213d9e",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "tr",
+   "gold_original_language": "tr",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-b635be46ef2ffd43",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "tr",
+   "gold_original_language": "tr",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-e53bf44fb3ecee17",
+   "split": "validation",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-f3fa73618ce46869",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "el",
+   "gold_original_language": "el",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-d555b23f5e2a8a48",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-143f3e9df2ed34fe",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-d4fef01b42c9844e",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "tr",
+   "gold_original_language": "tr",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-96a14a2a3ca707a0",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-9753f49e97f282bb",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "tr",
+   "gold_original_language": "tr",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-472cd34a74d5cc26",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "el",
+   "gold_original_language": "el",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-fe9e6c99f87b84f8",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-6fbfb26274ca6694",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "hr",
+   "gold_original_language": "hr",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-ef85bac5388f1cbf",
+   "split": "validation",
+   "training_eligible": true,
+   "source_language": "es",
+   "gold_original_language": "es",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-10386a034080af52",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-5331dc8b90331eac",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "tr",
+   "gold_original_language": "tr",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-7e361b918a7ab423",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "es",
+   "gold_original_language": "es",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-3205200df8c482bc",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-715eceeb06e2af50",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "es",
+   "gold_original_language": "es",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-fc803c162744b058",
+   "split": "test",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-4e6a7f6f1773a05e",
+   "split": "validation",
+   "training_eligible": true,
+   "source_language": "bg",
+   "gold_original_language": "bg",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-8d4c4862e9a8345e",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-56b51a810d7c6a0e",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "nl",
+   "gold_original_language": "nl",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-1e4b81f1477e3932",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "hr",
+   "gold_original_language": "hr",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-c6de5ee2f987884b",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-f1edab986aa2d68c",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-af004b83e27a15fb",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "tr",
+   "gold_original_language": "tr",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-df0e3ddcdd10d681",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "es",
+   "gold_original_language": "es",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-7e474a63863eb905",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-fb4a16f220ca8505",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-5c97601043577052",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "de",
+   "gold_original_language": "de",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-ce58c42bfe08ca3b",
+   "split": "validation",
+   "training_eligible": true,
+   "source_language": "bg",
+   "gold_original_language": "bg",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-66b5496d2175a621",
+   "split": "validation",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-70b7097ec699fd1f",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "hr",
+   "gold_original_language": "hr",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-a6f448aa5d1794d2",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-6f823188d3ab272d",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-07b92def36d27b2f",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "hr",
+   "gold_original_language": "hr",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-551006b1e03d09db",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "es",
+   "gold_original_language": "es",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-67d6014d792c8ee8",
+   "split": "validation",
+   "training_eligible": true,
+   "source_language": "en",
+   "gold_original_language": "en",
+   "report_language": "en",
+   "report_provenance": "source_english",
+   "gold_text_matches_trained_text": true,
+   "gold_source_matches_cohort_source": true
+  },
+  {
+   "study_uid": "study-098a599ad6910a6f",
+   "split": "train",
+   "training_eligible": true,
+   "source_language": "de",
+   "gold_original_language": "de",
+   "report_language": "en",
+   "report_provenance": "translated_english",
+   "gold_text_matches_trained_text": false,
+   "gold_source_matches_cohort_source": true
+  }
+ ]
+}

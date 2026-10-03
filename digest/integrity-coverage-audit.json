@@ -1,0 +1,995 @@
+{
+ "generated": "2026-09-11T15:16:18+0800",
+ "cohort": "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
+ "cohort_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+ "scope": {
+  "reads": "local CSV/manifest plus one middle DICOM header per study",
+  "decodes_pixels": false,
+  "opens_locked_test_content": false,
+  "raw_volume_content_hashing": "not attempted: 532 GB over 4,407 studies on a 9p-mounted Windows drive"
+ },
+ "patient_grouping": {
+  "rows": 4407,
+  "distinct_group_ids": 4407,
+  "group_size_distribution": {
+   "1": 4407
+  },
+  "groups_spanning_splits": 0,
+  "every_group_is_a_single_study": true,
+  "split_sizes": {
+   "test": 440,
+   "train": 3526,
+   "validation": 441
+  }
+ },
+ "series_join": {
+  "series_csv": {
+   "columns": [
+    "StudyInstanceUID",
+    "SeriesInstanceUID",
+    "Fluid_Sensitive",
+    "Fat_Suppression",
+    "Anatomical_Plane"
+   ],
+   "rows": 24371,
+   "distinct_series": 24371,
+   "series_under_multiple_studies": 0,
+   "examples": {}
+  },
+  "manifest_slots": {
+   "slot_references": 13221,
+   "distinct_series_directories": 13221,
+   "directories_shared_by_multiple_studies": 0,
+   "detail": null,
+   "examples": {}
+  }
+ },
+ "report_collisions": {
+  "translated_report": {
+   "groups": 44,
+   "studies_involved": 135,
+   "largest_group": 10,
+   "groups_crossing_splits": 20,
+   "studies_in_crossing_groups": 78,
+   "groups_within_one_split": 24,
+   "crossing_detail": [
+    {
+     "key": "944f6efeb5807e8e4eb59fc4100317b5f64a525e3beb8efbb9c75132c1459d14",
+     "members": 10,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "1c6a7b9289dd33e2ecb9c50ea7c0f0a087bec25d45759e33aacf3a5a69637156",
+     "members": 9,
+     "splits": [
+      "test",
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "9e9d9348684e4afec109a18010fa2a7f883b9ff69e2d628e9df7a697065d21d8",
+     "members": 8,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "450545b1f8ba15129fd4b01dd9d2158b322a7adc8ab695ce248b608869a1f561",
+     "members": 6,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "9577ecc049ebb1ab73c59f0a1d0538ed25d8e39226341380a8b23939f1c5f958",
+     "members": 6,
+     "splits": [
+      "test",
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "5c2e3c5802e8c4ae29740a2b0bbbceaad53dd81cdb220888797e123752230c9e",
+     "members": 5,
+     "splits": [
+      "test",
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "bc5c88125f89cd48f43aa17517094a91f3322fbcf816553bf13af56442129415",
+     "members": 3,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "b4654d6324d23b5c42df9e728818e8f6010878545de30a5001c9cf6daf9fc492",
+     "members": 3,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "ded340bef1dac8580f471120a3fa0bdfb8d6b0a0f9ac889ad5258c731a74ab0c",
+     "members": 3,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "6bced0ac62d54182729c92406ea14638d1d0ac3e99be7a1edea73c6a983c3516",
+     "members": 3,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "fe8495000b78efcfe54d45b04e4de1ff5a6db8822a609528c347c9b005d9772f",
+     "members": 3,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "c08da3942285e17c3effbd06ead3420c55193ec3185964092f62a6b1788e6df4",
+     "members": 3,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "07ab4a1236a1c9294673485ac7ced36e20f84121164e30e0e527cb06541822b6",
+     "members": 2,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "7d00d3ef40a92a97b35f143a604060ccd8b62dd93fcb3771b3442cdece8f7b3c",
+     "members": 2,
+     "splits": [
+      "test",
+      "validation"
+     ]
+    },
+    {
+     "key": "9065891fbd6cc5441f980e9edf02629a261423d5c1671f030928196d8e6b6776",
+     "members": 2,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "3ea86ed546fe66a49d4cb410d6709505e29ecee9f70690fbde5faf191591dccf",
+     "members": 2,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "35d78820855ba0dc4ee17081c93acf31036bebe271c0fe97065e790547a5b688",
+     "members": 2,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "253fc777458875d0ae03f5447c13e43cc51272a6e4d068ee264a94a72c4aa5ed",
+     "members": 2,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "1869f13f16aa314a4b88a7e28f1d80563c8087b980cde7124d009751e27c5637",
+     "members": 2,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "9f94d1db02b2191859e08ad502a2f9869393b16ebc0a746c64ada937c105cc36",
+     "members": 2,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    }
+   ],
+   "rows_with_field": 4407
+  },
+  "source_report": {
+   "groups": 49,
+   "studies_involved": 183,
+   "largest_group": 37,
+   "groups_crossing_splits": 22,
+   "studies_in_crossing_groups": 118,
+   "groups_within_one_split": 27,
+   "crossing_detail": [
+    {
+     "key": "5b5ed3668a4e8a3f9bdf04bef4c3b5a60f17fc249c6e2933ba8965639b3dada9",
+     "members": 37,
+     "splits": [
+      "test",
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "0a6e30147f9cf27fd5b7eaaf21dcccc8006c50d92781b0569b0fb45960213e9b",
+     "members": 14,
+     "splits": [
+      "test",
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "853a125095b63eb55f8f46143c4118b10d9f29ea437f714785ecbb62942a0369",
+     "members": 12,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "450545b1f8ba15129fd4b01dd9d2158b322a7adc8ab695ce248b608869a1f561",
+     "members": 6,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "5c2e3c5802e8c4ae29740a2b0bbbceaad53dd81cdb220888797e123752230c9e",
+     "members": 5,
+     "splits": [
+      "test",
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "c08088de0c9b5af423700341e7b65520505df19bc7b4486d2c4fa396e220c941",
+     "members": 5,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "925f09aa043b779bbc371261f059fdf7e8266bb47dc14b9ee9de41183758ab8b",
+     "members": 3,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "e47b32b73219b50544ebe749a3ff7a623bbdc769b9482d01e64132d87a6964e7",
+     "members": 3,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "ded340bef1dac8580f471120a3fa0bdfb8d6b0a0f9ac889ad5258c731a74ab0c",
+     "members": 3,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "24c73b197579d25f0ec7c65069c10b3176c712a12535b6511699972eefa1ccc3",
+     "members": 3,
+     "splits": [
+      "test",
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "d464fc1801439d1ed6f1d6cec8e03c4ce301988ca5df8bd47ffc695fbcf45cb0",
+     "members": 3,
+     "splits": [
+      "test",
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "92e7d5c1ca69f7ca124d2adf3502b0b41e1c20b7d8585c5eb36c85acc425ef1a",
+     "members": 3,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "69ff9ff5e20177f51774deaffe3faf5c989869d27016797a461b0bacddcf847b",
+     "members": 3,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "4f936783ae0eef298e4e39cf029f4e28b8b7cb0a9f98e29f90b670fada92083b",
+     "members": 2,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "4fd9e68f71f9b6bb215dbc2a12657660b26b0674708bddc7010dec98869436e7",
+     "members": 2,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "7d00d3ef40a92a97b35f143a604060ccd8b62dd93fcb3771b3442cdece8f7b3c",
+     "members": 2,
+     "splits": [
+      "test",
+      "validation"
+     ]
+    },
+    {
+     "key": "9065891fbd6cc5441f980e9edf02629a261423d5c1671f030928196d8e6b6776",
+     "members": 2,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "dabf771ee25f20192f5425432dff896a4c1a39fcf0c680c6fe17d68fe1e66c08",
+     "members": 2,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "f0e6c8915cbc6512c8cb352292112a95bb95896f00bd5f1fd79af329e3a6237f",
+     "members": 2,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "35d78820855ba0dc4ee17081c93acf31036bebe271c0fe97065e790547a5b688",
+     "members": 2,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    },
+    {
+     "key": "6d88aa6b719b809898ff8469625bc75e5624cc58ff6ca0b2e5d3201363b3cfcf",
+     "members": 2,
+     "splits": [
+      "test",
+      "train"
+     ]
+    },
+    {
+     "key": "9f94d1db02b2191859e08ad502a2f9869393b16ebc0a746c64ada937c105cc36",
+     "members": 2,
+     "splits": [
+      "train",
+      "validation"
+     ]
+    }
+   ],
+   "rows_with_field": 4407
+  }
+ },
+ "series_fingerprints": {
+  "semantics": "sha256 of PREPROCESSING_VERSION plus each .dcm file name, st_size and st_mtime_ns (preprocessing.py:196). Stat metadata, not pixel content: cannot detect a re-exported duplicate, and a collision proves an identical file tree rather than identical images.",
+  "per_plane": {
+   "Axial": {
+    "groups": 0,
+    "studies_involved": 0,
+    "largest_group": 0,
+    "groups_crossing_splits": 0,
+    "studies_in_crossing_groups": 0,
+    "groups_within_one_split": 0,
+    "crossing_detail": [],
+    "rows_with_plane": 4407
+   },
+   "Coronal": {
+    "groups": 0,
+    "studies_involved": 0,
+    "largest_group": 0,
+    "groups_crossing_splits": 0,
+    "studies_in_crossing_groups": 0,
+    "groups_within_one_split": 0,
+    "crossing_detail": [],
+    "rows_with_plane": 4407
+   },
+   "Sagittal": {
+    "groups": 0,
+    "studies_involved": 0,
+    "largest_group": 0,
+    "groups_crossing_splits": 0,
+    "studies_in_crossing_groups": 0,
+    "groups_within_one_split": 0,
+    "crossing_detail": [],
+    "rows_with_plane": 4407
+   }
+  },
+  "all_three_planes": {
+   "groups": 0,
+   "studies_involved": 0,
+   "largest_group": 0,
+   "groups_crossing_splits": 0,
+   "studies_in_crossing_groups": 0,
+   "groups_within_one_split": 0,
+   "crossing_detail": []
+  }
+ },
+ "identity_probe": {
+  "studies_probed": 4407,
+  "studies_unreadable": 0,
+  "unreadable_examples": [],
+  "seconds": 100.6,
+  "per_tag": {
+   "PatientID": {
+    "studies_with_a_value": 4407,
+    "distinct_values": 4407,
+    "collision_profile": {
+     "groups": 0,
+     "studies_involved": 0,
+     "largest_group": 0,
+     "groups_crossing_splits": 0,
+     "studies_in_crossing_groups": 0,
+     "groups_within_one_split": 0,
+     "crossing_detail": []
+    }
+   },
+   "PatientSex": {
+    "studies_with_a_value": 4169,
+    "distinct_values": 3,
+    "collision_profile": {
+     "groups": 3,
+     "studies_involved": 4169,
+     "largest_group": 2076,
+     "groups_crossing_splits": 3,
+     "studies_in_crossing_groups": 4169,
+     "groups_within_one_split": 0,
+     "crossing_detail": [
+      {
+       "key": "M",
+       "members": 2076,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "F",
+       "members": 1894,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "O",
+       "members": 199,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      }
+     ]
+    }
+   },
+   "PatientName": {
+    "studies_with_a_value": 0,
+    "distinct_values": 0,
+    "collision_profile": {
+     "groups": 0,
+     "studies_involved": 0,
+     "largest_group": 0,
+     "groups_crossing_splits": 0,
+     "studies_in_crossing_groups": 0,
+     "groups_within_one_split": 0,
+     "crossing_detail": []
+    }
+   },
+   "PatientBirthDate": {
+    "studies_with_a_value": 0,
+    "distinct_values": 0,
+    "collision_profile": {
+     "groups": 0,
+     "studies_involved": 0,
+     "largest_group": 0,
+     "groups_crossing_splits": 0,
+     "studies_in_crossing_groups": 0,
+     "groups_within_one_split": 0,
+     "crossing_detail": []
+    }
+   },
+   "StudyDate": {
+    "studies_with_a_value": 0,
+    "distinct_values": 0,
+    "collision_profile": {
+     "groups": 0,
+     "studies_involved": 0,
+     "largest_group": 0,
+     "groups_crossing_splits": 0,
+     "studies_in_crossing_groups": 0,
+     "groups_within_one_split": 0,
+     "crossing_detail": []
+    }
+   },
+   "StudyTime": {
+    "studies_with_a_value": 0,
+    "distinct_values": 0,
+    "collision_profile": {
+     "groups": 0,
+     "studies_involved": 0,
+     "largest_group": 0,
+     "groups_crossing_splits": 0,
+     "studies_in_crossing_groups": 0,
+     "groups_within_one_split": 0,
+     "crossing_detail": []
+    }
+   },
+   "AccessionNumber": {
+    "studies_with_a_value": 0,
+    "distinct_values": 0,
+    "collision_profile": {
+     "groups": 0,
+     "studies_involved": 0,
+     "largest_group": 0,
+     "groups_crossing_splits": 0,
+     "studies_in_crossing_groups": 0,
+     "groups_within_one_split": 0,
+     "crossing_detail": []
+    }
+   },
+   "FrameOfReferenceUID": {
+    "studies_with_a_value": 4407,
+    "distinct_values": 4407,
+    "collision_profile": {
+     "groups": 0,
+     "studies_involved": 0,
+     "largest_group": 0,
+     "groups_crossing_splits": 0,
+     "studies_in_crossing_groups": 0,
+     "groups_within_one_split": 0,
+     "crossing_detail": []
+    }
+   },
+   "Manufacturer": {
+    "studies_with_a_value": 4407,
+    "distinct_values": 12,
+    "collision_profile": {
+     "groups": 12,
+     "studies_involved": 4407,
+     "largest_group": 1053,
+     "groups_crossing_splits": 12,
+     "studies_in_crossing_groups": 4407,
+     "groups_within_one_split": 0,
+     "crossing_detail": [
+      {
+       "key": "Siemens Healthineers",
+       "members": 1053,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "GE MEDICAL SYSTEMS",
+       "members": 868,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "SIEMENS",
+       "members": 804,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Philips Medical Systems",
+       "members": 718,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Philips",
+       "members": 492,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "TOSHIBA",
+       "members": 181,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Siemens",
+       "members": 94,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Philips Healthcare",
+       "members": 91,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "CANON_MEC",
+       "members": 45,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "GEHC",
+       "members": 37,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "FUJIFILM Healthcare Corporation",
+       "members": 16,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Hitachi Medical Corporation",
+       "members": 8,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      }
+     ]
+    }
+   },
+   "ManufacturerModelName": {
+    "studies_with_a_value": 4407,
+    "distinct_values": 46,
+    "collision_profile": {
+     "groups": 38,
+     "studies_involved": 4399,
+     "largest_group": 741,
+     "groups_crossing_splits": 37,
+     "studies_in_crossing_groups": 4396,
+     "groups_within_one_split": 1,
+     "crossing_detail": [
+      {
+       "key": "Ingenia",
+       "members": 741,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "MAGNETOM Vida",
+       "members": 447,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Aera",
+       "members": 400,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Achieva dStream",
+       "members": 327,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "MAGNETOM Avanto fit",
+       "members": 262,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "SonataVision",
+       "members": 214,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "SIGNA Explorer",
+       "members": 213,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "SIGNA Artist",
+       "members": 208,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Optima MR450w",
+       "members": 158,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "SIGNA EXCITE",
+       "members": 136,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Vantage",
+       "members": 129,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "MAGNETOM Aera",
+       "members": 122,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Skyra",
+       "members": 110,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "MAGNETOM Prisma",
+       "members": 108,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "SIGNA Architect",
+       "members": 88,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Ingenia Ambition X",
+       "members": 84,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "MAGNETOM Skyra",
+       "members": 74,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Espree",
+       "members": 64,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "MR 5300",
+       "members": 63,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "MAGNETOM Sempra",
+       "members": 59,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Titan",
+       "members": 51,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Galan 3T",
+       "members": 45,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "MAGNETOM Lumina",
+       "members": 41,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Signa HDxt",
+       "members": 39,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      },
+      {
+       "key": "Optima MR430s 1.5T",
+       "members": 37,
+       "splits": [
+        "test",
+        "train",
+        "validation"
+       ]
+      }
+     ]
+    }
+   },
+   "DeviceSerialNumber": {
+    "studies_with_a_value": 0,
+    "distinct_values": 0,
+    "collision_profile": {
+     "groups": 0,
+     "studies_involved": 0,
+     "largest_group": 0,
+     "groups_crossing_splits": 0,
+     "studies_in_crossing_groups": 0,
+     "groups_within_one_split": 0,
+     "crossing_detail": []
+    }
+   },
+   "InstitutionName": {
+    "studies_with_a_value": 0,
+    "distinct_values": 0,
+    "collision_profile": {
+     "groups": 0,
+     "studies_involved": 0,
+     "largest_group": 0,
+     "groups_crossing_splits": 0,
+     "studies_in_crossing_groups": 0,
+     "groups_within_one_split": 0,
+     "crossing_detail": []
+    }
+   }
+  },
+  "patient_id": {
+   "multi_study_patients": 0,
+   "studies_in_multi_study_patients": 0,
+   "patients_spanning_splits": 0,
+   "studies_in_split_spanning_patients": 0,
+   "split_pairs_observed": {},
+   "largest_patient_group": 0
+  },
+  "record_sha256": "5606bd56c10532e4ab7109520033814070af5ab51c227b265e67ba760b0b3869"
+ }
+}

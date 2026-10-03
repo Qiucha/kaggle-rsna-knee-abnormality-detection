@@ -1,0 +1,544 @@
+{
+  "comparison_version": "gold-probe-both-block-v1-paired-arms",
+  "config": {
+    "arms": {
+      "after_cl": {
+        "checkpoints": [
+          "checkpoints/contrastive/claude-translated-dfd07db-both-block-v1/both-block-seed2026/best.pt",
+          "checkpoints/contrastive/claude-translated-dfd07db-both-block-v1/both-block-seed2027/best.pt",
+          "checkpoints/contrastive/claude-translated-dfd07db-both-block-v1/both-block-seed2028/best.pt",
+          "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2026/best.pt",
+          "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2027/best.pt",
+          "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2028/best.pt"
+        ],
+        "features": [
+          "uniform_mean_768",
+          "plane_attention_768",
+          "projection_256"
+        ],
+        "name": "both-block adaptation (--image-unfreeze-last 1 --text-unfreeze-last 1) alongside the image-block arm it is paired against",
+        "note": "Both arms sit in this slot so the script extracts their features under one identical pass. The seed-matched both-block versus image-block contrast is NOT produced by evaluate_downstream_probe.py, which only compares against before_cl; it is computed by scripts/compare_downstream_arms.py from the same cached features, folds and bootstrap."
+      },
+      "before_cl": {
+        "features": [
+          "uniform_mean_768"
+        ],
+        "image_model": "facebook/dinov2-small",
+        "image_model_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "name": "dinov2-unadapted",
+        "pooling": "uniform mean over the three planes"
+      },
+      "frozen_tower_null": {
+        "checkpoints": [
+          "checkpoints/contrastive/claude-translated-dfd07db-text-block-v1/text-block-seed2026/best.pt",
+          "checkpoints/contrastive/claude-translated-dfd07db-text-block-v1/text-block-seed2027/best.pt",
+          "checkpoints/contrastive/claude-translated-dfd07db-text-block-v1/text-block-seed2028/best.pt"
+        ],
+        "declared_in_advance": "These three runs adapted the text tower only and never updated a DINOv2 weight, so their uniform_mean_768 features must be numerically identical to the before_cl arm. That identity is asserted as a correctness check on a previously untested arm, and any difference would be a bug, not a result. It also settles the text-only question directly: whatever text adaptation achieved for retrieval, it provably did not change what the image tower encodes.",
+        "features": [
+          "uniform_mean_768",
+          "plane_attention_768",
+          "projection_256"
+        ],
+        "name": "text-only final-block adaptation (--image-unfreeze-last 0 --text-unfreeze-last 1)"
+      }
+    },
+    "bootstrap": {
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "resamples": 5000,
+      "seed": 2029,
+      "unit": "study"
+    },
+    "cohort_manifest": "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
+    "comparisons": {
+      "anchor": "before_cl/uniform_mean_768 versus each adapted arm -- reproduces and extends the gold-probe-v1 table, and places both arms on the same scale as the published +0.0249 to +0.0271 image-block result",
+      "confounded": "projection_256 is a learned 768->256 linear-plus-GELU compression; a linear probe cannot gain from compression, so this arm is reported but is not evidence against contrastive learning",
+      "primary": "after_cl/both-block-seed<N>/uniform_mean_768 versus after_cl/image-block-seed<N>/uniform_mean_768 at matched seed -- matched pooling, matched dimensionality, matched seed, so the only difference is whether the final text block was also unfrozen. Computed by scripts/compare_downstream_arms.py.",
+      "secondary": "plane_attention_768 adds the learned plane pooling; per-arm, against the same arm's uniform_mean_768"
+    },
+    "derived_from": {
+      "config": "configs/downstream/gold-probe-v1.json",
+      "config_sha256_at_derivation": "1c4267387340a2cade7c4ade1de38ca398a4e41e998017221c81913031b6c576",
+      "policy": "The probe and bootstrap blocks below are copied by value from that config, unchanged, so every number here sits on the same folds, seeds and resamples and is directly comparable to its table. That config is frozen and is NOT edited to add these arms."
+    },
+    "estimand": "Readout quality of a frozen representation on a cohort it was trained on. Explicitly NOT generalisation: 56 of 58 gold cases were exposed to contrastive training or checkpoint selection. The both-block arm trains strictly more parameters on that same cohort than the image-block arm, so it has more room to look better for reasons unrelated to medical semantics. Any gain must be read with that asymmetry in mind.",
+    "gold_labels_csv": "data/cleaned.csv",
+    "labels": [
+      "ACL",
+      "MCL",
+      "Medial Meniscus",
+      "Lateral Meniscus",
+      "Medial OA",
+      "Lateral OA",
+      "PF OA",
+      "Effusion",
+      "Synovitis",
+      "Baker's",
+      "Contusion",
+      "Fracture"
+    ],
+    "manifest_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+    "metrics": {
+      "environment_note": "sklearn 1.8 deprecates the explicit penalty=l2 argument pinned above and removes it in 1.10. The fitted model is unchanged, since l2 is the default; a rerun on 1.10 must translate it to l1_ratio=0 rather than silently dropping it.",
+      "primary": "pooled out-of-fold AUROC per label, macro-averaged over the 12 labels",
+      "rare_labels": "MCL has 8 positives over 56 cases: pooled-OOF only, fold-level AUROC declared uninformative in advance",
+      "secondary": "pooled out-of-fold average precision (AUPRC)",
+      "tie_policy": "midrank. Every reported point estimate comes from sklearn.metrics.roc_auc_score. The bootstrap replicates use an equivalent rank-sum implementation (scipy.stats.rankdata) for speed, and the script asserts the two agree to 1e-9 on every label's real scores before building any interval."
+    },
+    "population": "gold studies whose cohort split is train or validation; locked-test gold studies are counted only",
+    "probe": {
+      "C": 1.0,
+      "class_weight": null,
+      "estimator": "sklearn.linear_model.LogisticRegression",
+      "fold": "StratifiedKFold(shuffle=True), stratification computed inside the per-label fold loop",
+      "fold_seed": 2026,
+      "folds": 8,
+      "max_iter": 5000,
+      "penalty": "l2",
+      "predictions": "exactly one held-out decision_function score per study per label",
+      "solver": "lbfgs",
+      "standardize": "StandardScaler fitted inside each training fold",
+      "tuning": "none; every hyperparameter is fixed here before the first fit"
+    },
+    "probe_version": "gold-probe-both-block-v1",
+    "purpose": "Does adapting the final IMAGE block and the final TEXT block together make the image tower read medical semantics better than adapting the image block alone? Unadapted DINOv2 is the anchor; image-block at the same seed is the contrast.",
+    "reference": {
+      "lm_label_extraction": "data/lm_label/*.csv scored against the same gold labels on the same 56 studies, as the text-side label-extraction ceiling"
+    },
+    "schema_version": 1,
+    "scope": "Read-only over existing artifacts. No training, no locked-test evaluation, no writes into any run directory."
+  },
+  "config_sha256": "a5311cbdd2c3772192055bbfdbebf97719c515a844bd8ecfb9ac5514d7c5781e",
+  "features_sha256": "28732207f9da2c2343a29349be5d4355d9720142f403e55fed5b88f95834ff10",
+  "paired_comparisons": {
+    "after_cl/both-block-seed2027/uniform_mean_768 vs after_cl/image-block-seed2027/uniform_mean_768": {
+      "baseline_arm": "after_cl/image-block-seed2027/uniform_mean_768",
+      "candidate_arm": "after_cl/both-block-seed2027/uniform_mean_768",
+      "fraction_of_replicates_favouring_right": 0.4842,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_baseline": 0.6706172967590954,
+      "macro_auroc_candidate": 0.67057638042274,
+      "macro_auroc_difference_ci95": [
+        -0.004524434002999067,
+        0.00446063960984847
+      ],
+      "macro_auroc_difference_mean": -8.382368195299695e-05,
+      "per_label_auroc_difference": {
+        "ACL": {
+          "ci95": [
+            -0.012755102040816313,
+            0.011612903225806494
+          ],
+          "difference": 0.0
+        },
+        "Baker's": {
+          "ci95": [
+            -0.02146690518783545,
+            0.0
+          ],
+          "difference": -0.005681818181818232
+        },
+        "Contusion": {
+          "ci95": [
+            -0.00401069518716568,
+            0.03281563941040841
+          ],
+          "difference": 0.011379800853485111
+        },
+        "Effusion": {
+          "ci95": [
+            0.0,
+            0.013021399456521768
+          ],
+          "difference": 0.0039525691699604515
+        },
+        "Fracture": {
+          "ci95": [
+            -0.018099547511312153,
+            0.009374999999999915
+          ],
+          "difference": -0.003016591251885248
+        },
+        "Lateral Meniscus": {
+          "ci95": [
+            -0.02560455192034139,
+            0.0026350461133070047
+          ],
+          "difference": -0.009358288770053402
+        },
+        "Lateral OA": {
+          "ci95": [
+            -0.01704545454545453,
+            0.022727272727272707
+          ],
+          "difference": 0.0020202020202021442
+        },
+        "MCL": {
+          "ci95": [
+            -0.0117647058823529,
+            0.027801932367149857
+          ],
+          "difference": 0.005208333333333259
+        },
+        "Medial Meniscus": {
+          "ci95": [
+            -0.007692307692307776,
+            0.01404853128991057
+          ],
+          "difference": 0.002564102564102555
+        },
+        "Medial OA": {
+          "ci95": [
+            -0.028622540250447196,
+            0.011908801982331402
+          ],
+          "difference": -0.005102040816326481
+        },
+        "PF OA": {
+          "ci95": [
+            -0.016081871345029253,
+            0.019047619047619035
+          ],
+          "difference": 0.001388888888888884
+        },
+        "Synovitis": {
+          "ci95": [
+            -0.020833333333333315,
+            0.009226052080911385
+          ],
+          "difference": -0.0038461538461538325
+        }
+      },
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    }
+  },
+  "population": {
+    "gold_studies": 58,
+    "manifest_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+    "population_size": 56,
+    "split_counts": {
+      "absent": 0,
+      "test": 2,
+      "train": 48,
+      "validation": 8
+    }
+  },
+  "provenance": {
+    "_cohort_manifest": "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
+    "_image_kwargs": {
+      "crop_mm": 130.0,
+      "image_size": 224,
+      "slice_band": [
+        0.2,
+        0.8
+      ],
+      "slices_per_plane": 3
+    },
+    "after_cl/both-block-seed2026": {
+      "checkpoint": "checkpoints/contrastive/claude-translated-dfd07db-both-block-v1/both-block-seed2026/best.pt",
+      "checkpoint_sha256": "64843b43123bf97d75965983a9fb0acae1bc80ac07e96687da225ff3877982b3",
+      "epoch": 15,
+      "image_unfreeze_last": 1,
+      "kind": "contrastive checkpoint",
+      "seed": 2026,
+      "text_unfreeze_last": 1
+    },
+    "after_cl/both-block-seed2027": {
+      "checkpoint": "checkpoints/contrastive/claude-translated-dfd07db-both-block-v1/both-block-seed2027/best.pt",
+      "checkpoint_sha256": "00fc96530c6645186f66fcb3ac656d24d3a5143018eb99f5de1a7e1198ead0c2",
+      "epoch": 20,
+      "image_unfreeze_last": 1,
+      "kind": "contrastive checkpoint",
+      "seed": 2027,
+      "text_unfreeze_last": 1
+    },
+    "after_cl/both-block-seed2028": {
+      "checkpoint": "checkpoints/contrastive/claude-translated-dfd07db-both-block-v1/both-block-seed2028/best.pt",
+      "checkpoint_sha256": "d81d9f849162e6380096a6b6872c1577c6d97966f64585533e44231d77ade953",
+      "epoch": 14,
+      "image_unfreeze_last": 1,
+      "kind": "contrastive checkpoint",
+      "seed": 2028,
+      "text_unfreeze_last": 1
+    },
+    "after_cl/image-block-seed2026": {
+      "checkpoint": "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2026/best.pt",
+      "checkpoint_sha256": "e828102d9a6919a2e9338e6a004ed99216f00c192e846d17c4ba5e1e2140f15f",
+      "epoch": 18,
+      "image_unfreeze_last": 1,
+      "kind": "contrastive checkpoint",
+      "seed": 2026,
+      "text_unfreeze_last": 0
+    },
+    "after_cl/image-block-seed2027": {
+      "checkpoint": "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2027/best.pt",
+      "checkpoint_sha256": "1282a2b994a72df9e67b590717d83ed429a8053b0772a853112b6e29fdf45014",
+      "epoch": 18,
+      "image_unfreeze_last": 1,
+      "kind": "contrastive checkpoint",
+      "seed": 2027,
+      "text_unfreeze_last": 0
+    },
+    "after_cl/image-block-seed2028": {
+      "checkpoint": "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2028/best.pt",
+      "checkpoint_sha256": "1dccd9c37b3f7ad8b74fc54747933a7ea522c7b2c5ddc82d8c440a91dfa5ac91",
+      "epoch": 17,
+      "image_unfreeze_last": 1,
+      "kind": "contrastive checkpoint",
+      "seed": 2028,
+      "text_unfreeze_last": 0
+    },
+    "before_cl/dinov2-unadapted": {
+      "image_model": "facebook/dinov2-small",
+      "image_model_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+      "kind": "unadapted pretrained backbone"
+    },
+    "frozen_tower_null/text-block-seed2026": {
+      "checkpoint": "checkpoints/contrastive/claude-translated-dfd07db-text-block-v1/text-block-seed2026/best.pt",
+      "checkpoint_sha256": "1bd27cb7ef625be5141047b858063a7e806fead150c370e7f403ca7adefe523b",
+      "epoch": 15,
+      "image_unfreeze_last": 0,
+      "kind": "contrastive checkpoint",
+      "seed": 2026,
+      "text_unfreeze_last": 1
+    },
+    "frozen_tower_null/text-block-seed2027": {
+      "checkpoint": "checkpoints/contrastive/claude-translated-dfd07db-text-block-v1/text-block-seed2027/best.pt",
+      "checkpoint_sha256": "755d0f7e9d411e8050ae0ee15ee37c95591adee661e7e86edd1469a146d6eba6",
+      "epoch": 17,
+      "image_unfreeze_last": 0,
+      "kind": "contrastive checkpoint",
+      "seed": 2027,
+      "text_unfreeze_last": 1
+    },
+    "frozen_tower_null/text-block-seed2028": {
+      "checkpoint": "checkpoints/contrastive/claude-translated-dfd07db-text-block-v1/text-block-seed2028/best.pt",
+      "checkpoint_sha256": "6c3e04cc87cb5fe13759ed1009e47dcb1384327126a37d93696eda2b1ae9147a",
+      "epoch": 16,
+      "image_unfreeze_last": 0,
+      "kind": "contrastive checkpoint",
+      "seed": 2028,
+      "text_unfreeze_last": 1
+    }
+  },
+  "purpose": "Seed-matched arm-versus-arm contrast, not arm-versus-unadapted.",
+  "results": {
+    "after_cl/both-block-seed2027/uniform_mean_768": {
+      "macro_auprc": 0.5616353609886969,
+      "macro_auroc": 0.67057638042274,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.4237515985453003,
+          "auroc": 0.5678524374176548,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.3684072595928418,
+          "auroc": 0.6856060606060606,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.7920940246422739,
+          "auroc": 0.829302987197724,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8686627828618342,
+          "auroc": 0.8089591567852438,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.38870243142567207,
+          "auroc": 0.5414781297134239,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.6155059910389159,
+          "auroc": 0.6002673796791445,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.27402197920914495,
+          "auroc": 0.5676767676767677,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.40655350084697917,
+          "auroc": 0.7473958333333333,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.7276818140101109,
+          "auroc": 0.7769230769230769,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.7437159097873384,
+          "auroc": 0.8163265306122449,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.5764436959937076,
+          "auroc": 0.5666666666666667,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.5540833439102439,
+          "auroc": 0.5384615384615385,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "after_cl/image-block-seed2027/uniform_mean_768": {
+      "macro_auprc": 0.5608353921340511,
+      "macro_auroc": 0.6706172967590954,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.42443534773506914,
+          "auroc": 0.5678524374176548,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.37078112859362855,
+          "auroc": 0.6912878787878788,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.7754406551284925,
+          "auroc": 0.8179231863442389,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8661286705914136,
+          "auroc": 0.8050065876152833,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.3899380536812157,
+          "auroc": 0.5444947209653092,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.6196168996356144,
+          "auroc": 0.6096256684491979,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.27283658669444105,
+          "auroc": 0.5656565656565655,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.40432338394294914,
+          "auroc": 0.7421875,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.7249929443280838,
+          "auroc": 0.7743589743589744,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.7431822250431273,
+          "auroc": 0.8214285714285714,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.5812328689620143,
+          "auroc": 0.5652777777777778,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.5571159412725633,
+          "auroc": 0.5423076923076924,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    }
+  },
+  "schema_version": 1,
+  "study_uids": [
+    "study-7fbb2a5a8b0ff546",
+    "study-d0813d9eca8145d4",
+    "study-cca0a43fc967c76a",
+    "study-272de5042e60aaa8",
+    "study-4c7e2b92fbb2d4eb",
+    "study-5ffc80b393a2931f",
+    "study-03c02ad767162c8f",
+    "study-80be32efbd79adf2",
+    "study-e3cd8ba7c4c33857",
+    "study-2901d9ea1a478fb2",
+    "study-f0d3a423cbc768e2",
+    "study-726f60971f4c11da",
+    "study-916279b0b2496d0d",
+    "study-3f7449f6a4a3e22c",
+    "study-554d123984b6110b",
+    "study-a5ea720fb283ecd2",
+    "study-9d3ddff3ed1faa40",
+    "study-f31708002735adf9",
+    "study-bee8dca223213d9e",
+    "study-b635be46ef2ffd43",
+    "study-e53bf44fb3ecee17",
+    "study-f3fa73618ce46869",
+    "study-d555b23f5e2a8a48",
+    "study-143f3e9df2ed34fe",
+    "study-d4fef01b42c9844e",
+    "study-96a14a2a3ca707a0",
+    "study-9753f49e97f282bb",
+    "study-472cd34a74d5cc26",
+    "study-fe9e6c99f87b84f8",
+    "study-6fbfb26274ca6694",
+    "study-ef85bac5388f1cbf",
+    "study-10386a034080af52",
+    "study-5331dc8b90331eac",
+    "study-7e361b918a7ab423",
+    "study-3205200df8c482bc",
+    "study-715eceeb06e2af50",
+    "study-4e6a7f6f1773a05e",
+    "study-8d4c4862e9a8345e",
+    "study-56b51a810d7c6a0e",
+    "study-1e4b81f1477e3932",
+    "study-c6de5ee2f987884b",
+    "study-f1edab986aa2d68c",
+    "study-af004b83e27a15fb",
+    "study-df0e3ddcdd10d681",
+    "study-7e474a63863eb905",
+    "study-fb4a16f220ca8505",
+    "study-5c97601043577052",
+    "study-ce58c42bfe08ca3b",
+    "study-66b5496d2175a621",
+    "study-70b7097ec699fd1f",
+    "study-a6f448aa5d1794d2",
+    "study-6f823188d3ab272d",
+    "study-07b92def36d27b2f",
+    "study-551006b1e03d09db",
+    "study-67d6014d792c8ee8",
+    "study-098a599ad6910a6f"
+  ]
+}

@@ -244,7 +244,7 @@ The near-term deliverable is therefore an evidence and evaluation decision, not 
 | [Input audit](claude-translated-dfd07db-input-audit.json), [duplicate verification](claude-translated-dfd07db-duplicate-verification.json), [continuation](claude-translated-dfd07db-continuation.md) | Scope of integrity checks and quarantine. |
 | [Text preflight](english-medical-text-preflight.json) | Token distributions and model-specific input coverage. |
 | [Ordering comparison](claude-translated-dfd07db-comparison-results.md), [image results](claude-translated-dfd07db-image-block-results.md), [text results](english-medical-text-results.md) | Completed comparisons, directional metrics, uncertainty. |
-| [Current handoff](handoff/) (local) | Pending qualitative text review and historical execution boundaries; experiment suggestions there do not authorize work in this session. |
+| [Current handoff](handoff/) (local) | Execution boundaries and the running cleanup log. The qualitative text review is complete ([error review](english-medical-text-error-review.md)); experiment suggestions there do not authorize work in this session. |
 | [Primary-source notes](knee-clip-feedback-source-notes.md) | MedCLIP/E5 provenance and OOF methodology qualifications. |
 
 The repository cannot currently answer which report belongs to the known duplicate acquisition, whether all remaining studies are independent, how much target-specific clinical information truncation removes, whether the projected embedding preserves all 12 targets, which semantic target is reliable, or how accurately a final image-only model generalizes. Each is retained above as an explicit question with an evidence requirement, rather than filled in with an assumption.

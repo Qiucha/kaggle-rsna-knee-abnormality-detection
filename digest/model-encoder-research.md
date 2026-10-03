@@ -54,7 +54,7 @@ Hold the image backbone, report preprocessing, split, batch construction, projec
 4. BiomedBERT — broad biomedical control.
 5. BioClinicalBERT — broad clinical control.
 
-Choose the winner using bidirectional retrieval on a patient-disjoint validation set: image→report and report→image Recall@1/5/10, median rank, and mean rank. Report both directions because a model can retrieve text from images well while producing weaker image retrieval from text.
+Choose the winner using bidirectional retrieval on the held-out validation split — which is study-disjoint, and cannot be made patient-disjoint, per the [integrity audit](integrity-coverage-audit.md): image→report and report→image Recall@1/5/10, median rank, and mean rank. Report both directions because a model can retrieve text from images well while producing weaker image retrieval from text.
 
 ## Text representation and adaptation details
 

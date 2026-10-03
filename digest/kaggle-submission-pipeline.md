@@ -1,6 +1,6 @@
 # Kaggle submission and benchmark pipeline
 
-Checked against the working tree and local artifacts on 2026-09-21. The root README's
+Checked against the working tree and local artifacts on 2026-09-25. The root README's
 original multilingual matrix is historical context; newer downstream experiments
 include both-tower adaptation, LoRA, DeCLIP, label-similarity targets, and gold holdouts.
 Existing user changes were retained.
@@ -12,20 +12,39 @@ LLMs; use that workflow only when an LLM evaluation is explicitly requested.
 
 ## Current model choice
 
-The default is the **holdout-trained six-block, rank-64 LoRA encoder** at
-`checkpoints/contrastive/both-lora-holdout-v1/holdout-both-lora-depth6-r64-seed2026/best.pt`.
-The existing `digest/downstream-probe-lora-holdout-v1.json` reports **0.75936**
-macro AUROC for its uniform mean CLS+patch features. The regularized LoRA variant
-scores 0.71261. Both exclude the gold cohort from encoder training and selection.
-The older three-seed four-block holdout checkpoints remain an explicit comparison.
-Higher exposed-cohort results in other digests are not directly comparable.
+The default submission is the **DINOv2-small + E5-base LM-MLP bundle**. It scored
+**0.788** public macro ROC-AUC in submission 56526493, the best score so far. Its
+local assets are `checkpoints/kaggle/lm-mlp-tower-size-58-dinov2-small-e5-base/`,
+built from `configs/kaggle/lm-mlp-tower-size-58-dinov2-small-e5-base.json`. The
+Kaggle assets are `kyunhsuan/rsna-knee-lm-mlp-dinov2s-e5base-{bundle,submission}`,
+with notebook version 1.
 
-The original contrastive checkpoints have no pathology classifier. This pipeline
-fits twelve standardized logistic heads on the **56 eligible gold-labeled studies**
-in `data/cleaned.csv`. Two additional gold studies remain locked test and are never
-used. Blank competition training labels and fractional LM label confidences are
-rejected as supervised targets. This is a gold-only first submission, not a classifier
-trained on all 4,407 studies or a pseudo-label training experiment.
+- **Encoder:** frozen **holdout-trained six-block, rank-64 LoRA encoder** at
+  `checkpoints/contrastive/both-lora-holdout-v1/holdout-both-lora-depth6-r64-seed2026/best.pt`.
+  This is the same checkpoint as the first submission. It excludes the gold cohort
+  from encoder training and selection.
+- **Head:** three seeded 256-unit MLPs averaged by probability. They were trained on
+  `data/lm_label/lm_labels_kaggle.csv` `YES`/`NO` verdicts, with `UNK` masked, and
+  selected by minimum validation BCE. Gold labels were never used for fitting or
+  epoch selection. The local score is 0.7659 AUROC on the 58 gold cases.
+
+Changing only the head, from gold logistic to LM-verdict MLP, raised the public score
+from 0.717 to 0.788. The DINOv2-small + E5-small LM-MLP bundle scored 0.774.
+Among local metrics, only LM-test AUROC ranks all three submissions correctly. The
+leaderboard section below gives the evidence and its label-bias limitations. Neither
+gold AUROC nor I→T R@1 should be used alone to select a bundle.
+
+### Previous default (first submission, 0.717 public)
+
+The first submitted bundle used the same LoRA encoder with twelve standardized
+logistic heads fitted on the 56 eligible gold-labeled studies in `data/cleaned.csv`.
+`digest/downstream-probe-lora-holdout-v1.json` reports **0.75936** OOF macro AUROC for
+those features; the regularized LoRA variant scores 0.71261. The older three-seed
+four-block holdout checkpoints remain an explicit comparison. Higher exposed-cohort
+results in other digests are not directly comparable. The two additional gold studies
+were not used by that bundle but were later scored in the 58-case LM-head experiment
+and are no longer untouched. Blank competition training labels and fractional LM
+label confidences are rejected as supervised targets.
 
 ## Verified local results
 
@@ -35,12 +54,43 @@ The pipeline was executed on the RTX 3070 using the existing CUDA environment:
 | --- | ---: | ---: | ---: |
 | Unadapted DINOv2 | 0.643992 | benchmark reference only | — |
 | Four-block holdout, three-seed probability ensemble | 0.696292 | 3 studies / 18.64 s | 265.6 MB |
-| **Six-block LoRA holdout, default** | **0.759362** | **3 studies / 7.17 s** | **99.5 MB** |
+| **Six-block LoRA holdout, first submission** | **0.759362** | **3 studies / 7.17 s** | **99.5 MB** |
 
 LoRA peak allocated GPU memory was 183.6 MB for the three-study inference call.
 These timings exclude Python import/startup and are hardware- and cache-dependent.
 The maximum export/reload probability difference was 2.94e-7 for LoRA.
 All 56 benchmark cases were confirmed `excluded` in each encoder's own cohort.
+
+## New local LM-head comparison on all 58 gold cases
+
+Four frozen, gold-holdout contrastive image encoders were each fitted with the same
+three-seed 12-label MLP head using `data/lm_label/lm_labels_kaggle.csv` (`YES`/`NO`
+targets; `UNK` masked). The head training and validation splits contain 3,438 and
+426 studies. All 58 gold studies were excluded from both, including the two from
+the former test split. Each AUROC below was independently recomputed from the
+saved 58-study predictions.
+
+| Image tower | Text tower | LM-linear 58-case AUROC | LM-MLP 58-case AUROC |
+| --- | --- | ---: | ---: |
+| DINOv2-small | E5-base | 0.7336 | **0.7659** |
+| DINOv2-small | E5-small | 0.7312 | 0.7541 |
+| DINOv2-base | E5-base | 0.7330 | 0.7504 |
+| DINOv2-base | E5-small | 0.7362 | 0.7605 |
+
+The linear heads show much smaller late validation-loss rebound, but the
+validation-selected MLP ensembles score higher on gold in every pairing. The
+MLP-minus-linear paired 95% intervals exclude zero for small-image/E5-base and
+base-image/E5-small, and include zero for the other two pairings. This supports
+early stopping of the MLP; it does not justify using its overtrained final epoch.
+
+The 58-case LM-head scores and the earlier 56-case gold-only OOF scores use
+different training labels and evaluation populations. They are not paired
+estimates of an improvement over the existing Kaggle submission. Every paired
+size contrast within the 58-case experiment has a 95% study-bootstrap interval
+spanning zero. The full protocol, loss curves, per-label results, and links to
+the four local bundles are in the [LM-head report](lm-head-tower-size-58-v1.md)
+and [HTML digest](lm-head-tower-size-58-v1.html). The two DINOv2-small bundles were
+submitted on 2026-09-24; see the leaderboard section below.
 
 Local artifacts are under `checkpoints/kaggle/{lora-holdout-v1,gold-holdout-v1}/`:
 `benchmark.json`, `bundle/`, `submission.csv`, and `submission.benchmark.json`.
@@ -49,7 +99,7 @@ Hugging Face offline mode enabled. Tests: **139 passed, 1 skipped**, including s
 new deployment tests. The seven deployment tests were also rerun after formatting;
 Ruff and notebook code syntax checks passed.
 
-The default bundle was also validated in a private Kaggle notebook version on
+The first-submission bundle was also validated in a private Kaggle notebook version on
 2026-09-23 using a T4 with Internet disabled. The hosted run completed successfully:
 three studies in 30.11 seconds, 184.6 MB peak allocated CUDA memory, and the same
 bundle hash (`cb571c7e...bc91cf`) as the local export. Its output had the expected
@@ -75,6 +125,97 @@ estimate. The live result confirms that the complete image preprocessing, LoRA i
 encoder, fitted pathology heads, and submission schema execute successfully on the
 hidden test set. It also establishes that this small gold-only head is not currently
 competitive and is the baseline for subsequent leaderboard experiments.
+
+## LM-head leaderboard results: which local criterion tracks the public score?
+
+Two DINOv2-small LM-MLP bundles were submitted on 2026-09-24 to test whether
+contrastive image-to-text R@1 or 58-case gold macro AUROC better predicts the public
+leaderboard. Before submission, the expected outcomes were recorded in each run's
+`leaderboard-submission.json`: a higher E5-small score would favor R@1, and a
+higher E5-base score would favor gold AUROC. Each bundle was uploaded to its own
+private dataset. Each private T4 notebook, version 1, reproduced the local bundle
+hash, and its predictions were within 3.5e-6 of local CUDA output.
+
+| Submission | Towers | I→T R@1 | 58-case gold AUROC | Public macro ROC-AUC |
+| --- | --- | ---: | ---: | ---: |
+| 56479080 (baseline) | DINOv2-small + E5-base, gold logistic head | 13.97% | 0.7594 (56 OOF) | 0.717 |
+| **56526493** | DINOv2-small + E5-base, LM-MLP head | 13.97% | **0.7659** | **0.788** |
+| 56526496 | DINOv2-small + E5-small, LM-MLP head | **14.55%** | 0.7541 | 0.774 |
+
+**Neither local metric ranks all three submissions correctly.**
+
+| Pair (public gap) | Local gold AUROC | I→T R@1 |
+| --- | --- | --- |
+| E5-base LM vs E5-small LM (+0.014) | agrees | disagrees |
+| E5-base LM vs first submission (+0.071) | agrees | tie (same encoder) |
+| E5-small LM vs first submission (+0.057) | **disagrees** (0.7541 < 0.7594) | agrees |
+
+- **Head effect:** both large gaps separate an LM-verdict MLP head from the gold-only
+  logistic head. The head type is the one factor that matches the public ordering.
+- **I→T R@1:** it cannot explain a gap between two bundles with the same encoder.
+- **Local AUROC:** the first-submission AUROC is a 56-case OOF score for heads fitted
+  on 56 gold labels. The LM-head scores use 58 held-out cases and heads trained on
+  3,438 studies. These protocols are not comparable, and the 56-case OOF score
+  overstated that small head's public performance.
+- **Within one head protocol:** the only comparison is E5-base versus E5-small. The
+  ordering agrees with gold AUROC, but the R@1 gap is below the seed noise floor, and
+  the gold-AUROC paired 95% interval includes zero. One pair does not establish
+  either metric as a leaderboard proxy.
+
+### Standard local report: LM-test AUROC
+
+**LM-test AUROC** is a standard local performance report for every exported bundle,
+alongside gold AUROC. It is the masked macro AUROC against LM `YES`/`NO` verdicts on
+the cohort's **432 non-gold locked-test studies**.
+
+- **Clean population:** no contrastive checkpoint selection, LM-head fitting or
+  epoch selection, or gold-head fitting used these studies.
+- **Exclusions:** gold studies and every study sharing a gold patient group are
+  removed. `UNK` cells are ignored.
+- **Implementation:** `src/contrastive_learning/lm_proxy.py`. Features come from each
+  bundle's frozen encoder and are cached by checkpoint checksum under
+  `checkpoints/kaggle/lm-proxy-cache/`. Scoring uses the deployed `predict_head`.
+- **Output:** every run writes `<run>/lm-proxy.json`. `scripts/train_lm_head.py` and
+  `scripts/build_kaggle_bundle.py` do this automatically.
+- **Comparison:** `scripts/eval_lm_proxy_heads.py <run dirs> --output <json>` adds
+  paired study-bootstrap intervals and pairwise agreement with recorded public scores.
+- **Digest:** the LM-head digest (`lm-head-tower-size-58-v1.md`) shows it next to gold
+  AUROC.
+
+| Run | Gold AUROC (local) | LM-test AUROC (432) | Public |
+| --- | ---: | ---: | ---: |
+| DINOv2-small + E5-base, LM-MLP (56526493) | 0.7659 | 0.8336 | **0.788** |
+| DINOv2-small + E5-small, LM-MLP (56526496) | 0.7541 | 0.8275 | 0.774 |
+| First submission, gold logistic (56479080) | 0.7594 (56 OOF) | 0.6844 | 0.717 |
+| DINOv2-base + E5-base, LM-MLP | 0.7504 | 0.8324 | — |
+| DINOv2-base + E5-small, LM-MLP | 0.7605 | **0.8401** | — |
+
+**LM-test AUROC orders all 3 public-score pairs correctly.** Gold AUROC orders 2 of 3,
+and I→T R@1 orders 1 of 3. Paired 95% intervals are in `digest/lm-proxy-eval-v2.json`:
+
+- **DINOv2-base + E5-small vs DINOv2-small + E5-small:** +0.0126 [+0.0028, +0.0223].
+  This is the only encoder contrast whose interval excludes zero.
+- **DINOv2-base + E5-small vs DINOv2-small + E5-base (current best public):** +0.0065
+  [-0.0026, +0.0163].
+- **Other LM-head pairs:** all intervals include zero.
+- **First submission vs LM heads:** about -0.15, with intervals near [-0.17, -0.12].
+
+Unsubmitted DINOv2-base + E5-small has the highest LM-test score. It is the best
+candidate for the next leaderboard check of this metric.
+
+Limitations:
+
+- **Label bias:** heads trained on LM verdicts are scored against those same verdicts.
+  The metric therefore favors LM-trained heads over heads trained with other labels.
+  It overstated the gold-logistic → LM-MLP public gap by about 2×.
+- **Best use:** comparing encoders under one LM-head recipe.
+- **Evidence:** only 3 public scores have been checked. The only encoder-only public
+  pair differs by 0.006 LM-test AUROC, and its interval includes zero.
+
+Record LM-test AUROC with every future submission to continue testing its agreement.
+`digest/lm-proxy-eval-v1.json` also contains the first three runs on the
+426-study LM validation split. LM heads selected epochs on that split, so it is a
+secondary reference only.
 
 ## Build and benchmark
 

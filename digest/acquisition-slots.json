@@ -1,0 +1,60 @@
+{
+  "studies": 4407,
+  "series": 24371,
+  "weighting_counts": {
+    "PD": 13646,
+    "T1": 5383,
+    "T2": 5114,
+    "GRE": 226,
+    "UNK": 2
+  },
+  "decided_by": {
+    "description": 18777,
+    "timing": 5594
+  },
+  "fat_suppressed_share": 0.5717451068893357,
+  "fluid_sensitive_share": 0.7697673464363383,
+  "slot_fill": {
+    "Coronal / PD / fatsat": 0.8400272294077604,
+    "Sagittal / PD / fatsat": 0.8261856137962332,
+    "Axial / PD / fatsat": 0.7220331291127752,
+    "Coronal / T1 / no-fatsat": 0.641479464488314,
+    "Sagittal / T1 / no-fatsat": 0.4111640571817563,
+    "Sagittal / PD / no-fatsat": 0.3746312684365782,
+    "Sagittal / T2 / no-fatsat": 0.3147265713637395,
+    "Axial / T2 / fatsat": 0.281597458588609,
+    "Sagittal / T2 / fatsat": 0.18901747220331291,
+    "Coronal / T2 / fatsat": 0.16950306330837303,
+    "Coronal / PD / no-fatsat": 0.1325164511005219,
+    "Axial / T1 / no-fatsat": 0.12389380530973451,
+    "Coronal / T2 / no-fatsat": 0.12026321760835035,
+    "Axial / PD / no-fatsat": 0.07465395960971183,
+    "Axial / T2 / no-fatsat": 0.0540049920580894,
+    "Sagittal / GRE / no-fatsat": 0.035398230088495575,
+    "Axial / GRE / no-fatsat": 0.014749262536873156,
+    "Axial / T1 / fatsat": 0.011118674835488994,
+    "Sagittal / T1 / fatsat": 0.0036305877013841615,
+    "Coronal / T1 / fatsat": 0.0020422055820285907,
+    "Coronal / UNK / fatsat": 0.0004538234626730202
+  },
+  "selected_by_pipeline": {
+    "weighting": {
+      "PD": 10730,
+      "T2": 2479,
+      "T1": 10,
+      "UNK": 2
+    },
+    "fat_suppressed_share": 0.957870055215188,
+    "fluid_sensitive_share": 0.9990923530746539
+  },
+  "discarded_by_pipeline": {
+    "weighting": {
+      "T1": 5373,
+      "PD": 2916,
+      "T2": 2635,
+      "GRE": 226
+    },
+    "fat_suppressed_share": 0.11390134529147983,
+    "fluid_sensitive_share": 0.497847533632287
+  }
+}

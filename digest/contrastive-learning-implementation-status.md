@@ -44,7 +44,7 @@ Reader validation rejects duplicate studies, invalid splits, patient groups span
 
 The translated pilot artifact contains 58 eligible studies with fixed splits of 46 train, 6 validation, and 6 test; all 58 passed pixel validation. The full cohort uses the multilingual-raw contract because full translations do not exist.
 
-One limitation remains: all observable DICOM `PatientID` values are unique. The split is grouped by that field, but the data cannot prove whether anonymization happened per patient or per study.
+One limitation remains, and as of 2026-09-11 it is settled in the unhelpful direction: all observable DICOM `PatientID` values are unique, and the split is grouped by a field whose every group holds one study. Anonymization is per study, not per patient — the two studies of the known pixel-identical duplicate pair carry different `PatientID` values. Patient independence is therefore unverifiable rather than merely unproven; see the [integrity audit](integrity-coverage-audit.md).
 
 ### 5. Harden run management
 

@@ -26,15 +26,40 @@ Preprocessing can affect source identity: short series repeat selected indices; 
 
 ## Logging and reproduction
 
-Enable tracing on any training/evaluation command with `CONTRASTIVE_SHAPE_TRACE=1`; redirect stderr to a JSONL file. This logs every PyTorch operation before and after, including backbone internals, reshape/view, flatten's component operations, permute/transpose, indexing, convolution, and reductions. It also records NumPy slice stacking and percentile aggregation. Scope and sequence pair the before/after records; named `image.*` events explain axis semantics. Tracing is off by default and includes no tensor values. It is verbose: enable for a bounded diagnostic run. Existing running processes must load the updated code to use it.
+> **Correction, 2026-09-10.** This section previously described a tracing harness —
+> `src/contrastive_learning/shape_trace.py`, `scripts/audit_image_shapes.py`,
+> `tests/test_image_shape_trace.py`, and a `CONTRASTIVE_SHAPE_TRACE=1` switch — and gave
+> commands to regenerate the trace. **None of those files exist**, in the working tree or
+> anywhere in git history (`git log --all -- <path>` returns nothing for each; no source file
+> mentions `CONTRASTIVE_SHAPE_TRACE`). The commands could never have run as written. The
+> section below states what is actually present.
 
-Offline reproduction (no downloads):
+The saved trace `digest/image-shape-trace.jsonl` **is** committed (added in `62a2a8f`) and is
+the evidence behind the table above. It holds 1,176 records: 585 matched `before`/`after`
+operation pairs, plus four named `image.*` events (`image.input`, `image.flatten`,
+`image.dino_input`, `image.dino_output`) that label axis semantics. Each record carries
+`scope`, `sequence`, `operation`, and tensor shapes/dtypes — **no tensor values**. Those counts
+are verifiable directly from the file.
+
+It was produced against the full 12-block, 384-wide DINOv2-small architecture with random
+weights and two synthetic studies at 224×224. All 18 distinct slice markers are recovered at the
+backbone input; embeddings have shape `[2,256]`. That verifies computation, not a trained
+checkpoint's quality or real DICOM provenance.
+
+**The trace cannot currently be regenerated.** The code that produced it was never committed.
+Treat the JSONL as a frozen historical artifact: cite it, but do not advertise a reproduction
+command. Rebuilding the harness is optional work, not a prerequisite for trusting the table —
+the reshape and pooling claims are readable directly from `model.py:136-155`, and the input
+shape guard those claims depend on lives at `model.py:135`.
+
+What *is* runnable today is the regression coverage, in **`tests/test_image_tower.py`**:
 
 ```sh
-.venv/bin/python scripts/audit_image_shapes.py 2> digest/image-shape-trace.jsonl
-.venv/bin/python -m pytest tests/test_image_shape_trace.py tests/test_preprocessing.py -q
+.venv/bin/python -m pytest tests/test_image_tower.py tests/test_preprocessing.py -q
 ```
 
-The saved trace uses the full 12-block, 384-wide DINOv2-small architecture with random weights and two synthetic studies at 224×224. All 18 distinct slice markers are recovered at the backbone input; embeddings have shape `[2,256]`. This verifies computation, not a trained checkpoint's quality or real DICOM provenance.
-
-Regression tests independently verify every batch/plane/channel value (including noncontiguous input), correct study-level pooling, rejection of missing axes, complete before/after operation pairing, and nonzero influence from all nine channels with no cross-study influence using a smaller real DINOv2 model.
+It independently verifies every batch/plane/channel value reaching the backbone (including
+noncontiguous input), correct study-level pooling under uniform plane attention, rejection of
+missing plane or channel axes, and nonzero gradient influence from all nine slice channels with
+no cross-study leakage, using a small real `Dinov2Model`. That is the substance of the
+regression claim; only the trace-pairing check is absent, since it lived in the missing file.

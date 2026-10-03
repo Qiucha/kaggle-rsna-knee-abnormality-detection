@@ -1,0 +1,103 @@
+{
+ "generated": "2026-09-11T17:46:22+0800",
+ "authorisation": "User instruction, 2026-09-11, to decode the gated train/test candidate. This is the locked-test protocol decision the feedback response's section 8 reserves for the user.",
+ "scope": {
+  "reads_test_pixels": true,
+  "reads_test_report_text": false,
+  "reads_test_labels": false,
+  "loads_a_model_or_computes_a_metric": false,
+  "note": "Reports are compared by manifest sha256, so agreement is established without either report being read."
+ },
+ "train_study": "study-2287d66535a19a17",
+ "test_study": "study-7721d58988002023",
+ "pixels_identical_on_every_plane": false,
+ "identical_planes": {
+  "Axial": false,
+  "Coronal": false,
+  "Sagittal": false
+ },
+ "reports_identical": false,
+ "source_reports_identical": false,
+ "verdict": "CLEARED: same acquisition protocol and slice geometry, different images. Not a duplicate; the test split is unaffected.",
+ "seconds": 2.9,
+ "per_study": {
+  "study-7721d58988002023": {
+   "split": "test",
+   "training_eligible": true,
+   "laterality": "R",
+   "report_sha256": "37623bb696a4a5082142e4f2a17e8850e48670abdc92eaa5585870361babeb28",
+   "source_report_sha256": "37623bb696a4a5082142e4f2a17e8850e48670abdc92eaa5585870361babeb28",
+   "planes": {
+    "Axial": {
+     "ordered_decoded_pixel_sha256": "57405dd738a9794f2bbcb9f1d9276ef82a53934e036b0e1b45dbceef0ed57e0d",
+     "slices": 30,
+     "slice_shapes": [
+      "(512, 512)"
+     ],
+     "dtypes": [
+      "float32"
+     ]
+    },
+    "Coronal": {
+     "ordered_decoded_pixel_sha256": "36ba6da2b039d2227aa7af3a6b8d38a35dd2f953e0571f91c1fa48cee3920f80",
+     "slices": 26,
+     "slice_shapes": [
+      "(512, 512)"
+     ],
+     "dtypes": [
+      "float32"
+     ]
+    },
+    "Sagittal": {
+     "ordered_decoded_pixel_sha256": "5549afdb1b9c8a9695e451242f0e1440996b03c88f179dadf9588cf68b32d18a",
+     "slices": 24,
+     "slice_shapes": [
+      "(640, 640)"
+     ],
+     "dtypes": [
+      "float32"
+     ]
+    }
+   }
+  },
+  "study-2287d66535a19a17": {
+   "split": "train",
+   "training_eligible": true,
+   "laterality": "R",
+   "report_sha256": "621f43b26626b716f91bf9d35186ce53be0ba60392ddf9baf73f99f52d80de5d",
+   "source_report_sha256": "621f43b26626b716f91bf9d35186ce53be0ba60392ddf9baf73f99f52d80de5d",
+   "planes": {
+    "Axial": {
+     "ordered_decoded_pixel_sha256": "455669c922ff3d027b6191d1ba571876bfc0389b26bd4a800448394bb2ed9186",
+     "slices": 30,
+     "slice_shapes": [
+      "(512, 512)"
+     ],
+     "dtypes": [
+      "float32"
+     ]
+    },
+    "Coronal": {
+     "ordered_decoded_pixel_sha256": "96895bcd6d933f91686f2a38b67a59995c8954b1050b4cdfe3298df90e888e8f",
+     "slices": 26,
+     "slice_shapes": [
+      "(512, 512)"
+     ],
+     "dtypes": [
+      "float32"
+     ]
+    },
+    "Sagittal": {
+     "ordered_decoded_pixel_sha256": "8d259ac3f226edc5ad62996fc81dbf336e8ce6a99254e8123b9aecb7db4d9c9e",
+     "slices": 24,
+     "slice_shapes": [
+      "(640, 640)"
+     ],
+     "dtypes": [
+      "float32"
+     ]
+    }
+   }
+  }
+ }
+}
