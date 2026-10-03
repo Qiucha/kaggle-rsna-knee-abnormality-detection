@@ -50,3 +50,25 @@ checkpoints/
 # committed; the notes themselves stay on the machine that produced them.
 digest/handoff/*
 !digest/handoff/README.md
+
+# Third-party LM label table: licensed for our use, not for redistribution
+data/lm_label/lm_labels_kaggle.csv
+
+# Run logs, agent tooling, and the locally served digest site (rebuilt by
+# scripts/build_digest_site.py)
+logs/
+.agents/
+.claude/
+skills-lock.json
+digest/site/
+
+# Cached probe features: large, and rebuilt from checkpoints by the probe scripts
+digest/*.npz
+
+# This machine's disk guards and archive mover (they assume one WSL host's Windows C:/D: disks)
+scripts/archive_checkpoints.sh
+scripts/disk_watchdog.sh
+scripts/require_free_space.sh
+
+# Personal Kaggle kernel metadata (account slug, private dataset)
+notebooks/kernel-metadata.json
