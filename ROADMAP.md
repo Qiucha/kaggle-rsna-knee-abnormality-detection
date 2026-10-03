@@ -2,6 +2,15 @@
 
 Last reviewed: 2026-09-11 (Asia/Taipei)
 
+> **Update 2026-10-03.** The work is now split into two tracks.
+> - **Track 1, supervised label training,** fine-tunes image backbones on LM labels.
+>   It is at a satisfactory stage; the reference recipe is run 5, public 0.879.
+> - **Track 2, report-based representation learning,** tests whether contrastive
+>   image–report training adds to Track 1 when the two are combined.
+>
+> See [Experiment tracks](README.md#experiment-tracks). The milestones below predate
+> this split, and they describe the contrastive pipeline only.
+
 ## Working goal
 
 Build a reproducible knee MRI research pipeline that learns study representations

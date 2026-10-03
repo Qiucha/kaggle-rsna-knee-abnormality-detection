@@ -26,11 +26,13 @@ The leaderboard models are no longer contrastive encoders with a fitted head. Th
 are **image backbones fine-tuned end to end on LM-extracted labels** (the "R4a"
 rung: K=8 windows of 3 slices per plane, mean-pooled). The contrastive code
 remains as the source of the initial checkpoint for one member, and as a record of
-the experiments that led here.
+the experiments that led here. See [Experiment tracks](#experiment-tracks) for how
+the two lines of work relate.
 
 | What | Where |
 | --- | --- |
-| Best public score, 0.839 | `configs/finetune/r4a-k8-omnirad-base-pretrained.json` (OmniRad-base, hard verdict targets) |
+| Best public score, 0.879 (run 5, submission 56789799) | `configs/finetune/r4a-k8-omnirad-base-soft-336.json` (OmniRad-base, soft targets, 336 px) |
+| Previous best, 0.839 | `configs/finetune/r4a-k8-omnirad-base-pretrained.json` (OmniRad-base, hard verdict targets, 224 px) |
 | Three-member candidate, not yet submitted | soft-target R4a (`r4a-soft-224-k8-mean.json`) + OmniRad-base + OmniRad-base soft 336 (`r4a-k8-omnirad-base-soft-336.json`), combined by per-label rank mean |
 | Train one member | `.venv-cuda/bin/python scripts/finetune_supervised.py --config configs/finetune/<rung>.json --output checkpoints/finetune/<rung>` |
 | Export members as one Kaggle bundle | `scripts/export_finetune_bundle.py --run <run dir> [--run ...] --output checkpoints/kaggle/<name>` |
@@ -64,6 +66,62 @@ older image cache rather than migrating it with `scripts/migrate_cache_keys.py`.
 
 For the next image and text tower runs, read the prioritized
 [model candidate and comparison note](digest/next-model-candidates.md) before deploying an experiment.
+
+## Experiment tracks
+
+Most experiments since 2026-09-29 do **not** train with the contrastive pipeline.
+They fine-tune an image backbone directly on LM-extracted labels. From here the
+work is split into two tracks, which share one data and evaluation core: the
+cohort manifest and its splits, DICOM preprocessing, the K-window input path,
+LM-test, and the gold-58 guard.
+
+**Track 1: supervised label training.** This track asks what kind of supervised
+label training to do: label form (hard verdicts or soft targets), UNK handling,
+resolution, slice sampling, multi-slice pooling and backbone. It has reached a
+stage we are satisfied with. The reference recipe is run 5,
+`r4a-k8-omnirad-base-soft-336`, at public 0.879. Its ladder and decisions are in
+`digest/finetune-ladder-v1.json`. Runs still queued against run 5 (a second seed,
+more epochs, deeper unfreezing, 384 px) will be reviewed before the next
+direction is set.
+
+**Track 2: report-based representation learning.** The LM labels compress each
+report into twelve YES/NO/UNK verdicts, and weak supervision on those verdicts is
+limited by the size of the labelled cohort (about 3,400 training studies). Track 2
+asks whether image–report contrastive learning, which uses the full report text,
+adds to the Track-1 recipe when the two are combined. The combinations to test
+are:
+
+- (a) contrastive pretraining, then Track-1 fine-tuning from that checkpoint;
+- (b) a contrastive auxiliary loss trained jointly with the label loss.
+
+**What the earlier combined runs do and do not show.** The DINOv2-small R4a rungs
+(`r1c-*`, `r4a-hard/soft-224-k8-*`, `r4b-*`, among them the soft R4a ensemble
+member) start from the contrastive checkpoint `both-lora-holdout-v1`. That
+checkpoint was trained on a single 3-slice stack per plane, while R4a fine-tunes
+on K=8 jittered windows per plane. Pretraining and fine-tuning therefore saw
+different inputs. The matched-init comparisons below (configs differ only in
+`init_checkpoint`; paired study-bootstrap 95% intervals) are confounded by that
+mismatch. They should not be read as the size of the contrastive benefit:
+
+| Recipe (DINOv2-small, 224 px, hard targets) | LM-test Δ, contrastive − pretrained init | Gold-58 Δ |
+| --- | ---: | ---: |
+| R1, one 3-slice stack per plane (input matches pretraining) | +0.014 [+0.002, +0.027] | +0.010 [−0.020, +0.039] |
+| R4a K=8, seed 2026 (input does not match) | +0.007 [−0.003, +0.017] | −0.010 [−0.041, +0.020] |
+| R4a K=8, seed 2027 (input does not match) | +0.005 [−0.005, +0.015] | −0.011 [−0.038, +0.017] |
+
+The first matched test of (a) is
+`r4a-k8-omnirad-base-soft-336-from-clip`, which is in progress. It pretrains
+OmniRad-base + E5-base contrastively on the run-5 input path (K=8, 336 px), then
+fine-tunes with the run-5 recipe. Its comparator is run 5 together with run 5's
+second seed, which is queued directly after it.
+
+Open questions for Track 2:
+
+- **Measurement.** LM-test scores agreement with the LM verdicts, so it cannot
+  credit information beyond them. Gold-58 can, but it is small and has been reused.
+- **Checkpoint selection.** Contrastive checkpoints are still selected by
+  validation retrieval (mean R@1). That may not be the checkpoint that fine-tunes
+  best.
 
 ---
 
