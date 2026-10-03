@@ -50,7 +50,7 @@ from contrastive_learning.model import build_model
 def load_gold_labels(csv_path: Path, labels: list[str]) -> tuple[list[str], np.ndarray]:
     """Read the binary gold label matrix, refusing the blank annotation template.
 
-    ``data/drop.csv`` carries the same 58 studies and the same columns with every
+    ``data/gold_unlabeled.csv`` carries the same 58 studies and the same columns with every
     label cell empty. Read as labels it yields a silent all-negative target, so a
     non-zero positive count per label is asserted rather than assumed.
     """

@@ -1,6 +1,6 @@
 {
   "data_root": "/mnt/d",
-  "reports_csv": "data/sample/train.csv",
+  "reports_csv": "data/train.csv",
   "cohort_manifest": "data/processed/contrastive-cohort.jsonl",
   "report_column": "Report",
   "output_dir": "checkpoints/contrastive/full-multilingual-v1/00-projection-full-mean-512",

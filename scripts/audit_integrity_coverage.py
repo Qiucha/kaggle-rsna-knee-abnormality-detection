@@ -26,7 +26,7 @@ from contrastive_learning.manifest import read_manifest_rows
 
 ROOT = Path(__file__).resolve().parent.parent
 COHORT = ROOT / "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl"
-SERIES_CSV = ROOT / "data/sample/train_series.csv"
+SERIES_CSV = ROOT / "data/train_series.csv"
 OUT = ROOT / "digest/integrity-coverage-audit.json"
 
 # One middle DICOM per study carries the patient/session tags; the rest of the series

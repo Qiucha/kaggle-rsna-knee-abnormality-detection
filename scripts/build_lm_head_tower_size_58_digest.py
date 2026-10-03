@@ -58,7 +58,7 @@ def main():
         with np.load(path / "gold-predictions.npz", allow_pickle=False) as loaded:
             predictions[name] = {key: loaded[key] for key in loaded.files}
     first = next(iter(predictions.values()))
-    with (ROOT / "data/cleaned.csv").open(newline="") as handle:
+    with (ROOT / "data/gold_label.csv").open(newline="") as handle:
         source_gold = {row["StudyInstanceUID"] for row in csv.DictReader(handle)}
     if len(source_gold) != 58 or set(first["study_uids"]) != source_gold:
         raise ValueError("Scored gold studies differ from all 58 cleaned.csv cases")

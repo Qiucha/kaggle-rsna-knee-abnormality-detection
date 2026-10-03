@@ -36,7 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=argparse.SUPPRESS,
         help="CSV of study reports. Unset, falls back to 'reports_csv' in the paths "
-        "configuration, then data/sample/train.csv",
+        "configuration, then data/train.csv",
     )
     parser.add_argument(
         "--series-csv",
@@ -75,7 +75,7 @@ def _resolve_inputs(args: argparse.Namespace) -> None:
     configured = paths.load_settings(getattr(args, "paths_config", None))
     data_root = configured.get("data_root")
     if getattr(args, "reports_csv", None) is None:
-        args.reports_csv = configured.get("reports_csv", Path("data/sample/train.csv"))
+        args.reports_csv = configured.get("reports_csv", Path("data/train.csv"))
     if getattr(args, "series_csv", None) is None:
         args.series_csv = paths.series_csv(data_root) if data_root else None
     if getattr(args, "series_root", None) is None:

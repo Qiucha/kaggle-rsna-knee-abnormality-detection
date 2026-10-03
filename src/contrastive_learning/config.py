@@ -71,7 +71,7 @@ class TrainConfig:
     # comes from --data-root or the paths configuration (see ``paths.py``). It stays
     # None whenever a run reads a frozen cohort manifest, which needs no mount.
     data_root: Path | None = None
-    reports_csv: Path = Path("data/sample/train.csv")
+    reports_csv: Path = Path("data/train.csv")
     # Preferred input: a frozen cohort with fixed patient-grouped splits. When it
     # is None the legacy CSV path pairs reports and series and splits on the fly.
     cohort_manifest: Path | None = None

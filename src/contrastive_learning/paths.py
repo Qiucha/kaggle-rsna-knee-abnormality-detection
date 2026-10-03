@@ -1,6 +1,6 @@
 """Where this machine keeps its data, kept out of the code.
 
-Every other module names paths *relatively* -- ``data/sample/train.csv``,
+Every other module names paths *relatively* -- ``data/train.csv``,
 ``checkpoints/contrastive`` -- except one: the DICOM mount, which is a different
 directory on every machine that has ever run this project. Hard-coding it meant
 that a checkout only worked on the host it was written on, and that a frozen

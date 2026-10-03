@@ -26,8 +26,8 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 COHORT = ROOT / "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl"
-GOLD = ROOT / "data/cleaned.csv"
-GOLD_BLANK = ROOT / "data/drop.csv"
+GOLD = ROOT / "data/gold_label.csv"
+GOLD_BLANK = ROOT / "data/gold_unlabeled.csv"
 GOLD_TRANSLATED = ROOT / "data/translation/gold_translated.csv"
 OUT = ROOT / "digest/gold-case-inventory.json"
 

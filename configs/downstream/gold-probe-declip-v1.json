@@ -8,7 +8,7 @@
   },
   "cohort_manifest": "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
   "manifest_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
-  "gold_labels_csv": "data/cleaned.csv",
+  "gold_labels_csv": "data/gold_label.csv",
   "population": "gold studies whose cohort split is train or validation; locked-test gold studies are counted only",
   "estimand": "Readout quality of a frozen representation on a cohort it was trained on. 56 of 58 gold cases were exposed to contrastive training or checkpoint selection.",
   "labels": [

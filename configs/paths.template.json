@@ -12,7 +12,7 @@
   "_data_root": "Required by anything that reads DICOM data: the mount holding train_series.csv and the train_series/<study>/<series>/*.dcm tree. No default -- this is the one setting a new machine must fill in.",
   "data_root": null,
 
-  "_reports_csv": "Study reports. Default: data/sample/train.csv, relative to the repository.",
+  "_reports_csv": "Study reports. Default: data/train.csv, relative to the repository.",
   "reports_csv": null,
 
   "_cohort_manifest": "Frozen patient-grouped cohort used when no --cohort-manifest is given. No default; leave null to require the flag.",

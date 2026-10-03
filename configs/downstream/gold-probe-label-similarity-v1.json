@@ -4,7 +4,7 @@
   "purpose": "Score the two label-similarity-v1 arms on the same 56 unexposed gold studies, to see whether mixing LM label agreement into the contrastive target changes what the image encoder represents. Exploratory: ONE seed per arm, so this sizes an effect and decides whether a three-seed replication is worth running. It is not a result.",
   "cohort_manifest": "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
   "manifest_sha256": "d104337696a19d52d12480c1cfaae30c937916102e36a67e3124755fa20123f5",
-  "gold_labels_csv": "data/cleaned.csv",
+  "gold_labels_csv": "data/gold_label.csv",
   "population": "the 56 gold studies, parked in split 'excluded' by the holdout cohort so that neither arm's contrastive training nor its checkpoint selection could see them",
   "estimand": "Paired difference in macro out-of-fold AUROC, lambda03 minus lambda00, over the same 56 studies, the same folds and the same study resamples. Both arms are single-seed, so the interval reflects study sampling ONLY and carries no seed-to-seed variance; the three-seed runs elsewhere in this project put that at roughly +/-0.01 macro AUROC, which is the yardstick any difference here has to clear before it means anything.",
   "labels": [

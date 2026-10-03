@@ -34,7 +34,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 
 MANIFEST = REPO / "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl"
-SOURCE_CSV = REPO / "data/sample/train.csv"
+SOURCE_CSV = REPO / "data/train.csv"
 PACKET = REPO / "digest/english-medical-text-error-review-packet.md"
 
 RUNS = {

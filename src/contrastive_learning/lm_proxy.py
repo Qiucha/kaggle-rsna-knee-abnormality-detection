@@ -29,7 +29,7 @@ FEATURE = "uniform_mean_cls_patch_v1"
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULTS = {
     "lm_labels_csv": ROOT / "data/lm_label/lm_labels_kaggle.csv",
-    "gold_labels_csv": ROOT / "data/cleaned.csv",
+    "gold_labels_csv": ROOT / "data/gold_label.csv",
     "cache_dir": ROOT / "checkpoints/kaggle/lm-proxy-cache",
     "image_cache_dir": ROOT / "checkpoints/contrastive/full-multilingual-v1/image-cache",
 }

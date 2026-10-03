@@ -111,7 +111,7 @@ def lm_test_predictions(run_dir, head_dir, kind):
 
 
 def main():
-    with (ROOT / "data/cleaned.csv").open(newline="") as handle:
+    with (ROOT / "data/gold_label.csv").open(newline="") as handle:
         source_gold = {row["StudyInstanceUID"] for row in csv.DictReader(handle)}
     arms, gold, lm_test, lm_population = {}, {}, {}, None
     for key, (_, _, run, head, _) in ARMS.items():

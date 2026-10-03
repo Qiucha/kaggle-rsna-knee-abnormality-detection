@@ -13,7 +13,7 @@
       "sha256": "199416bb6a4b401ab586ace7a5d980bb281f96883d3ce8d1af6e29dbe7adbbf6"
     },
     {
-      "path": "data/sample/train.csv",
+      "path": "data/train.csv",
       "bytes": 5690007,
       "sha256": "8ca2203c0e9d61c080c7a314c7cdb51c1b03a1d9eb4770819f7f34af53ef4e33"
     },

@@ -786,7 +786,7 @@ def build_master_table_card(probe_results: dict) -> str:
       </tbody>
     </table>
   </div>
-  <p class="muted" style="margin-top:8px;">Features evaluated via 8-fold cross-validated logistic regression (C=1.0) on gold studies (`data/cleaned.csv`). Primary metric is <code>uniform_mean_768</code> pooling.</p>
+  <p class="muted" style="margin-top:8px;">Features evaluated via 8-fold cross-validated logistic regression (C=1.0) on gold studies (`data/gold_label.csv`). Primary metric is <code>uniform_mean_768</code> pooling.</p>
 </div>
 """
 
@@ -991,7 +991,7 @@ def build_generalizability_card() -> str:
   <h2>Generalizability & Exposure Inflation Check (56 Held-Out Gold Cases)</h2>
   <div class="callout" style="background:#fefcbf;border-left:4px solid #d69e2e;padding:12px 16px;margin-bottom:16px;border-radius:6px;">
     <ul style="margin:0;padding-left:20px;font-size:13.5px;color:#744210;line-height:1.6;">
-      <li><b>The 58 Gold Evaluation Cases:</b> The repository carries 58 gold-adjudicated knee studies across 12 pathology labels (<code>data/cleaned.csv</code>). In the standard contrastive pretraining cohort (<code>contrastive-cohort.jsonl</code>), <b>56 of these cases are exposed</b> (48 in <code>train</code>, 8 in <code>validation</code>, and 2 in the locked <code>test</code> split). Thus, standard probe scores measure <b>representation readout on an exposed cohort</b>.</li>
+      <li><b>The 58 Gold Evaluation Cases:</b> The repository carries 58 gold-adjudicated knee studies across 12 pathology labels (<code>data/gold_label.csv</code>). In the standard contrastive pretraining cohort (<code>contrastive-cohort.jsonl</code>), <b>56 of these cases are exposed</b> (48 in <code>train</code>, 8 in <code>validation</code>, and 2 in the locked <code>test</code> split). Thus, standard probe scores measure <b>representation readout on an exposed cohort</b>.</li>
       <li><b>The Held-Out Protocol:</b> In <code>contrastive-cohort-gold-holdout-v1.jsonl</code>, all 56 non-test gold studies are moved to split <code>excluded</code>. Neither representation training nor checkpoint selection sees any of these studies. Probing this model provides an uncompromised estimate of <b>true clinical generalizability to unseen patient studies</b>.</li>
       <li><b>Prior Finding on 4-Block Baseline:</b> 4-block Full FT scored <b>0.7106</b> exposed vs <b>0.6938</b> unexposed (+0.0500 over unadapted 0.6438). Exposure accounted for <b>~0.0168 (24%)</b> of the measured gain, proving that <b>76% of the adaptation gain was genuine semantic transfer</b>.</li>
       <li><b>LoRA Generalizability Hypothesis:</b> Because LoRA updates only <b>2.85% of parameters</b> (8.79M params vs 54M in Full FT), its compact adapter subspace inherently resists memorization, hypothesized to exhibit lower exposure inflation and higher out-of-sample retention.</li>

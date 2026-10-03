@@ -4,7 +4,7 @@
   "purpose": "Score the three gold-holdout runs, whose encoder never saw any of the 56 gold studies, against the three published exposed baselines -- in ONE extraction pass so both arms share identical studies, folds and bootstrap resamples. This is the paired contrast pre-registered in digest/gold-holdout-probe-protocol.md.",
   "cohort_manifest": "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
   "manifest_sha256": "d104337696a19d52d12480c1cfaae30c937916102e36a67e3124755fa20123f5",
-  "gold_labels_csv": "data/cleaned.csv",
+  "gold_labels_csv": "data/gold_label.csv",
   "population": "the 56 gold studies, parked in split 'excluded' by the holdout cohort so that neither contrastive training nor checkpoint selection could see them; the 2 locked-test gold studies are counted only",
   "estimand": "PRIMARY: pooled paired difference in macro out-of-fold AUROC, unexposed minus exposed, across three matched seeds, bootstrapped over studies using the SAME resample indices for both arms and resampling the per-study difference. This measures how much of the published 0.7105 is exposure inflation. The unexposed arm alone is the project's first gold-probe number that is an estimate of generalisation rather than a development statistic -- at study level, not patient level, since patient identity is unverifiable.",
   "labels": [

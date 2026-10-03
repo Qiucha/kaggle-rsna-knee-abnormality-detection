@@ -27,7 +27,7 @@
     "plane_sagittal_768": "one plane alone, to measure where each label's signal actually lives",
     "uniform_mean_768": "mean over the three plane vectors; the reference arm every comparison here is paired against"
   },
-  "gold_labels_csv": "data/cleaned.csv",
+  "gold_labels_csv": "data/gold_label.csv",
   "labels": [
     "ACL",
     "MCL",

@@ -4,7 +4,7 @@
     "checkpoints/contrastive/gold-holdout-v1/holdout-unfreeze4-seed2027/best.pt",
     "checkpoints/contrastive/gold-holdout-v1/holdout-unfreeze4-seed2028/best.pt"
   ],
-  "labels_csv": "data/cleaned.csv",
+  "labels_csv": "data/gold_label.csv",
   "cohort_manifest": "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
   "manifest_sha256": "d104337696a19d52d12480c1cfaae30c937916102e36a67e3124755fa20123f5",
   "population_splits": [

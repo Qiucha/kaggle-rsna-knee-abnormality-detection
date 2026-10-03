@@ -131,7 +131,7 @@ def finished(key):
 
 
 def main():
-    with (ROOT / "data/cleaned.csv").open(newline="") as handle:
+    with (ROOT / "data/gold_label.csv").open(newline="") as handle:
         source_gold = {row["StudyInstanceUID"] for row in csv.DictReader(handle)}
     done = [k for k in ARMS if finished(k)]
     pending = [k for k in ARMS if k not in done]

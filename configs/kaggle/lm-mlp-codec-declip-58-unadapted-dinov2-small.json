@@ -13,7 +13,7 @@
   "cohort_manifest": "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
   "expected_gold_studies": 58,
   "feature": "uniform_mean_cls_patch",
-  "gold_labels_csv": "data/cleaned.csv",
+  "gold_labels_csv": "data/gold_label.csv",
   "gold_reference_probe": {
     "c": 1.0,
     "folds": 8,

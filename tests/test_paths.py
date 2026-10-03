@@ -64,7 +64,7 @@ def test_a_flag_overrides_the_configuration_which_overrides_the_default(tmp_path
     configured = cli.config_from_args(base)
     assert configured.data_root == Path("/mount")
     assert configured.output_dir == Path("/configured")
-    assert configured.reports_csv == Path("data/sample/train.csv")
+    assert configured.reports_csv == Path("data/train.csv")
 
     overridden = cli.config_from_args([*base, "--output-dir", "/flag"])
     assert overridden.output_dir == Path("/flag")

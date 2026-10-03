@@ -4,7 +4,7 @@
   "purpose": "Answer the question the 150mm crop was actually chosen to serve: does retaining 95.7% of tissue instead of 86.1% help the twelve pathology labels? The crop was chosen on measured tissue retention, not on a predicted score, and retrieval fell (0.1340 -> 0.1190). Retrieval and label readout have dissociated twice in this project, so the retrieval drop does not settle the label question. This config scores it directly.",
   "cohort_manifest": "data/processed/contrastive-cohort.jsonl",
   "manifest_sha256": "54bd803e23acf3299daeb815d651a34249c736689e20d790f862fc71c0520b63",
-  "gold_labels_csv": "data/cleaned.csv",
+  "gold_labels_csv": "data/gold_label.csv",
   "population": "gold studies whose cohort split is train or validation (56); the 2 locked-test gold studies are counted and dropped before any pixel is read",
   "population_splits": ["train", "validation"],
   "population_splits_note": "Declared explicitly rather than left to the default. A null here is NOT the default: resolve_population is reached via config.get('population_splits', ('train','validation')), and a present-but-null key returns None and raises. The older exposed configs omit the key entirely; the holdout config names ['excluded']. Naming the splits is the clearer of the two working forms.",

@@ -54,7 +54,7 @@
     "primary": "after_cl (attention pooling) versus uniform_pooling, per seed, on uniform_mean_768 -- matched pooling at readout and identical dimensionality, so the only difference is how training pooled the planes. Also each against before_cl/uniform_mean_768."
   },
   "estimand": "Readout quality of a frozen representation on a cohort it was trained on. Explicitly NOT generalisation: 56 of 58 gold cases were exposed to contrastive training or checkpoint selection.",
-  "gold_labels_csv": "data/cleaned.csv",
+  "gold_labels_csv": "data/gold_label.csv",
   "labels": [
     "ACL",
     "MCL",
