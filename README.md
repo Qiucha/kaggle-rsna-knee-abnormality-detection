@@ -19,8 +19,48 @@ historical experiments and are not current instructions.
 
 For offline Kaggle inference, supervised label-head fitting, and current checkpoint
 selection, see the [submission and benchmark guide](digest/kaggle-submission-pipeline.md).
-The default candidate is the gold-holdout LoRA encoder; build with
-`scripts/build_kaggle_bundle.py` and run with `scripts/predict_kaggle.py`.
+
+## Start here: the current best pipeline (2026-10-03)
+
+The leaderboard models are no longer contrastive encoders with a fitted head. They
+are **image backbones fine-tuned end to end on LM-extracted labels** (the "R4a"
+rung: K=8 windows of 3 slices per plane, mean-pooled). The contrastive code
+remains as the source of the initial checkpoint for one member, and as a record of
+the experiments that led here.
+
+| What | Where |
+| --- | --- |
+| Best public score, 0.839 | `configs/finetune/r4a-k8-omnirad-base-pretrained.json` (OmniRad-base, hard verdict targets) |
+| Three-member candidate, not yet submitted | soft-target R4a (`r4a-soft-224-k8-mean.json`) + OmniRad-base + OmniRad-base soft 336 (`r4a-k8-omnirad-base-soft-336.json`), combined by per-label rank mean |
+| Train one member | `.venv-cuda/bin/python scripts/finetune_supervised.py --config configs/finetune/<rung>.json --output checkpoints/finetune/<rung>` |
+| Export members as one Kaggle bundle | `scripts/export_finetune_bundle.py --run <run dir> [--run ...] --output checkpoints/kaggle/<name>` |
+| Combine already-exported bundles | `scripts/assemble_ensemble_bundle.py` |
+| Run a bundle as Kaggle does | `scripts/predict_kaggle.py` and `notebooks/kaggle_submission.ipynb`; DICOM codecs are vendored in `kaggle/codecs/` |
+| Model code | `src/contrastive_learning/finetune.py` (training), `submission.py` (inference, ensembling), `timm_dinov2.py` / `timm_backbone.py` (OmniRad, RadioDino, CoAtNet) |
+| Results and decisions | `digest/` (open `digest/index.html`): `finetune-ladder-v1.json` for the R-rungs; `kaggle-submission-pipeline.md` covers the bundle format but its leaderboard table stops at the 0.788 LM-MLP bundle (R4a DINOv2-small later scored 0.826, OmniRad-base 0.839) |
+
+How candidates are judged: by the LM-test interval excluding zero. The 58 gold
+cases have been reused for prompt tuning, encoder selection and head fitting, so
+gold-58 is only a veto (−0.024 or worse) and a tiebreaker, never a selector on its
+own. Single-seed differences under about 0.024 are within run-to-run noise.
+
+**Not in git, needed to train** (ask the team for copies):
+
+- `data/lm_label/lm_labels_kaggle.csv`: third-party LM labels, never commit it.
+- `data/processed/contrastive-cohort-gold-holdout-v1.jsonl`: the frozen cohort
+  manifest. Configs pin its SHA-256, and it has no committed builder yet.
+- The DICOM tree (set `data_root` in `paths.json`, see
+  `configs/paths.template.json`) and, for the soft R4a member, the contrastive
+  init checkpoint named in its config's `init_checkpoint`.
+- `train_series_mirror.to` in each fine-tuning config points at one machine's
+  local copy of `train_series`. Edit it, or delete the key, to read from `data_root`.
+
+Image caches are keyed by `PREPROCESSING_VERSION`, the image settings and each
+series' `<study>/<series>` identity. Commit `084d086` (2026-09-29, exact-extent
+crop) changed the pixels of small field-of-view series without bumping
+`PREPROCESSING_VERSION`, so a cache written before it can serve the older pixels
+under the same key. The R4a window caches were all written after it. Rebuild an
+older image cache rather than migrating it with `scripts/migrate_cache_keys.py`.
 
 For the next image and text tower runs, read the prioritized
 [model candidate and comparison note](digest/next-model-candidates.md) before deploying an experiment.
