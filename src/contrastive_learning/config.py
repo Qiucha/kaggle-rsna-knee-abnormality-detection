@@ -18,7 +18,7 @@ from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from typing import Any
 
-from contrastive_learning import paths
+from contrastive_learning import paths, preprocessing
 from contrastive_learning.text import REPORT_VIEWS
 
 
@@ -196,12 +196,7 @@ class TrainConfig:
     @property
     def image_kwargs(self) -> dict[str, Any]:
         """Image preprocessing settings shared by training, evaluation, and caching."""
-        return {
-            "image_size": self.image_size,
-            "crop_mm": self.crop_mm,
-            "slices_per_plane": self.slices_per_plane,
-            "slice_band": (self.slice_band_low, self.slice_band_high),
-        }
+        return preprocessing.image_kwargs(self)
 
     @property
     def memory_cache_size(self) -> int:

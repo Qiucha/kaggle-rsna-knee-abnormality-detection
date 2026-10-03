@@ -40,7 +40,6 @@
   "init_checkpoint": "checkpoints/contrastive/both-lora-holdout-v1/holdout-both-lora-depth6-r64-seed2026/best.pt",
   "train_slice_sampling": "random",
   "train_series_mirror": {
-    "from": "/mnt/d/train_series",
     "to": "/home/q/novo-mirror/train_series"
   },
   "grad_accumulation": 4,

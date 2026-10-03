@@ -83,7 +83,8 @@ def load_cohort(config: TrainConfig, *, for_training: bool = False) -> StudyCoho
     validated when the run was created, and re-decoding it would only cost time.
     """
     if config.cohort_manifest is not None:
-        records, metadata = read_cohort_manifest(config.cohort_manifest)
+        series_root = config.series_root if config.data_root is not None else None
+        records, metadata = read_cohort_manifest(config.cohort_manifest, series_root=series_root)
         text_policy = metadata["text_policy"]
         if (
             for_training

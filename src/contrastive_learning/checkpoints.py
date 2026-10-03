@@ -118,6 +118,20 @@ def checkpoint_config(checkpoint: dict[str, Any]) -> TrainConfig:
     return TrainConfig.from_dict(checkpoint["config"])
 
 
+def checkpoint_epoch(checkpoint: dict[str, Any]) -> int:
+    """Recover the epoch a checkpoint completed."""
+    return int(checkpoint["epoch"])
+
+
+def checkpoint_metrics(checkpoint: dict[str, Any]) -> dict[str, Any]:
+    """Recover the metrics stored beside a checkpoint's weights.
+
+    A checkpoint written before metrics were recorded carries none, so the
+    absent case is a normal read rather than a corrupt payload.
+    """
+    return checkpoint.get("metrics", {})
+
+
 def has_full_weights(checkpoint: dict[str, Any]) -> bool:
     """Whether the payload carries every weight, or only the trained subset.
 

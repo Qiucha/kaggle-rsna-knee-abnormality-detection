@@ -68,7 +68,7 @@ def test_manifest_keeps_patient_groups_together_and_preserves_provenance(tmp_pat
             seed=7,
         )
     )
-    records, metadata = read_cohort_manifest(output_path)
+    records, metadata = read_cohort_manifest(output_path, series_root=series_root)
 
     by_uid = {record.study_uid: record for record in records}
     assert summary.total_studies == 5
@@ -87,7 +87,7 @@ def test_manifest_keeps_patient_groups_together_and_preserves_provenance(tmp_pat
     same_group["split"] = "test" if raw_rows[0]["split"] != "test" else "train"
     output_path.write_text("".join(json.dumps(row) + "\n" for row in raw_rows), encoding="utf-8")
     with pytest.raises(ValueError, match="patient group spans multiple splits"):
-        read_cohort_manifest(output_path)
+        read_cohort_manifest(output_path, series_root=series_root)
 
 
 def test_english_manifest_uses_audited_translations_and_excludes_missing_text(tmp_path: Path) -> None:
@@ -146,7 +146,7 @@ def test_english_manifest_uses_audited_translations_and_excludes_missing_text(tm
             validation_fraction=0.25,
         )
     )
-    records, _ = read_cohort_manifest(output_path)
+    records, _ = read_cohort_manifest(output_path, series_root=series_root)
     by_uid = {record.study_uid: record for record in records}
 
     assert summary.eligible_studies == 2

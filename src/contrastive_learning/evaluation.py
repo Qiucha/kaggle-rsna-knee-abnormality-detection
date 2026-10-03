@@ -25,9 +25,12 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from contrastive_learning import paths
 from contrastive_learning.artifacts import sha256_file, write_json, write_jsonl
 from contrastive_learning.checkpoints import (
     checkpoint_config,
+    checkpoint_epoch,
+    checkpoint_metrics,
     has_full_weights,
     load_model_weights,
     read_checkpoint,
@@ -86,8 +89,26 @@ def _check_paired(image_embeddings: torch.Tensor, text_embeddings: torch.Tensor)
         raise ValueError("Retrieval embeddings must be paired 2D tensors with matching shapes")
 
 
+def _similarities(
+    image_embeddings: torch.Tensor,
+    text_embeddings: torch.Tensor,
+    precomputed: torch.Tensor | None,
+) -> torch.Tensor:
+    """The query-by-candidate score matrix, reused across metric families.
+
+    Every metric below is defined over the same matrix, so callers that need more
+    than one of them pass it in rather than paying for the matmul again.
+    """
+    if precomputed is not None:
+        return precomputed
+    return image_embeddings.float() @ text_embeddings.float().T
+
+
 def retrieval_metrics(
-    image_embeddings: torch.Tensor, text_embeddings: torch.Tensor
+    image_embeddings: torch.Tensor,
+    text_embeddings: torch.Tensor,
+    *,
+    similarities: torch.Tensor | None = None,
 ) -> dict[str, float]:
     """Recall and rank statistics in both retrieval directions over one split.
 
@@ -97,7 +118,7 @@ def retrieval_metrics(
     _check_paired(image_embeddings, text_embeddings)
     if not torch.isfinite(image_embeddings).all() or not torch.isfinite(text_embeddings).all():
         raise ValueError("Retrieval embeddings must be finite")
-    similarities = image_embeddings.float() @ text_embeddings.float().T
+    similarities = _similarities(image_embeddings, text_embeddings, similarities)
 
     def direction(matrix: torch.Tensor, prefix: str) -> dict[str, float]:
         greater, tied, ranks = _tie_aware_ranks(matrix)
@@ -119,6 +140,8 @@ def retrieval_diagnostics(
     image_embeddings: torch.Tensor,
     text_embeddings: torch.Tensor,
     study_uids: list[str],
+    *,
+    similarities: torch.Tensor | None = None,
 ) -> tuple[dict[str, float], list[dict[str, Any]]]:
     """Return the same metrics plus one row per query, for per-study error review.
 
@@ -129,10 +152,13 @@ def retrieval_diagnostics(
     _check_paired(image_embeddings, text_embeddings)
     if len(study_uids) != len(image_embeddings):
         raise ValueError("Retrieval embeddings and study_uids must describe paired examples")
-    similarities = image_embeddings.float() @ text_embeddings.float().T
+    similarities = _similarities(image_embeddings, text_embeddings, similarities)
     rows: list[dict[str, Any]] = []
     for matrix, direction in ((similarities, "image_to_text"), (similarities.T, "text_to_image")):
         greater, tied, ranks = _tie_aware_ranks(matrix)
+        # Each cutoff's credit is a whole-split vector; computing it per query
+        # would rebuild the same length-N vector once for every row.
+        recalls = {k: _expected_recall(greater, tied, k) for k in RECALL_CUTOFFS}
         # Stable argsort keeps the reported top match deterministic across runs.
         top_indices = torch.argsort(matrix, dim=1, descending=True, stable=True)[:, 0]
         for index, uid in enumerate(study_uids):
@@ -148,22 +174,44 @@ def retrieval_diagnostics(
                 "expected_rank": float(ranks[index]),
             }
             for k in RECALL_CUTOFFS:
-                row[f"expected_r@{k}"] = float(_expected_recall(greater, tied, k)[index])
+                row[f"expected_r@{k}"] = float(recalls[k][index])
             rows.append(row)
-    return retrieval_metrics(image_embeddings, text_embeddings), rows
+    return retrieval_metrics(image_embeddings, text_embeddings, similarities=similarities), rows
 
 
 def embedding_health_metrics(
-    image_embeddings: torch.Tensor, text_embeddings: torch.Tensor, logit_scale: torch.Tensor
+    image_embeddings: torch.Tensor,
+    text_embeddings: torch.Tensor,
+    logit_scale: torch.Tensor,
+    *,
+    similarities: torch.Tensor | None = None,
 ) -> dict[str, float]:
     """Diagnostics that distinguish real alignment from a collapsed embedding space.
 
     Recall alone cannot tell those apart. Positive similarity rising while negative
     similarity rises with it, or per-dimension standard deviation trending to zero,
     is representation collapse. ``inverse_temperature`` is clamped exactly as
-    training clamps it, so the reported validation loss is comparable to train loss.
+    training clamps it.
+
+    ``validation_loss`` is **not comparable to the logged ``train_loss``**, and an
+    earlier version of this docstring wrongly said it was. They differ on two axes
+    that both move the number by more than any effect worth measuring:
+
+    * **Candidate count.** This is the full-split matrix -- 441 candidates at chance
+      log(441) = 6.09 -- while ``train_loss`` is the in-batch loss over ``batch_size``
+      candidates, chance log(32) = 3.47.
+    * **Augmentation.** Evaluation loaders run unaugmented; the training loader does not.
+
+    Quoting the two as a train/validation pair reads a generalisation gap off an
+    axis mismatch, and that misreading reached a handoff twice. Measured at matched
+    N=441 on three 4-block seeds, the real gap is train 1.86 vs validation 3.71 and
+    train R@1 0.404 vs validation 0.134 -- see ``digest/matched-n-loss-audit.md``.
+
+    Note also that every retrieval metric is invariant to ``inverse_temperature``:
+    it scales all logits and cannot reorder a similarity matrix. It moves this loss
+    and nothing else here.
     """
-    similarities = image_embeddings.float() @ text_embeddings.float().T
+    similarities = _similarities(image_embeddings, text_embeddings, similarities)
     diagonal = similarities.diagonal()
     off_diagonal = similarities[
         ~torch.eye(len(similarities), dtype=torch.bool, device=similarities.device)
@@ -203,8 +251,11 @@ def collect_embeddings(
 def evaluate(model: torch.nn.Module, loader: DataLoader, device: torch.device) -> dict[str, float]:
     """One epoch's validation metrics: what checkpoint selection is scored on."""
     images, texts, _ = collect_embeddings(model, loader, device)
-    metrics = retrieval_metrics(images, texts)
-    metrics.update(embedding_health_metrics(images, texts, model.logit_scale))
+    similarities = images.float() @ texts.float().T
+    metrics = retrieval_metrics(images, texts, similarities=similarities)
+    metrics.update(
+        embedding_health_metrics(images, texts, model.logit_scale, similarities=similarities)
+    )
     return metrics
 
 
@@ -237,7 +288,9 @@ def evaluate_checkpoint(
     The checkpoint's own saved configuration defines the model, cohort, and split,
     so a report cannot silently describe a different setup than the one trained.
     Only the image cache location may be redirected, because it holds derived
-    pixels rather than anything that changes the result. Backbone weights are
+    pixels rather than anything that changes the result. The data root is this
+    host's when it states one: the checkpoint's recorded mount names where the
+    same bytes lived when it was trained (docs/adr/0001). Backbone weights are
     loaded offline; a compact checkpoint additionally instantiates the pinned
     pretrained backbones to supply the frozen parameters it omits.
 
@@ -248,6 +301,7 @@ def evaluate_checkpoint(
     checkpoint = read_checkpoint(checkpoint_path)
     config = checkpoint_config(checkpoint)
     config.resume = None
+    config.data_root = paths.load_settings().get("data_root", config.data_root)
     if image_cache_dir is not None:
         config.image_cache_dir = Path(image_cache_dir)
     records = load_cohort(config).split(split)
@@ -277,8 +331,11 @@ def evaluate_checkpoint(
     images, texts, study_uids = collect_embeddings(
         model, make_loader(records, tokenizer, config), device
     )
-    metrics, rankings = retrieval_diagnostics(images, texts, study_uids)
-    metrics.update(embedding_health_metrics(images, texts, model.logit_scale))
+    similarities = images.float() @ texts.float().T
+    metrics, rankings = retrieval_diagnostics(images, texts, study_uids, similarities=similarities)
+    metrics.update(
+        embedding_health_metrics(images, texts, model.logit_scale, similarities=similarities)
+    )
 
     count = len(study_uids)
     image_rows, text_rows = rankings[:count], rankings[count:]
@@ -286,13 +343,13 @@ def evaluate_checkpoint(
         (image_row["expected_r@1"] + text_row["expected_r@1"]) / 2
         for image_row, text_row in zip(image_rows, text_rows, strict=True)
     ]
-    stored_metrics = checkpoint.get("metrics", {})
+    stored_metrics = checkpoint_metrics(checkpoint)
     result = {
         "schema_version": EVALUATION_SCHEMA_VERSION,
         "metric_tie_policy": METRIC_TIE_POLICY,
         "checkpoint": str(checkpoint_path),
         "checkpoint_sha256": sha256_file(checkpoint_path),
-        "checkpoint_epoch": int(checkpoint["epoch"]),
+        "checkpoint_epoch": checkpoint_epoch(checkpoint),
         "split": split,
         "studies": count,
         "metrics": metrics,

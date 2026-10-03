@@ -30,9 +30,14 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def sha256_bytes(value: bytes) -> str:
+    """Hash a payload already in memory, such as bytes read from a git revision."""
+    return hashlib.sha256(value).hexdigest()
+
+
 def sha256_text(value: str) -> str:
     """Hash decoded text, for report bodies compared across CSV encodings."""
-    return hashlib.sha256(value.encode()).hexdigest()
+    return sha256_bytes(value.encode())
 
 
 def write_atomic(path: Path, write: Callable[[Path], None]) -> Path:
@@ -73,14 +78,32 @@ def write_json(path: Path, value: Any) -> Path:
     return write_text(path, json.dumps(value, indent=2, sort_keys=True) + "\n")
 
 
+def jsonl_line(row: dict[str, Any], *, ensure_ascii: bool = True) -> str:
+    """One compact, key-sorted JSON document and its newline.
+
+    The single definition of a JSON-lines record, so an appended history and a
+    rewritten artifact are always the same format.
+    """
+    return json.dumps(row, sort_keys=True, ensure_ascii=ensure_ascii) + "\n"
+
+
 def write_jsonl(path: Path, rows: list[dict[str, Any]], *, ensure_ascii: bool = True) -> Path:
     """Write one compact, key-sorted JSON document per line."""
-    return write_text(
-        path,
-        "".join(
-            json.dumps(row, sort_keys=True, ensure_ascii=ensure_ascii) + "\n" for row in rows
-        ),
-    )
+    return write_text(path, "".join(jsonl_line(row, ensure_ascii=ensure_ascii) for row in rows))
+
+
+def append_jsonl(path: Path, row: dict[str, Any], *, ensure_ascii: bool = True) -> Path:
+    """Append one record to a JSON-lines history.
+
+    Appending, rather than rewriting through :func:`write_atomic`, is deliberate:
+    a growing history must not be republished on every line, and a reader that
+    tolerates a torn final line (see :func:`read_jsonl`) is what makes that safe.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(jsonl_line(row, ensure_ascii=ensure_ascii))
+    return path
 
 
 def read_json(path: Path) -> Any:

@@ -12,6 +12,11 @@ import time
 
 import torch
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / 'src'))
+
+from contrastive_learning.artifacts import write_text
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -34,7 +39,12 @@ def main() -> None:
         'device_memory_bytes': torch.cuda.get_device_properties(0).total_memory,
         'status': 'running',
     }
-    args.telemetry.write_text(json.dumps(record, indent=2) + '\n')
+
+    def publish() -> None:
+        """Republish the telemetry record durably, so a killed run leaves a whole file."""
+        write_text(args.telemetry, json.dumps(record, indent=2) + '\n')
+
+    publish()
     torch.cuda.reset_peak_memory_stats()
     started = time.perf_counter()
     sys.argv = [str(train_script), *train_args]
@@ -53,7 +63,7 @@ def main() -> None:
             peak_allocated_bytes=torch.cuda.max_memory_allocated(),
             peak_reserved_bytes=torch.cuda.max_memory_reserved(),
         )
-        args.telemetry.write_text(json.dumps(record, indent=2) + '\n')
+        publish()
 
 
 if __name__ == '__main__':

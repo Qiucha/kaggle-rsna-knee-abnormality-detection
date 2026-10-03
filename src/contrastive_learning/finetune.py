@@ -37,7 +37,7 @@ import torch
 from torch import nn
 
 from .artifacts import sha256_file, sha256_text, write_atomic, write_json
-from .data import KneeReportDataset
+from .data import KneeReportDataset, slot_identity
 from .lm_proxy import load_test_population, masked_macro_auroc
 from .lm_supervision import load_population
 from .preprocessing import (
@@ -233,7 +233,8 @@ class RandomSliceDataset(torch.utils.data.Dataset):
     loader's generator, so workers draw differently and a seed replays the run.
 
     Every epoch decodes DICOMs again, which is too slow over the WSL ``/mnt`` mount.
-    ``mirror`` maps a series-root prefix to a byte-identical local copy.
+    ``mirror["to"]`` is a byte-identical local copy of the ``<study>/<series>`` tree,
+    found by slot identity wherever the source tree is mounted.
     """
 
     def __init__(self, records, kwargs: dict, mirror: dict | None = None):
@@ -242,7 +243,7 @@ class RandomSliceDataset(torch.utils.data.Dataset):
     def _series(self, path: Path) -> Path:
         if not self.mirror:
             return path
-        local = Path(self.mirror["to"]) / path.relative_to(self.mirror["from"])
+        local = Path(self.mirror["to"]) / slot_identity(path)
         if not local.is_dir():
             raise FileNotFoundError(f"Series missing from the local mirror: {local}")
         return local
@@ -289,14 +290,18 @@ class WindowDataset(RandomSliceDataset):
                 images[i], valid[i] = apply_left_knee_windows(*read, plane, record.laterality)
         return images, valid
 
+    def cache_path(self, record) -> Path:
+        key = sha256_text(json.dumps({**self.settings, "laterality": record.laterality,
+                                      "slots": {p: slot_identity(record.slots[p]) for p in PLANES}},
+                                     sort_keys=True))
+        return self.cache_dir / f"{record.study_uid}-{key[:12]}.pt"
+
     def __getitem__(self, index: int) -> dict:
         record = self.records[index]
         if self.training:
             images, valid = self._read(record, np.random.default_rng(int(torch.randint(2**62, (1,)))))
             return {"images": images, "valid": valid, "study_uid": record.study_uid}
-        key = sha256_text(json.dumps({**self.settings, "laterality": record.laterality,
-                                      "slots": {p: str(record.slots[p]) for p in PLANES}}, sort_keys=True))
-        path = self.cache_dir / f"{record.study_uid}-{key[:12]}.pt"
+        path = self.cache_path(record)
         cached = None
         if path.exists():
             # A hard stop of WSL can keep write_atomic's rename but drop the data,

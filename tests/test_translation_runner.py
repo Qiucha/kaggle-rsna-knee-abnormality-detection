@@ -57,7 +57,7 @@ def test_merge_preserves_english_and_refuses_missing_rows(tmp_path):
     bundle = tmp_path/'bundle'; bundle.mkdir()
     source = 'StudyInstanceUID,Report,Original Language\na,Original English,en\nb,Original Spanish,es\n'
     (bundle/'source.csv').write_text(source)
-    (bundle/'contract.json').write_text(json.dumps({'source_sha256': runner.digest(source.encode())}))
+    (bundle/'contract.json').write_text(json.dumps({'source_sha256': runner.sha256_text(source)}))
     _, h, rows = runner.load_bundle(bundle)
     result_path = tmp_path/'results.jsonl'; result_path.write_text('')
     args = SimpleNamespace(bundle=bundle, results=[result_path], output=tmp_path/'merged.csv')

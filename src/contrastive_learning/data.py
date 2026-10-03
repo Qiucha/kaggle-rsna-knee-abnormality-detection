@@ -18,7 +18,6 @@ import csv
 import json
 import random
 import sys
-import uuid
 from collections import OrderedDict, defaultdict
 from dataclasses import dataclass
 from functools import partial
@@ -28,7 +27,7 @@ from typing import Any, Iterable, Sequence
 import torch
 from torch.utils.data import Dataset
 
-from contrastive_learning.artifacts import sha256_text
+from contrastive_learning.artifacts import sha256_text, write_atomic
 from contrastive_learning.preprocessing import (
     PLANES,
     PREPROCESSING_VERSION,
@@ -69,12 +68,42 @@ class StudyRecord:
     fallbacks: dict[str, tuple[Path, ...]] | None = None
 
 
+# Manifests frozen before ADR 0001 store slots as absolute paths under this mount.
+# Only the <study>/<series> part after it is meaningful; it is never used to read.
+LEGACY_SERIES_ROOT = "/mnt/d/train_series"
+
+
+def slot_identity(series_dir: Path | str) -> str:
+    """Name a series by ``<study>/<series>``, the part of its path no host decides.
+
+    Cache keys and mirrors use this rather than the full path, so moving the DICOM
+    tree to another disk leaves every cached tensor reachable.
+    """
+    path = Path(series_dir)
+    return f"{path.parent.name}/{path.name}"
+
+
+def resolve_slot(stored: str, series_root: Path) -> Path:
+    """Locate a manifest slot under this host's ``train_series`` tree.
+
+    A slot is either ``<study>/<series>`` or a legacy absolute path under
+    :data:`LEGACY_SERIES_ROOT`. Anything else is rejected rather than guessed at:
+    a path that silently resolved to the wrong tree would train on the wrong bytes.
+    """
+    path = Path(stored)
+    relative = path.relative_to(LEGACY_SERIES_ROOT) if path.is_relative_to(LEGACY_SERIES_ROOT) else path
+    if relative.is_absolute() or len(relative.parts) != 2 or ".." in relative.parts:
+        raise ValueError(f"Unrecognised manifest slot: {stored!r}")
+    return Path(series_root) / relative
+
+
 @dataclass(frozen=True)
 class DataSummary:
     """Why studies were kept or dropped while pairing reports with series."""
 
+    # read_reports keeps only rows that have both a UID and nonempty text, so this
+    # counts usable reports, not lines in the CSV.
     report_rows: int
-    reports_with_text: int
     studies_scanned: int
     paired_studies: int
     missing_plane: int
@@ -268,7 +297,6 @@ def build_study_records(
             break
     summary = DataSummary(
         report_rows=len(reports),
-        reports_with_text=len(reports),
         studies_scanned=studies_scanned,
         paired_studies=len(records),
         missing_plane=missing_plane,
@@ -349,9 +377,10 @@ class KneeReportDataset(Dataset):
     def _cache_path(self, record: StudyRecord) -> Path | None:
         """Name a study's cache file after everything that could change its pixels.
 
-        Because the digest covers preprocessing version and settings, series paths,
-        laterality, and per-file size and modification times, a stale entry is
-        unreachable rather than wrong: changed inputs simply produce a new name.
+        Because the digest covers preprocessing version and settings, series
+        identities, laterality, and per-file size and modification times, a stale
+        entry is unreachable rather than wrong: changed inputs simply produce a new
+        name. Where the series tree is mounted is deliberately not covered.
         """
         if self.image_cache_dir is None:
             return None
@@ -361,7 +390,7 @@ class KneeReportDataset(Dataset):
                 "preprocessing_version": PREPROCESSING_VERSION,
                 "image_kwargs": self.image_kwargs,
                 "laterality": record.laterality,
-                "slots": {name: str(path) for name, path in sorted(record.slots.items())},
+                "slots": {name: slot_identity(path) for name, path in sorted(record.slots.items())},
                 "series_fingerprints": {
                     name: series_fingerprint(path) for name, path in sorted(record.slots.items())
                 },
@@ -430,12 +459,7 @@ class KneeReportDataset(Dataset):
     @staticmethod
     def _write_cache(cache_path: Path, images: torch.Tensor) -> None:
         """Publish a cache entry atomically; concurrent workers may race harmlessly."""
-        temporary = cache_path.with_name(f".{cache_path.name}.{uuid.uuid4().hex}.tmp")
-        try:
-            torch.save(images, temporary)
-            temporary.replace(cache_path)
-        finally:
-            temporary.unlink(missing_ok=True)
+        write_atomic(cache_path, lambda temporary: torch.save(images, temporary))
 
     def __getitem__(self, index: int) -> dict[str, Any]:
         record = self.records[index]

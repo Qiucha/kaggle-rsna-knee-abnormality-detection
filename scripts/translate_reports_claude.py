@@ -10,21 +10,22 @@ import argparse
 import ast
 import csv
 import fcntl
-import hashlib
 import io
 import json
 import os
 import subprocess
+import sys
 import time
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / 'src'))
+
+from contrastive_learning.artifacts import sha256_bytes, sha256_file, sha256_text, write_text
+
 REVISION = '8e3bd6899d7a7c9e56a8d27110a57f0b711a0a59'
 DEFAULT_BUNDLE = Path('checkpoints/translations/config-8e3bd68')
-
-
-def digest(value: bytes) -> str:
-    return hashlib.sha256(value).hexdigest()
 
 
 def read_csv(path):
@@ -32,7 +33,13 @@ def read_csv(path):
 
 
 def write_json(path, value):
-    path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n')
+    """Publish provenance atomically, in this script's frozen byte format.
+
+    The format predates ``artifacts.write_json`` (no key sorting, non-ASCII kept
+    literal) and its digests are recorded in frozen configs, so the bytes stay
+    as they are; only the durability comes from the shared module.
+    """
+    write_text(path, json.dumps(value, ensure_ascii=False, indent=2) + '\n')
 
 
 def prepare(bundle):
@@ -49,7 +56,7 @@ def prepare(bundle):
                         constants[target.id] = ast.literal_eval(node.value)
     if set(constants) != {'MODEL', 'TIMEOUT_S', 'MAX_ATTEMPTS', 'SYSTEM_PROMPT'}:
         raise ValueError('Notebook translation contract missing')
-    contract = dict(constants, revision=REVISION, source_sha256=digest(source),
+    contract = dict(constants, revision=REVISION, source_sha256=sha256_bytes(source),
                     user_prefix='Translate this report into standard English:\n\n', source_column='Report')
     bundle.mkdir(parents=True, exist_ok=True)
     for name, data in [('source.csv', source), ('contract.json', (json.dumps(contract, ensure_ascii=False, indent=2)+'\n').encode())]:
@@ -63,18 +70,18 @@ def prepare(bundle):
 def load_bundle(bundle):
     contract_bytes = (bundle/'contract.json').read_bytes()
     contract = json.loads(contract_bytes)
-    if digest((bundle/'source.csv').read_bytes()) != contract['source_sha256']:
+    if sha256_file(bundle/'source.csv') != contract['source_sha256']:
         raise ValueError('Source checksum mismatch')
     rows = read_csv(bundle/'source.csv')
     ids = [r['StudyInstanceUID'] for r in rows]
     if len(ids) != len(set(ids)) or any(not uid for uid in ids):
         raise ValueError('Missing/duplicate study identity')
-    return contract, digest(contract_bytes), rows
+    return contract, sha256_bytes(contract_bytes), rows
 
 
 def identity(row, index, contract_hash):
     return {'row_index': index, 'study_uid': row['StudyInstanceUID'],
-            'source_sha256': digest(row['Report'].encode()), 'contract_sha256': contract_hash}
+            'source_sha256': sha256_text(row['Report']), 'contract_sha256': contract_hash}
 
 
 def load_results(paths, rows, contract_hash):
@@ -220,8 +227,8 @@ def merge(args):
             translated = row['Report'] if row['Original Language'] == 'en' else results[row['StudyInstanceUID']]['translation']
             writer.writerow({k: translated if k == 'Translated Report' else row[k] for k in writer.fieldnames})
     write_json(args.output.with_suffix('.provenance.json'), {
-        'contract_sha256': contract_hash, 'output_sha256': digest(args.output.read_bytes()),
-        'result_files': {str(p): digest(p.read_bytes()) for p in args.results},
+        'contract_sha256': contract_hash, 'output_sha256': sha256_file(args.output),
+        'result_files': {str(p): sha256_file(p) for p in args.results},
         'english_policy': 'retain original per training manifest contract',
         'language_source': 'Google detection from pinned origin/config; requires QC',
         'qc_status': 'unreviewed; not approved for training'})

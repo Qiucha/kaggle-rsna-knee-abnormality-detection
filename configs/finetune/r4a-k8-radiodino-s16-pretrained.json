@@ -39,7 +39,6 @@
   "seed": 2026,
   "train_slice_sampling": "random",
   "train_series_mirror": {
-    "from": "/mnt/d/train_series",
     "to": "/home/q/novo-mirror/train_series"
   },
   "grad_accumulation": 4,

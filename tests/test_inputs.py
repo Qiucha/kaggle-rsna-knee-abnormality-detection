@@ -20,7 +20,7 @@ def records(count=7):
 
 
 def test_fixed_cohort_limit_and_text_policy(monkeypatch, tmp_path):
-    monkeypatch.setattr(inputs, "read_cohort_manifest", lambda _: (
+    monkeypatch.setattr(inputs, "read_cohort_manifest", lambda *_, **__: (
         records(), {"text_policy": "multilingual_raw"}))
     config = TrainConfig(cohort_manifest=tmp_path / "cohort.jsonl", max_studies=3)
     with pytest.raises(ValueError, match="multilingual_raw"):
@@ -41,7 +41,13 @@ def test_legacy_splits_match_training_and_evaluation(monkeypatch, fold_count, fo
 
     def index(*args, **kwargs):
         pixel_checks.append(kwargs["validate_pixels"])
-        return records(), DataSummary(7, 7, 7, 7, 0, 0)
+        return records(), DataSummary(
+            report_rows=7,
+            studies_scanned=7,
+            paired_studies=7,
+            missing_plane=0,
+            decode_failed=0,
+        )
 
     monkeypatch.setattr(inputs, "build_study_records", index)
     config = TrainConfig(data_root=Path("/mount"), fold_count=fold_count, fold_index=fold_index)
@@ -60,7 +66,13 @@ def test_legacy_splits_match_training_and_evaluation(monkeypatch, fold_count, fo
 
 def test_prepare_only_does_not_require_a_trainable_split(monkeypatch, tmp_path):
     monkeypatch.setattr(inputs, "build_study_records", lambda *a, **kw: (
-        records(1), DataSummary(1, 1, 1, 1, 0, 0)))
+        records(1), DataSummary(
+            report_rows=1,
+            studies_scanned=1,
+            paired_studies=1,
+            missing_plane=0,
+            decode_failed=0,
+        )))
     output = tmp_path / "run"
     result = training.run_training(
         TrainConfig(data_root=Path("/mount"), prepare_only=True, output_dir=output)

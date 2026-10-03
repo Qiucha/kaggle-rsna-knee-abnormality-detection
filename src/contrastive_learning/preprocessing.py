@@ -50,7 +50,6 @@ except ModuleNotFoundError:  # Allows non-DICOM unit tests to run before depende
 # Plane order is fixed and load-bearing: it is the channel order of every study
 # tensor, and the image tower's per-plane embeddings are indexed by it.
 PLANES = ("Sagittal", "Coronal", "Axial")
-PLANE_KEYS = {"Sagittal": "sagittal", "Coronal": "coronal", "Axial": "axial"}
 
 # Bumping this invalidates every cached tensor, because it is hashed into their
 # cache keys and into cohort metadata. Change it whenever pixel output changes.
@@ -86,6 +85,22 @@ STRICT_DECODE_ENV = "KNEE_STRICT_DECODE"
 # each keep their own. Events: decoded, failed, pin_retry_decoded,
 # substituted_slices, undecodable_planes, fallback_series.
 _DECODE_COUNTS: Counter[tuple[str, str]] = Counter()
+
+
+def image_kwargs(settings: Any) -> dict[str, Any]:
+    """The :func:`read_slot` settings carried by a training or manifest config.
+
+    Both configs declare the same five fields, and these values are hashed into
+    image cache keys and recorded as manifest pixel QC. Deriving the kwargs here,
+    from whichever config is at hand, keeps a manifest's validated pixels and a
+    run's decoded pixels from drifting apart silently.
+    """
+    return {
+        "image_size": settings.image_size,
+        "crop_mm": settings.crop_mm,
+        "slices_per_plane": settings.slices_per_plane,
+        "slice_band": (settings.slice_band_low, settings.slice_band_high),
+    }
 
 
 def _require_pydicom() -> Any:

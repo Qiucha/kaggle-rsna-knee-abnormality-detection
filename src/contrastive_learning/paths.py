@@ -13,7 +13,10 @@ allowed to relocate. Three properties are load-bearing:
 * **It is read once, explicitly, by a command-line entry point** -- never at import
   time, and never deep inside a workflow. Everything downstream still receives a
   fully resolved :class:`~contrastive_learning.config.TrainConfig`, so run
-  artifacts keep recording concrete paths and remain reproducible.
+  artifacts keep recording concrete paths and remain reproducible. The one
+  exception is :func:`host_series_root`: cohort manifests name series only as
+  ``<study>/<series>``, so reading one needs this host's tree, and a checkpoint's
+  recorded mount may no longer exist (docs/adr/0001).
 * **A flag always wins over the file.** The file supplies defaults for settings the
   caller did not state, which is what lets an existing matrix run unchanged on a
   new host without editing the frozen commands inside it.
@@ -69,6 +72,19 @@ def series_csv(data_root: Path) -> Path:
 def series_root(data_root: Path) -> Path:
     """Root of the ``<study>/<series>/*.dcm`` tree on the DICOM mount."""
     return Path(data_root) / "train_series"
+
+
+def host_data_root(explicit: Path | None = None) -> Path:
+    """This machine's DICOM mount, from the paths configuration."""
+    data_root = load_settings(explicit).get("data_root")
+    if data_root is None:
+        raise ValueError(missing_data_root_message())
+    return data_root
+
+
+def host_series_root(explicit: Path | None = None) -> Path:
+    """This machine's ``train_series`` tree, under which cohort manifest slots resolve."""
+    return series_root(host_data_root(explicit))
 
 
 def find_config(explicit: Path | None = None) -> Path | None:

@@ -25,7 +25,6 @@ with hashes, so a translation can always be audited after the fact.
 
 from __future__ import annotations
 
-import csv
 import random
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -33,6 +32,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+from contrastive_learning import paths
 from contrastive_learning.artifacts import (
     read_json,
     read_jsonl,
@@ -41,10 +41,18 @@ from contrastive_learning.artifacts import (
     write_json,
     write_jsonl,
 )
-from contrastive_learning.data import StudyRecord, pick_study_slots, read_series_manifest
+from contrastive_learning.data import (
+    StudyRecord,
+    pick_study_slots,
+    read_csv_rows,
+    read_series_manifest,
+    resolve_slot,
+    slot_identity,
+)
 from contrastive_learning.preprocessing import (
     PLANES,
     PREPROCESSING_VERSION,
+    image_kwargs,
     middle_dicom,
     read_slot,
     resolve_laterality,
@@ -91,12 +99,7 @@ class ManifestConfig:
     @property
     def image_kwargs(self) -> dict[str, Any]:
         """Preprocessing settings used for pixel validation, matching TrainConfig."""
-        return {
-            "image_size": self.image_size,
-            "crop_mm": self.crop_mm,
-            "slices_per_plane": self.slices_per_plane,
-            "slice_band": (self.slice_band_low, self.slice_band_high),
-        }
+        return image_kwargs(self)
 
 
 @dataclass(frozen=True)
@@ -105,7 +108,6 @@ class ManifestSummary:
 
     total_studies: int
     eligible_studies: int
-    excluded_studies: int
     split_counts: dict[str, int]
     language_counts: dict[str, int]
     preprocessing_counts: dict[str, int]
@@ -148,17 +150,6 @@ def _patient_id(slots: dict[str, Path] | None, fallback: str) -> str:
 # --------------------------------------------------------------------------- #
 # Building
 # --------------------------------------------------------------------------- #
-
-
-def _read_csv_rows(path: Path) -> list[dict[str, str]]:
-    """Read a CSV tolerating a UTF-8 byte order mark, which Excel exports add."""
-    with Path(path).open(newline="", encoding="utf-8-sig") as handle:
-        return list(csv.DictReader(handle))
-
-
-def _require_columns(rows: list[dict[str, str]], columns: set[str], source: str) -> None:
-    if rows and not columns.issubset(rows[0]):
-        raise ValueError(f"{source} must contain {sorted(columns)}")
 
 
 def _resolve_text(
@@ -218,7 +209,10 @@ def _validate_row_pixels(row: dict[str, Any], config: ManifestConfig) -> tuple[s
     """Decode every plane of one study, returning a status and pixel QC summary."""
     if not row["slots"]:
         return "missing_plane", {}
-    tensors = [read_slot(Path(row["slots"][plane]), **config.image_kwargs) for plane in PLANES]
+    tensors = [
+        read_slot(resolve_slot(row["slots"][plane], config.series_root), **config.image_kwargs)
+        for plane in PLANES
+    ]
     if any(tensor is None for tensor in tensors):
         return "decode_failed", {}
     return "passed", {
@@ -258,7 +252,8 @@ def _manifest_row(
         "report_provenance": report_provenance,
         "report_sha256": sha256_text(training_report),
         "source_report_sha256": sha256_text(report),
-        "slots": {plane: str(path) for plane, path in (slots or {}).items()},
+        # <study>/<series> only: where the tree is mounted is a host setting.
+        "slots": {plane: slot_identity(path) for plane, path in (slots or {}).items()},
         # Fingerprints let a later audit prove the referenced series bytes are
         # the ones this cohort was frozen against.
         "series_fingerprints": {
@@ -286,20 +281,17 @@ def build_cohort_manifest(config: ManifestConfig) -> ManifestSummary:
     if config.text_policy not in TEXT_POLICIES:
         raise ValueError(f"Supported text policies: {', '.join(TEXT_POLICIES)}")
 
-    report_rows = _read_csv_rows(Path(config.reports_csv))
+    required = {"StudyInstanceUID", config.report_column}
+    report_rows = read_csv_rows(Path(config.reports_csv), required)
     if not report_rows:
         raise ValueError("Reports CSV is empty")
-    required = {"StudyInstanceUID", config.report_column}
-    _require_columns(report_rows, required, "Reports CSV")
     series_by_study = read_series_manifest(Path(config.series_csv))
 
     translations: dict[str, dict[str, str]] = {}
     if config.translations_csv is not None:
-        translation_rows = _read_csv_rows(Path(config.translations_csv))
-        _require_columns(
-            translation_rows,
+        translation_rows = read_csv_rows(
+            Path(config.translations_csv),
             {"StudyInstanceUID", config.language_column, config.translated_report_column},
-            "Translations CSV",
         )
         translations = {
             row["StudyInstanceUID"].strip(): row
@@ -356,7 +348,6 @@ def build_cohort_manifest(config: ManifestConfig) -> ManifestSummary:
     return ManifestSummary(
         total_studies=len(rows),
         eligible_studies=eligible,
-        excluded_studies=len(rows) - eligible,
         split_counts=dict(counts["split"]),
         language_counts=dict(counts["language"]),
         preprocessing_counts=dict(counts["preprocessing"]),
@@ -397,8 +388,29 @@ def _cohort_metadata(config: ManifestConfig, output_path: Path) -> dict[str, Any
 # --------------------------------------------------------------------------- #
 
 
-def read_cohort_manifest(path: Path) -> tuple[list[StudyRecord], dict[str, Any]]:
+def read_manifest_rows(path: Path, *, series_root: Path | None = None) -> list[dict[str, Any]]:
+    """Every row of a manifest, with slots resolved to this host's series directories.
+
+    For read-only audits, which inspect all rows -- ineligible and test included --
+    rather than the verified training records :func:`read_cohort_manifest` returns.
+    """
+    rows = read_jsonl(Path(path))
+    if any(row.get("slots") for row in rows) and series_root is None:
+        series_root = paths.host_series_root()
+    for row in rows:
+        row["slots"] = {plane: resolve_slot(value, series_root)
+                        for plane, value in (row.get("slots") or {}).items()}
+    return rows
+
+
+def read_cohort_manifest(
+    path: Path, *, series_root: Path | None = None
+) -> tuple[list[StudyRecord], dict[str, Any]]:
     """Load the training-eligible studies of a verified cohort, with its metadata.
+
+    Slots resolve under ``series_root``, defaulting to this host's ``train_series``
+    tree from the paths configuration. The manifest itself names no host, so the
+    same bytes -- and the same checksum -- serve wherever the data is mounted.
 
     Every invariant a training run depends on is checked here, before any of it
     can affect a result: unique study identifiers, known splits, no patient group
@@ -437,18 +449,23 @@ def read_cohort_manifest(path: Path) -> tuple[list[StudyRecord], dict[str, Any]]
     if sha256_file(path) != expected_hash:
         raise ValueError("Cohort manifest checksum does not match its metadata")
 
+    eligible = [row for row in rows if row["training_eligible"]]
+    if eligible and series_root is None:
+        series_root = paths.host_series_root()
+    # Unchecked, a missing tree only surfaces later as planes masked as undecodable.
+    if eligible and not Path(series_root).is_dir():
+        raise FileNotFoundError(f"Series root not found; is the data disk mounted? {series_root}")
     records = [
         StudyRecord(
             study_uid=row["study_uid"],
             report=row["report"],
-            slots={plane: Path(value) for plane, value in row["slots"].items()},
+            slots={plane: resolve_slot(value, series_root) for plane, value in row["slots"].items()},
             laterality=row["laterality"],
             patient_group_id=row["patient_group_id"],
             split=row["split"],
             report_language=row["report_language"],
             report_provenance=row["report_provenance"],
         )
-        for row in rows
-        if row["training_eligible"]
+        for row in eligible
     ]
     return records, metadata
