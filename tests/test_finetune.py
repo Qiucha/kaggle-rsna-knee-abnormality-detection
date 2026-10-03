@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 import torch
 
-from contrastive_learning.finetune import FinetuneModel, soft_targets, validate_config
+from contrastive_learning.finetune import FinetuneModel, soft_targets, unk_supervision, validate_config
 from contrastive_learning.submission import LABELS, _adapt, image_features, predict_head
 
 
@@ -53,8 +53,22 @@ def test_soft_targets_keep_unk_masked(tmp_path):
     assert np.allclose(values[1], 0.0)
 
 
+def test_unk_cells_train_toward_the_csv_value_at_their_own_weight(tmp_path):
+    uids = ["a", "b"]
+    frame = pd.DataFrame({"StudyInstanceUID": uids})
+    for label in LABELS:
+        frame[label] = [0.94, 0.28]
+    frame.to_csv(tmp_path / "lm.csv", index=False)
+    masks = np.zeros((2, len(LABELS)), np.float32)
+    masks[0] = 1
+    targets = np.full((2, len(LABELS)), 0.5, np.float32)
+    values, weights = unk_supervision(tmp_path / "lm.csv", uids, masks, targets, 0.2)
+    assert np.allclose(values[0], 0.5) and np.allclose(weights[0], 1.0)
+    assert np.allclose(values[1], 0.28) and np.allclose(weights[1], 0.2)
+
+
 @pytest.mark.parametrize("change", [{"targets": "probability"}, {"image_unfreeze_last": 0},
-                                    {"slices_per_plane": 5}, {"epochs": 0}])
+                                    {"slices_per_plane": 5}, {"epochs": 0}, {"unk_weight": 1.5}])
 def test_invalid_rung_configs_are_rejected(change):
     config = {"targets": "verdict", "image_unfreeze_last": 3, "slices_per_plane": 3,
               "epochs": 20, "batch_size": 16, "patience": 5, **change}
@@ -103,10 +117,11 @@ def test_random_slices_read_from_the_local_mirror(tmp_path):
     from contrastive_learning.finetune import RandomSliceDataset
 
     (tmp_path / "local" / "study" / "series").mkdir(parents=True)
-    dataset = RandomSliceDataset([], {}, {"from": "/mnt/d/train_series", "to": str(tmp_path / "local")})
-    assert dataset._series(Path("/mnt/d/train_series/study/series")) == tmp_path / "local/study/series"
+    # Wherever the source tree lives, the mirror is found by <study>/<series>.
+    dataset = RandomSliceDataset([], {}, {"to": str(tmp_path / "local")})
+    assert dataset._series(Path("/any/train_series/study/series")) == tmp_path / "local/study/series"
     with pytest.raises(FileNotFoundError):
-        dataset._series(Path("/mnt/d/train_series/study/other"))
+        dataset._series(Path("/any/train_series/study/other"))
 
 
 def test_eval_windows_sit_inside_the_strata_training_draws_from():
@@ -145,12 +160,13 @@ def test_sagittal_right_knees_reverse_window_depth_and_mask_together():
     assert flipped_valid.tolist() == [False, True, True, True]
 
 
-@pytest.mark.parametrize("pooling", ["mean", "attention"])
+@pytest.mark.parametrize("pooling", ["mean", "attention", "grouped"])
 def test_masked_windows_do_not_change_predictions(pooling):
     from contrastive_learning.finetune import WindowModel
 
     torch.manual_seed(0)
-    model = WindowModel(tiny_backbone(), [16], dropout=0.0, pooling=pooling).eval()
+    model = WindowModel(tiny_backbone(), [16], dropout=0.0, pooling=pooling,
+                        window_groups=2 if pooling == "grouped" else None).eval()
     images = torch.rand(2, 3, 4, 3, 28, 28)
     valid = torch.ones(2, 3, 4, dtype=torch.bool)
     valid[0, 1, 2:] = False
@@ -183,7 +199,12 @@ def test_mean_pooling_on_one_window_per_plane_matches_r1c():
 
 @pytest.mark.parametrize("change", [{"pooling": "mean"}, {"windows_per_plane": 8},
                                     {"windows_per_plane": 8, "pooling": "max", "window_cache_dir": "x"},
-                                    {"grad_accumulation": 0}])
+                                    {"grad_accumulation": 0},
+                                    {"windows_per_plane": 8, "pooling": "grouped", "window_cache_dir": "x"},
+                                    {"windows_per_plane": 8, "pooling": "grouped", "window_groups": 3,
+                                     "window_cache_dir": "x"},
+                                    {"windows_per_plane": 8, "pooling": "mean", "window_groups": 2,
+                                     "window_cache_dir": "x"}])
 def test_invalid_window_configs_are_rejected(change):
     config = {"targets": "verdict", "image_unfreeze_last": 3, "slices_per_plane": 3,
               "epochs": 20, "batch_size": 16, "patience": 5, **change}
@@ -233,3 +254,34 @@ def test_only_training_loaders_keep_their_workers_alive(tmp_path):
     records = [SimpleNamespace(study_uid="s", laterality="L", slots={})]
     assert _loader(records, config, training=True).persistent_workers
     assert not _loader(records, config, training=False).persistent_workers
+
+
+@pytest.mark.parametrize("groups", [None, 2])
+def test_exported_window_member_predicts_what_the_trained_model_predicts(groups):
+    from contrastive_learning.finetune import WindowModel, export_dense_head
+    from contrastive_learning.submission import window_features
+
+    torch.manual_seed(0)
+    model = WindowModel(tiny_backbone(), [16], dropout=0.2, pooling="grouped" if groups else "mean",
+                        window_groups=groups).eval()
+    images = torch.rand(2, 3, 4, 3, 28, 28)
+    valid = torch.ones(2, 3, 4, dtype=torch.bool)
+    valid[0, 1, 2:] = False
+    valid[1, 2] = False  # a whole missing plane
+    with torch.no_grad():
+        trained = model(images, valid).sigmoid().numpy()
+    deployed = predict_head(window_features(model.backbone, images, valid, groups).numpy(),
+                            export_dense_head(model.head))
+    np.testing.assert_allclose(deployed, trained, atol=1e-5)
+
+
+def test_grouped_pooling_keeps_slice_runs_and_planes_apart():
+    from contrastive_learning.submission import pool_windows
+
+    tokens = torch.arange(3 * 4, dtype=torch.float32).reshape(1, 3, 4, 1)  # window value = its index
+    valid = torch.ones(1, 3, 4, dtype=torch.bool)
+    valid[0, 0, 1] = False  # masked window leaves its run's mean to the valid one
+    valid[0, 2, 2:] = False  # a fully masked run pools to zero
+    pooled = pool_windows(tokens, valid, groups=2)
+    assert pooled.tolist() == [[0.0, 2.5, 4.5, 6.5, 8.5, 0.0]]
+    assert pool_windows(tokens, valid).shape == (1, 1)

@@ -17,8 +17,8 @@ Three things keep a rung comparable with R0 and with the other rungs:
   with gradients, and the head is exported as ``dense_v1`` with an identity scaler.
   The saved member therefore loads and predicts through the existing Kaggle code.
 
-UNK verdicts are masked in every rung. ``targets: "soft"`` swaps only the observed
-cells' 0/1 for the CSV's ``<finding>`` value. That value is a lookup from verdict and
+UNK verdicts are masked unless ``unk_weight`` is set (see :func:`unk_supervision`).
+``targets: "soft"`` swaps only the observed cells' 0/1 for the CSV's ``<finding>`` value. That value is a lookup from verdict and
 confidence (NO is always 0.08, YES is 0.68-0.94), not a calibrated probability.
 """
 
@@ -49,13 +49,13 @@ from .preprocessing import (
     read_windows,
 )
 from .model import _IMAGENET_MEAN, _IMAGENET_STD, freeze_then_unfreeze_last
-from .submission import LABELS, UID, export_member, score_predictions
+from .submission import LABELS, UID, export_member, pool_windows, score_predictions
 from .supervised_head import masked_bce
 
 ROOT = Path(__file__).resolve().parents[2]
 TARGETS = ("verdict", "soft")
 SLICE_SAMPLING = ("fixed", "random")
-POOLING = ("mean", "attention")
+POOLING = ("mean", "attention", "grouped")
 
 
 def image_kwargs(config: dict) -> dict:
@@ -78,6 +78,24 @@ def soft_targets(lm_labels_csv: Path, uids: list[str], hard_masks: np.ndarray) -
     if ((values < 0) | (values > 1))[hard_masks > 0].any():
         raise ValueError("Soft LM values must lie in [0, 1]")
     return np.where(hard_masks > 0, values, 0.0).astype(np.float32)
+
+
+def unk_supervision(lm_labels_csv: Path, uids: list[str], hard_masks: np.ndarray,
+                    targets: np.ndarray, unk_weight: float) -> tuple[np.ndarray, np.ndarray]:
+    """Targets and loss weights that also train UNK cells toward the CSV value at ``unk_weight``.
+
+    Observed cells keep weight 1 and their target. UNK cells take the CSV's ``<finding>``
+    value (0.28 for every UNK) at weight ``unk_weight``, the way pilkwang's labeler uses
+    them, instead of being masked. Loss normalisation stays on the hard mask, so the
+    observed cells' gradient is the parent rung's and the UNK term is purely additive.
+    """
+    frame = pd.read_csv(lm_labels_csv, dtype={UID: str}).set_index(UID)
+    values = frame.loc[uids, LABELS].to_numpy(np.float32)
+    unknown = hard_masks == 0
+    if not np.isfinite(values[unknown]).all():
+        raise ValueError("Soft LM value missing for an UNK verdict")
+    weights = np.where(unknown, unk_weight, 1.0).astype(np.float32)
+    return np.where(unknown, values, targets).astype(np.float32), weights
 
 
 def dense_head(width: int, hidden_dims: list[int], dropout: float) -> nn.Sequential:
@@ -114,18 +132,22 @@ class FinetuneModel(nn.Module):
         return self.head(self.features(images))
 
     def export_head(self) -> dict:
-        """The head as ``dense_v1``; the identity scaler leaves features untouched."""
-        width = self.head[0].in_features
-        return {
-            "kind": "dense_v1",
-            "mean": torch.zeros(width),
-            "scale": torch.ones(width),
-            "layers": [
-                {"weight": layer.weight.detach().float().cpu(), "bias": layer.bias.detach().float().cpu()}
-                for layer in self.head
-                if isinstance(layer, nn.Linear)
-            ],
-        }
+        return export_dense_head(self.head)
+
+
+def export_dense_head(head: nn.Sequential) -> dict:
+    """A :func:`dense_head` as ``dense_v1``; the identity scaler leaves features untouched."""
+    width = head[0].in_features
+    return {
+        "kind": "dense_v1",
+        "mean": torch.zeros(width),
+        "scale": torch.ones(width),
+        "layers": [
+            {"weight": layer.weight.detach().float().cpu(), "bias": layer.bias.detach().float().cpu()}
+            for layer in head
+            if isinstance(layer, nn.Linear)
+        ],
+    }
 
 
 class WindowModel(nn.Module):
@@ -137,15 +159,22 @@ class WindowModel(nn.Module):
     learned plane embedding, and scores each label from its own pooled token. Keys
     are a low-dimensional projection and values are the raw tokens, which keeps the
     head's size near R1c's so R4b against R4a tests attention, not capacity.
+    ``pooling="grouped"`` keeps slice position and plane identity: each plane's
+    windows pool into ``window_groups`` contiguous runs, and the dense head reads all
+    runs concatenated (:func:`submission.pool_windows`).
     """
 
     def __init__(self, backbone: nn.Module, hidden_dims: list[int], dropout: float, pooling: str,
-                 key_dim: int = 128):
+                 key_dim: int = 128, window_groups: int | None = None):
         super().__init__()
         self.backbone, self.pooling = backbone, pooling
+        self.window_groups = window_groups if pooling == "grouped" else None
         width = 2 * backbone.config.hidden_size
-        if pooling == "mean":
-            self.head = dense_head(width, hidden_dims, dropout)
+        if pooling == "grouped" and not window_groups:
+            raise ValueError("grouped pooling needs window_groups")
+        if pooling in ("mean", "grouped"):
+            self.head = dense_head(width * (len(PLANES) * window_groups if self.window_groups else 1),
+                                   hidden_dims, dropout)
         else:
             self.plane_embedding = nn.Parameter(torch.zeros(len(PLANES), width))
             self.key = nn.Linear(width, key_dim)
@@ -172,13 +201,8 @@ class WindowModel(nn.Module):
 
     def forward(self, images: torch.Tensor, valid: torch.Tensor, *, return_attention: bool = False):
         tokens = self.tokens(images, valid)
-        weights = valid.to(tokens.dtype)
-        if self.pooling == "mean":
-            counts = weights.sum(-1)
-            planes = (tokens * weights[..., None]).sum(2) / counts.clamp(min=1)[..., None]
-            present = (counts > 0).to(tokens.dtype)
-            study = (planes * present[..., None]).sum(1) / present.sum(1).clamp(min=1)[:, None]
-            logits, attention = self.head(study), None
+        if self.pooling in ("mean", "grouped"):
+            logits, attention = self.head(pool_windows(tokens, valid, self.window_groups)), None
         else:
             tokens = (tokens + self.plane_embedding[None, :, None]).flatten(1, 2)
             scores = torch.einsum("lk,bnk->bln", self.queries, self.key(tokens)) / math.sqrt(self.queries.shape[1])
@@ -211,6 +235,12 @@ def load_backbone(config: dict) -> tuple[nn.Module, dict]:
         backbone = load_timm_dinov2(config["image_model"], config["image_model_revision"],
                                     base_model=config["image_model_base"],
                                     base_revision=config["image_model_base_revision"])
+    elif config.get("image_model_format") == "timm":
+        # e.g. CoAtNet: a timm convolutional/hybrid model behind the HF ViT interface.
+        from .timm_backbone import load_timm_backbone
+
+        backbone = load_timm_backbone(config["image_model"], config["image_model_revision"],
+                                      grad_checkpointing=config.get("image_grad_checkpointing", False))
     else:
         from transformers import AutoModel
 
@@ -426,8 +456,15 @@ def validate_config(config: dict) -> None:
             raise ValueError(f"A windowed rung needs pooling in {POOLING}")
         if "window_cache_dir" not in config:
             raise ValueError("A windowed rung needs window_cache_dir for evaluation windows")
+        if (config["pooling"] == "grouped") != ("window_groups" in config):
+            raise ValueError("window_groups goes with grouped pooling, and only with it")
+        if config["pooling"] == "grouped" and (
+                config["window_groups"] < 1 or config["windows_per_plane"] % config["window_groups"]):
+            raise ValueError("window_groups must divide windows_per_plane")
     elif "pooling" in config:
         raise ValueError("pooling applies only with windows_per_plane")
+    if not 0 <= config.get("unk_weight", 0) <= 1:
+        raise ValueError("unk_weight must lie in [0, 1]")
     if config.get("grad_accumulation", 1) < 1:
         raise ValueError("grad_accumulation must be positive")
     for key in ("epochs", "batch_size", "patience"):
@@ -450,6 +487,10 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         train_y = soft_targets(lm_csv, [r.study_uid for r in groups["train"]], masks["train"])
     else:
         train_y = hard["train"]
+    train_w = masks["train"]
+    if config.get("unk_weight"):
+        train_y, train_w = unk_supervision(lm_csv, [r.study_uid for r in groups["train"]], masks["train"],
+                                           train_y, config["unk_weight"])
     train_rows = {r.study_uid: i for i, r in enumerate(groups["train"])}
 
     torch.manual_seed(config["seed"])
@@ -457,7 +498,8 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     backbone, adaptation = load_backbone(config)
     windowed = bool(config.get("windows_per_plane"))
     if windowed:
-        model = WindowModel(backbone, config["head_hidden"], config["dropout"], config["pooling"])
+        model = WindowModel(backbone, config["head_hidden"], config["dropout"], config["pooling"],
+                            window_groups=config.get("window_groups"))
     else:
         model = FinetuneModel(backbone, config["head_hidden"], config["dropout"])
     model = model.to(device)
@@ -478,9 +520,11 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     scheduler = _scheduler(optimizer, config["epochs"] * steps_per_epoch, config["warmup_fraction"])
     scaler = torch.amp.GradScaler(enabled=config["amp"])
     y_all = torch.as_tensor(train_y, device=device)
-    m_all = torch.as_tensor(masks["train"], device=device)
+    m_all = torch.as_tensor(train_w, device=device)
     # Fixed full-split observation rates keep minibatch losses on one macro scale.
-    observed_rates = m_all.mean(0)
+    # They come from the hard mask, so UNK weight adds to a label's loss without
+    # rescaling its observed cells.
+    observed_rates = torch.as_tensor(masks["train"], device=device).mean(0)
     trainable = {n for n, p in model.named_parameters() if p.requires_grad}
     print(
         json.dumps({"population": population["coverage"], "trainable_parameters": sum(
@@ -616,6 +660,9 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
                  "studies": len(targets["gold"])},
         "population": population,
         "lm_labels_sha256": sha256_file(lm_csv),
+        **({"unk_weight": config["unk_weight"], "unk_weight_share": dict(zip(LABELS, (
+            (train_w.sum(0) - masks["train"].sum(0)) / masks["train"].sum(0)).round(4).tolist()))}
+           if config.get("unk_weight") else {}),
         **({"window_counts": window_counts, "exported": False} if windowed else {}),
         "seconds": time.perf_counter() - started,
     }

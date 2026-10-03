@@ -10,6 +10,7 @@ from contrastive_learning.submission import (
     LABELS,
     UID,
     benchmark_head,
+    combine_members,
     export_member,
     fit_head,
     image_features,
@@ -34,6 +35,24 @@ def test_submission_requires_exact_order_and_probabilities():
     ):
         with pytest.raises(ValueError):
             validate_submission(bad, sample)
+
+
+def test_rank_mean_averages_per_label_ranks_across_members():
+    from scipy.stats import rankdata
+
+    rng = np.random.default_rng(0)
+    members = [rng.random((7, 12)), rng.random((7, 12))]
+    members[1][:2, 0] = 0.25  # a tie takes the average rank
+    expected = np.mean([np.column_stack([rankdata(m[:, j]) / len(m) for j in range(12)])
+                        for m in members], axis=0)
+    np.testing.assert_allclose(combine_members(members, "rank_mean"), expected)
+
+
+def test_ensemble_mode_defaults_to_probability_mean_and_rejects_unknown():
+    members = [np.full((3, 12), 0.2), np.full((3, 12), 0.6)]
+    np.testing.assert_allclose(combine_members(members, "mean_probability"), 0.4)
+    with pytest.raises(ValueError):
+        combine_members(members, "geometric")
 
 
 def test_portable_head_matches_sklearn():

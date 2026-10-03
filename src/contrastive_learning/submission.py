@@ -25,7 +25,16 @@ from .data import (
     read_series_manifest,
 )
 from .model import _IMAGENET_MEAN, _IMAGENET_STD, freeze_then_unfreeze_last
-from .preprocessing import PREPROCESSING_VERSION, decode_counts, resolve_laterality
+from .preprocessing import (
+    PLANES,
+    PREPROCESSING_VERSION,
+    apply_left_knee_windows,
+    count_decode_event,
+    decode_counts,
+    read_windows,
+    resolve_laterality,
+    series_transfer_syntax,
+)
 
 LABELS = [
     "ACL",
@@ -160,11 +169,107 @@ def image_features(backbone, images: torch.Tensor) -> torch.Tensor:
     )
 
 
+class _WindowReads(torch.utils.data.Dataset):
+    """Inference windows at stratum centres, as ``finetune.WindowDataset`` evaluates.
+
+    A plane that will not decode tries its ranked fallback series (logged and
+    counted); if none decodes, the plane is masked, as training masks it. Only a
+    study with no readable plane at all is an error.
+    """
+
+    def __init__(self, records, image_kwargs: dict):
+        self.records = list(records)
+        self.kwargs = {k: v for k, v in image_kwargs.items() if k not in ("windows", "slices_per_plane", "window_groups")}
+        self.windows = image_kwargs["windows"]
+
+    def __len__(self):
+        return len(self.records)
+
+    def __getitem__(self, index):
+        record = self.records[index]
+        size = self.kwargs["image_size"]
+        images = torch.zeros(len(PLANES), self.windows, 3, size, size)
+        valid = torch.zeros(len(PLANES), self.windows, dtype=torch.bool)
+        for i, plane in enumerate(PLANES):
+            failed = record.slots[plane]
+            read = read_windows(failed, windows=self.windows, **self.kwargs)
+            for alternative in (record.fallbacks or {}).get(plane, ()):
+                if read is not None:
+                    break
+                count_decode_event(series_transfer_syntax(failed), "fallback_series")
+                read = read_windows(alternative, windows=self.windows, **self.kwargs)
+                print(f"decode fallback: study {record.study_uid} {plane}: {failed.name} -> "
+                      f"{alternative.name} ({'ok' if read is not None else 'failed'})",
+                      file=sys.stderr, flush=True)
+                failed = alternative
+            if read is None:
+                print(f"masked plane: study {record.study_uid} {plane}", file=sys.stderr, flush=True)
+                continue
+            images[i], valid[i] = apply_left_knee_windows(*read, plane, record.laterality)
+        if not valid.any():
+            raise RuntimeError(f"No readable plane: {record.study_uid}")
+        return images.half(), valid
+
+
+@torch.inference_mode()
+def window_features(backbone, images: torch.Tensor, valid: torch.Tensor, groups: int | None = None) -> torch.Tensor:
+    """``finetune.WindowModel`` features: window tokens pooled by :func:`pool_windows`."""
+    flat = images.reshape(-1, *images.shape[-3:])[valid.reshape(-1)].float()
+    mean = flat.new_tensor(_IMAGENET_MEAN).view(1, 3, 1, 1)
+    std = flat.new_tensor(_IMAGENET_STD).view(1, 3, 1, 1)
+    with torch.autocast(device_type=flat.device.type, enabled=flat.device.type == "cuda"):
+        hidden = backbone(pixel_values=(flat - mean) / std).last_hidden_state
+    first_patch = 1 + int(getattr(backbone.config, "num_register_tokens", 0))
+    pooled = torch.cat((hidden[:, 0], hidden[:, first_patch:].mean(1)), dim=-1).float()
+    tokens = pooled.new_zeros(valid.numel(), pooled.shape[-1])
+    tokens[valid.reshape(-1)] = pooled
+    return pool_windows(tokens.reshape(*valid.shape, -1), valid, groups)
+
+
+def pool_windows(tokens: torch.Tensor, valid: torch.Tensor, groups: int | None = None) -> torch.Tensor:
+    """Pool window tokens ``[B, planes, K, D]`` under ``valid`` ``[B, planes, K]``.
+
+    Without ``groups`` (R4a): mean of valid windows per plane, then of present planes,
+    giving ``[B, D]``. With ``groups``: each plane's K windows split into ``groups``
+    contiguous runs along the slice axis, each run mean-pooled over its valid windows
+    (zeros if none), and all ``planes * groups`` runs concatenated in order, giving
+    ``[B, planes * groups * D]``. Slice order is anatomical and right knees are
+    mirrored, so on sagittal the runs separate the medial from the lateral side, and
+    the concatenation keeps which plane each feature came from.
+    """
+    weights = valid.to(tokens.dtype)
+    if groups:
+        batch, planes, windows, width = tokens.shape
+        tokens = tokens.reshape(batch, planes, groups, windows // groups, width)
+        weights = weights.reshape(batch, planes, groups, windows // groups)
+        runs = (tokens * weights[..., None]).sum(3) / weights.sum(-1).clamp(min=1)[..., None]
+        return runs.flatten(1)
+    counts = weights.sum(-1)
+    planes = (tokens * weights[..., None]).sum(2) / counts.clamp(min=1)[..., None]
+    present = (counts > 0).to(tokens.dtype)
+    return (planes * present[..., None]).sum(1) / present.sum(1).clamp(min=1)[:, None]
+
+
 def extract_features(
     backbone, records, image_kwargs, device, batch_size=8, cache_dir=None
 ):
     if batch_size < 1:
         raise ValueError("batch_size must be positive")
+    if image_kwargs.get("windows"):
+        import os
+
+        loader = torch.utils.data.DataLoader(
+            _WindowReads(records, image_kwargs), batch_size=batch_size,
+            num_workers=min(4, os.cpu_count() or 1),
+        )
+        backbone.to(device).eval()
+        groups = image_kwargs.get("window_groups")
+        parts = [window_features(backbone, images.to(device), valid.to(device), groups).cpu().numpy()
+                 for images, valid in loader]
+        result = np.concatenate(parts)
+        if not np.isfinite(result).all():
+            raise ValueError("Encoder produced nonfinite features")
+        return result
     dataset = KneeReportDataset(records, image_kwargs, image_cache_dir=cache_dir)
     backbone.to(device).eval()
     parts = []
@@ -207,6 +312,22 @@ def fit_head(features: np.ndarray, targets: np.ndarray, *, c=1.0):
             "intercept": np.asarray(intercepts),
         }.items()
     }
+
+
+ENSEMBLES = ("mean_probability", "rank_mean")
+
+
+def combine_members(predictions: list[np.ndarray], mode: str) -> np.ndarray:
+    """Combine member probabilities ``[studies, labels]`` as a bundle's ``ensemble`` says.
+
+    ``rank_mean`` averages per-label percentile ranks (ties take the average rank).
+    AUROC only sees order, so it lets members with different calibrations count equally.
+    """
+    if mode == "mean_probability":
+        return np.mean(predictions, axis=0)
+    if mode == "rank_mean":
+        return np.mean([pd.DataFrame(p).rank(pct=True).to_numpy() for p in predictions], axis=0)
+    raise ValueError(f"Unsupported ensemble: {mode}")
 
 
 def predict_head(features: np.ndarray, head: dict) -> np.ndarray:
@@ -322,6 +443,7 @@ def predict_submission(
         bundle["schema_version"] != 1
         or bundle["labels"] != LABELS
         or not bundle["members"]
+        or bundle.get("ensemble", "mean_probability") not in ENSEMBLES
     ):
         raise ValueError("Unsupported or empty submission bundle")
     sample = pd.read_csv(data_root / "sample_submission.csv", dtype={UID: str})
@@ -347,7 +469,9 @@ def predict_submission(
         )
         predictions.append(predict_head(features, payload["head"]))
         del backbone, payload
-    submission = pd.DataFrame(np.mean(predictions, axis=0), columns=LABELS)
+    submission = pd.DataFrame(
+        combine_members(predictions, bundle.get("ensemble", "mean_probability")), columns=LABELS
+    )
     submission.insert(0, UID, ids)
     validate_submission(submission, sample)
     write_atomic(output, lambda temporary: submission.to_csv(temporary, index=False))
