@@ -169,6 +169,6 @@ md += ["", "## Selection rules, out of sample (k = 5, 5 split seeds x 200 half-s
 md += [f"| {r['split_seed']} | {r['top5']:.4f} | {r['coverage']:.4f} | {r['greedy']:.4f} | {f(r['coverage_minus_greedy'])} |" for r in k5]
 md += ["", f"Per-label winners other than the best-macro run: edge {persistence['selection_edge']:+.4f} on the selection "
        f"half, {persistence['held_out_edge']:+.4f} held out (positive in {persistence['held_out_positive']:.0%}).",
-       "", "[Phase 2 digest page](site/pages/phase2.html#ensembles)", "[Machine-readable snapshot](ensemble-selection-v1.json)"]
+       "", "[Submission page](site/pages/submission.html)", "[Machine-readable snapshot](ensemble-selection-v1.json)"]
 (DIGEST / "ensemble-selection-v1.md").write_text("\n".join(md) + "\n")
 print(json.dumps({"combos": len(combos), "pairs": len(pairs), "singles": len(singles)}))

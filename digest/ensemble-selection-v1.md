@@ -52,5 +52,5 @@ All ensembles are per-label rank means of fine-tuned runs. LM-test is the criter
 
 Per-label winners other than the best-macro run: edge +0.0274 on the selection half, +0.0024 held out (positive in 49%).
 
-[Phase 2 digest page](site/pages/phase2.html#ensembles)
+[Submission page](site/pages/submission.html)
 [Machine-readable snapshot](ensemble-selection-v1.json)
