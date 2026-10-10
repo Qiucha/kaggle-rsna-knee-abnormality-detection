@@ -98,6 +98,63 @@ def unk_supervision(lm_labels_csv: Path, uids: list[str], hard_masks: np.ndarray
     return np.where(unknown, values, targets).astype(np.float32), weights
 
 
+def label_columns(names: list[str]) -> list[int]:
+    unknown = set(names) - set(LABELS)
+    if unknown or not names:
+        raise ValueError(f"Unknown or empty label list: {sorted(unknown)}")
+    return [LABELS.index(name) for name in names]
+
+
+def oversampled_rows(hard_y: np.ndarray, masks: np.ndarray, spec: dict) -> tuple[np.ndarray, np.ndarray]:
+    """Training rows for one epoch: every study once, then ``copies`` extra draws of each
+    study with an observed positive verdict on any of ``spec["labels"]``.
+
+    Returns the rows and a per-row weight multiplier. With ``mask_other_labels`` the extra
+    draws carry weight 0 on every other label, so those labels see exactly the base
+    data and only the named labels gain repeats.
+    """
+    columns = label_columns(spec["labels"])
+    positive = ((hard_y[:, columns] == 1) & (masks[:, columns] > 0)).any(1)
+    extra = np.repeat(np.flatnonzero(positive), spec["copies"])
+    rows = np.concatenate([np.arange(len(hard_y)), extra])
+    keep = np.ones((len(rows), len(LABELS)), np.float32)
+    if spec.get("mask_other_labels", True):
+        others = [i for i in range(len(LABELS)) if i not in columns]
+        keep[len(hard_y):, others] = 0.0
+    return rows, keep
+
+
+def label_weight_vector(weights: dict) -> np.ndarray:
+    """Per-label loss weights, named labels at their value and the rest at 1, rescaled to
+    mean 1 so the total loss scale (and with it the clipped gradient) matches the base."""
+    vector = np.ones(len(LABELS), np.float32)
+    for column, name in zip(label_columns(list(weights)), weights):
+        vector[column] = weights[name]
+    return vector / vector.mean()
+
+
+def noisy_targets(targets: torch.Tensor, columns: list[int], sigma: float,
+                  generator: torch.Generator) -> torch.Tensor:
+    """Fresh Gaussian noise on ``columns`` of the soft targets, clipped back into [0, 1]."""
+    noise = torch.randn(targets.shape[0], len(columns), generator=generator, device=targets.device)
+    targets = targets.clone()
+    targets[:, columns] = (targets[:, columns] + sigma * noise).clamp(0.0, 1.0)
+    return targets
+
+
+class TrainingRows(torch.utils.data.Dataset):
+    """A dataset read at ``rows`` (repeats allowed); each item carries its position."""
+
+    def __init__(self, dataset, rows):
+        self.dataset, self.rows = dataset, [int(r) for r in rows]
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> dict:
+        return {**self.dataset[self.rows[index]], "row": index}
+
+
 def dense_head(width: int, hidden_dims: list[int], dropout: float) -> nn.Sequential:
     """ReLU MLP from ``width`` to one logit per label; exports as ``dense_v1``."""
     widths = [width, *hidden_dims, len(LABELS)]
@@ -368,14 +425,17 @@ def _dataset(records, config, *, training):
     return KneeReportDataset(records, image_kwargs(config), image_cache_dir=ROOT / config["image_cache_dir"])
 
 
-def _loader(records, config, *, training, generator=None):
+def _loader(records, config, *, training, generator=None, rows=None):
     dataset = _dataset(records, config, training=training)
+    if rows is not None:
+        dataset = TrainingRows(dataset, rows)
 
     def collate(batch):
-        # Model inputs first, as a tuple the model is called with; study uids last.
+        # Model inputs first, as a tuple the model is called with; then the training row
+        # positions, or the study uids when the dataset is read without rows.
         inputs = tuple(torch.stack([item[key] for item in batch])
                        for key in ("images", "valid") if key in batch[0])
-        return inputs, [item["study_uid"] for item in batch]
+        return inputs, [item["row"] if "row" in item else item["study_uid"] for item in batch]
 
     return torch.utils.data.DataLoader(
         dataset,
@@ -470,6 +530,18 @@ def validate_config(config: dict) -> None:
     for key in ("epochs", "batch_size", "patience"):
         if config[key] < 1:
             raise ValueError(f"{key} must be positive")
+    if "oversample" in config:
+        label_columns(config["oversample"]["labels"])
+        if config["oversample"]["copies"] < 1:
+            raise ValueError("oversample copies must be positive")
+    if "label_noise" in config:
+        label_columns(config["label_noise"]["labels"])
+        if not config["label_noise"]["sigma"] > 0:
+            raise ValueError("label_noise sigma must be positive")
+    if "label_weights" in config:
+        label_columns(list(config["label_weights"]))
+        if any(w <= 0 for w in config["label_weights"].values()):
+            raise ValueError("label_weights must be positive")
 
 
 def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
@@ -491,7 +563,14 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     if config.get("unk_weight"):
         train_y, train_w = unk_supervision(lm_csv, [r.study_uid for r in groups["train"]], masks["train"],
                                            train_y, config["unk_weight"])
-    train_rows = {r.study_uid: i for i, r in enumerate(groups["train"])}
+    # Rows index the training tables. Without oversampling each study is read once, as before.
+    epoch_rows = np.arange(len(groups["train"]))
+    if config.get("oversample"):
+        epoch_rows, keep = oversampled_rows(hard["train"], masks["train"], config["oversample"])
+        train_y, train_w = train_y[epoch_rows], train_w[epoch_rows] * keep
+    clean_w = train_w
+    if config.get("label_weights"):
+        train_w = train_w * label_weight_vector(config["label_weights"])
 
     torch.manual_seed(config["seed"])
     np.random.seed(config["seed"])
@@ -513,7 +592,7 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         weight_decay=config["weight_decay"],
     )
     generator = torch.Generator().manual_seed(config["seed"])
-    train_loader = _loader(groups["train"], config, training=True, generator=generator)
+    train_loader = _loader(groups["train"], config, training=True, generator=generator, rows=epoch_rows)
     validation_loader = _loader(groups["validation"], config, training=False)
     accumulation = config.get("grad_accumulation", 1)
     steps_per_epoch = math.ceil(len(train_loader) / accumulation)
@@ -521,6 +600,12 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     scaler = torch.amp.GradScaler(enabled=config["amp"])
     y_all = torch.as_tensor(train_y, device=device)
     m_all = torch.as_tensor(train_w, device=device)
+    # The logged training BCE stays unweighted and noise-free, comparable with the base rung.
+    m_clean = torch.as_tensor(clean_w, device=device)
+    noise = config.get("label_noise")
+    if noise:
+        noise_columns = label_columns(noise["labels"])
+        noise_generator = torch.Generator(device=device).manual_seed(config["seed"] + 1)
     # Fixed full-split observation rates keep minibatch losses on one macro scale.
     # They come from the hard mask, so UNK weight adds to a label's loss without
     # rescaling its observed cells.
@@ -536,17 +621,21 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     stale = 0
     for epoch in range(1, config["epochs"] + 1):
         model.train()
-        epoch_started, losses, train_valid = time.perf_counter(), [], []
+        epoch_started, losses, objectives, train_valid = time.perf_counter(), [], [], []
         optimizer.zero_grad(set_to_none=True)
-        for batch, (inputs, uids) in enumerate(train_loader, start=1):
-            index = torch.as_tensor([train_rows[u] for u in uids], device=device)
+        for batch, (inputs, batch_rows) in enumerate(train_loader, start=1):
+            index = torch.as_tensor(batch_rows, device=device)
             with torch.autocast(device_type=device.split(":")[0], enabled=config["amp"]):
                 logits = model(*_to(inputs, device))
-            loss = masked_bce(logits.float(), y_all[index], m_all[index], observed_rates)
+            targets_batch = y_all[index]
+            if noise:
+                targets_batch = noisy_targets(targets_batch, noise_columns, noise["sigma"], noise_generator)
+            loss = masked_bce(logits.float(), targets_batch, m_all[index], observed_rates)
             if not torch.isfinite(loss):
                 raise ValueError(f"Nonfinite training loss at epoch {epoch}")
             scaler.scale(loss / accumulation).backward()
-            losses.append(float(loss))
+            objectives.append(float(loss))
+            losses.append(float(masked_bce(logits.detach().float(), y_all[index], m_clean[index], observed_rates)))
             if windowed:
                 train_valid.append(inputs[1].numpy())
             # Step every `accumulation` micro-batches, and flush a partial group at epoch end.
@@ -572,6 +661,8 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         row = {
             "epoch": epoch,
             "train_masked_bce": float(np.mean(losses)),
+            **({"train_objective": float(np.mean(objectives))}
+               if noise or config.get("label_weights") else {}),
             "validation_masked_bce": validation_bce,
             "validation_macro_auroc": validation_auroc["macro_auroc"],
             "seconds": time.perf_counter() - epoch_started,
@@ -663,6 +754,11 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         **({"unk_weight": config["unk_weight"], "unk_weight_share": dict(zip(LABELS, (
             (train_w.sum(0) - masks["train"].sum(0)) / masks["train"].sum(0)).round(4).tolist()))}
            if config.get("unk_weight") else {}),
+        **({"oversample": {"draws_per_epoch": len(epoch_rows), "extra_draws": len(epoch_rows) - len(groups["train"]),
+                           "observed_draws": dict(zip(LABELS, (clean_w > 0).sum(0).tolist()))}}
+           if config.get("oversample") else {}),
+        **({"label_weights": dict(zip(LABELS, label_weight_vector(config["label_weights"]).round(4).tolist()))}
+           if config.get("label_weights") else {}),
         **({"window_counts": window_counts, "exported": False} if windowed else {}),
         "seconds": time.perf_counter() - started,
     }

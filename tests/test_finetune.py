@@ -285,3 +285,68 @@ def test_grouped_pooling_keeps_slice_runs_and_planes_apart():
     pooled = pool_windows(tokens, valid, groups=2)
     assert pooled.tolist() == [[0.0, 2.5, 4.5, 6.5, 8.5, 0.0]]
     assert pool_windows(tokens, valid).shape == (1, 1)
+
+
+def test_oversampling_repeats_target_positives_and_masks_other_labels_on_repeats():
+    from contrastive_learning.finetune import oversampled_rows
+
+    lateral, acl = LABELS.index("Lateral Meniscus"), LABELS.index("ACL")
+    hard = np.zeros((4, len(LABELS)), np.float32)
+    masks = np.ones((4, len(LABELS)), np.float32)
+    hard[1, lateral] = 1
+    hard[2, lateral] = 1
+    masks[2, lateral] = 0  # a positive verdict that is not observed does not count
+    hard[3, acl] = 1
+    rows, keep = oversampled_rows(hard, masks, {"labels": ["Lateral Meniscus"], "copies": 2})
+    assert rows.tolist() == [0, 1, 2, 3, 1, 1]
+    assert (keep[:4] == 1).all()
+    assert (keep[4:, lateral] == 1).all() and keep[4:].sum() == 2
+    _, kept = oversampled_rows(hard, masks, {"labels": ["Lateral Meniscus"], "copies": 1,
+                                             "mask_other_labels": False})
+    assert (kept == 1).all()
+
+
+def test_label_weights_keep_the_mean_weight_at_one():
+    from contrastive_learning.finetune import label_weight_vector
+
+    vector = label_weight_vector({"Lateral OA": 2.0, "Synovitis": 2.0})
+    assert vector.mean() == pytest.approx(1.0)
+    assert vector[LABELS.index("Lateral OA")] == pytest.approx(2 * vector[LABELS.index("ACL")])
+
+
+def test_label_noise_touches_only_its_columns_and_stays_in_range():
+    from contrastive_learning.finetune import noisy_targets
+
+    targets = torch.full((500, len(LABELS)), 0.08)
+    columns = [LABELS.index("Lateral Meniscus"), LABELS.index("Lateral OA")]
+    generator = torch.Generator().manual_seed(0)
+    noisy = noisy_targets(targets, columns, 0.1, generator)
+    others = [i for i in range(len(LABELS)) if i not in columns]
+    assert torch.equal(noisy[:, others], targets[:, others])
+    assert (noisy[:, columns] >= 0).all() and (noisy[:, columns] <= 1).all()
+    assert noisy[:, columns].std() > 0.05
+    assert torch.equal(targets, torch.full((500, len(LABELS)), 0.08))  # input untouched
+    again = noisy_targets(targets, columns, 0.1, generator)
+    assert not torch.equal(again, noisy)  # fresh noise on every draw
+
+
+@pytest.mark.parametrize("change", [
+    {"oversample": {"labels": ["Lateral Menisci"], "copies": 1}},
+    {"oversample": {"labels": ["Lateral OA"], "copies": 0}},
+    {"label_noise": {"labels": ["Lateral OA"], "sigma": 0.0}},
+    {"label_weights": {"Synovitis": -1.0}},
+])
+def test_invalid_rebalancing_configs_are_rejected(change):
+    config = {"targets": "soft", "image_unfreeze_last": 3, "slices_per_plane": 3,
+              "epochs": 20, "batch_size": 16, "patience": 5, **change}
+    with pytest.raises(ValueError):
+        validate_config(config)
+
+
+def test_training_rows_read_repeats_and_report_their_position():
+    from contrastive_learning.finetune import TrainingRows
+
+    base = [{"study_uid": u} for u in "abc"]
+    rows = TrainingRows(base, [0, 1, 2, 1])
+    assert len(rows) == 4
+    assert rows[3] == {"study_uid": "b", "row": 3}
