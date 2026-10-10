@@ -26,7 +26,8 @@ GROUPS = {"baseline": {"label": "R0 baseline (frozen encoder)", "color": "var(--
           "backbones": {"label": "Backbone swaps (R4a K8, pretrained start)", "color": "var(--g-amber)"},
           "labels": {"label": "Soft labels, seed replicates and 336 px (R4a K8)", "color": "var(--g-rose)"},
           "combined": {"label": "Combined: OmniRad-base + soft + 336 px", "color": "var(--g-lime)"},
-          "diagnostic": {"label": "Backbone diagnostic: CoAtNet-384 (ticket 16)", "color": "var(--g-sky)"}}
+          "diagnostic": {"label": "Backbone diagnostic: CoAtNet-384 (ticket 16)", "color": "var(--g-sky)"},
+          "lateral": {"label": "Lateral-label fixes on R4a soft (ticket 18)", "color": "var(--g-holdout)"}}
 
 
 def _ci(lo: float, hi: float) -> str:
@@ -92,6 +93,28 @@ def _coatnet_note(by_id) -> str:
             "so it underfits: only 3 of 24 blocks train, and stages 0–2 keep ImageNet features. The 0.924 reference "
             "fine-tuned every block for 16 epochs with top-3 weight averaging, on private labels. A deeper-unfreeze "
             "arm is queued.</li>")
+
+
+def _lateral_note(by_id) -> str:
+    """Ticket 18: Lateral Meniscus and Lateral OA are the two weakest gold-58 labels in every run."""
+    arms = [by_id[k] for k in ("R4a-soft-unk", "R4a-soft-grouped") if k in by_id]
+    if not arms:
+        return ""
+    parent = by_id["R4a-soft"]
+
+    def lat(s):
+        g = s["gold"]["per_label"]
+        return f"Lateral Meniscus {num(g['Lateral Meniscus'])}, Lateral OA {num(g['Lateral OA'])}"
+    rows = "; ".join(f"{esc(s['short'])}: {lat(s)} (macro LM-test {num(s['vs_parent']['lm_test']['difference'], '.4f', True)} "
+                     f"{_ci(*s['vs_parent']['lm_test']['ci95'])})" for s in arms)
+    return ("<li><strong>Lateral-label fixes (2026-10-03, ticket 18).</strong> Lateral Meniscus and Lateral OA are the two "
+            "lowest gold-58 labels averaged over every run, while LM-test rates them as average. The LM labels disagree with "
+            "gold on these two labels more than on others, and they tie Lateral OA to Medial OA (correlation 0.60 against 0.32 "
+            "in gold), which the heads copy. "
+            f"Parent R4a soft: {lat(parent)}. {rows}. Neither arm moves either lateral label beyond noise, and the "
+            "Lateral OA head still ranks gold Medial OA and PF OA above its own label, so the lever left is the label "
+            "source (ticket 18, option 2). Per-label paired intervals: "
+            "<code>checkpoints/finetune/lateral-fixes-table.json</code>.</li>")
 
 
 def _label_group_note(j, by_id) -> str:
@@ -185,6 +208,7 @@ def steps_section(ctx, j, by_id) -> tuple[str, dict]:
              + _label_group_note(j, by_id)
              + _combined_note(by_id)
              + _coatnet_note(by_id)
+             + _lateral_note(by_id)
              + "<li>Gold-58 has been examined many times and rests on few positives per label: treat it as exploratory. "
                "LM-test scores agreement with LM-generated labels, not radiologists, and the two disagree on OmniRad-small.</li>"
              "<li>Every step is one training seed (2026), except the seed-2027 replicates, which repeat their parent "

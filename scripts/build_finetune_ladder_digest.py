@@ -108,6 +108,17 @@ STEPS = [
                "Pooled feature is [spatial max, mean] since CoAtNet has no CLS. Changes backbone and resolution "
                "against run 5.",
      "also": "OmniRad-B"},
+    {"id": "R4a-soft-unk", "run": "r4a-soft-224-k8-mean-unk02", "parent": "R4a-soft", "group": "lateral",
+     "short": "R4a soft UNK 0.2", "label": "R4a K8 soft · UNK cells trained at weight 0.2 (ticket 18)",
+     "change": "UNK verdicts stop being masked: they train toward the CSV's UNK value (0.28) at loss weight 0.2, "
+               "added on top of the observed cells (normalisation stays on the hard mask). Aimed at Lateral OA, "
+               "33% UNK in training, whose gold-58 UNK cases are all negative."},
+    {"id": "R4a-soft-grouped", "run": "r4a-soft-224-k8-grouped2", "parent": "R4a-soft", "group": "lateral",
+     "short": "R4a soft grouped", "label": "R4a K8 soft · slice-position and plane-aware pooling (ticket 18)",
+     "change": "Grouped pooling: each plane's 8 windows pool into 2 contiguous halves along the slice axis (on sagittal, "
+               "medial vs lateral half; slice order is the same direction in every study and right knees are mirrored), and "
+               "the 3 planes × 2 halves are concatenated instead of averaged, so the head (6× wider input) sees slice "
+               "position and plane. Exports through the same dense_v1 head."},
 ]
 KAGGLE = ROOT / "checkpoints" / "kaggle"
 
