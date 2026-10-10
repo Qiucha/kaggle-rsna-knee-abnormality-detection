@@ -177,6 +177,7 @@ configurations resolve consistently.
 | `build_project_digest.py` | Rebuild `digest/project-state.html` from local experiment artifacts. Takes no arguments. |
 | `evaluate_downstream_probe.py` | Score representations on the downstream label-extraction task before and after contrastive learning: cross-validated per-label logistic probes over the gold cohort, pooled out-of-fold AUROC, paired bootstrap intervals. Read-only; never loads the locked test split. |
 | `analyze_plane_pooling.py` | Decompose why the image tower's learned plane attention reads labels worse than averaging the same three planes: per-plane probes, the attention weights, and the pooling with and without its plane-embedding term. Reuses the downstream probe's contract by import, not by copy. |
+| `extract_setting_features.py` | Per-window features for up to six series per study (each plane's selected series and its opposite fat-suppression counterpart), read through a windowed rung's evaluation path and encoded by both the rung's adapted backbone and its pretrained starting point. Fsynced shards; a rerun resumes. |
 | `translate_reports_claude.py` | Prepare, run, and merge report translations used by the `translated_english` cohorts. Only `run --execute` calls out to Claude; everything else is offline. |
 | `templates/` | HTML template used by `build_project_digest.py`. |
 
