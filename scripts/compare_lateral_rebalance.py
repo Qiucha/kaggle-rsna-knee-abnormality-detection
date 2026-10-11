@@ -4,7 +4,8 @@
 Both arms train the u9-b1 recipe with one change each: (A) one extra draw of every study
 positive for Lateral Meniscus, Lateral OA or Synovitis, other labels masked on the extra
 draws, plus fresh N(0, 0.1) noise on the two lateral soft targets; (B) 2x loss weight on
-the three labels, renormalised to mean 1. Every run is read from its own ``predictions.npz``
+the three labels, renormalised to mean 1. "A ep30" reruns A with a 30-epoch cosine budget,
+patience off and a divergence stop. Every run is read from its own ``predictions.npz``
 and must match run 5 study for study. Intervals are study bootstraps shared across runs
 (:func:`lm_proxy.paired_intervals`), so each delta is paired. The run-5 seed replicate
 gives the training-noise reference.
@@ -36,11 +37,14 @@ RUNS = {  # key -> (run directory, title)
     "oversample+noise": (FINETUNE / "r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise",
                          "A · oversample + lateral noise"),
     "loss weight 2x": (FINETUNE / "r4a-k8-omnirad-base-soft-336-u9-b1-lat-w2", "B · 2× loss weight"),
+    "oversample+noise ep30": (FINETUNE / "r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30",
+                              "A · 30-epoch budget"),
 }
-ARMS = ["oversample+noise", "loss weight 2x"]
+ARMS = ["oversample+noise", "loss weight 2x", "oversample+noise ep30"]
 TARGETS = ["Lateral Meniscus", "Lateral OA", "Synovitis"]
 PAIRS = [("run5 seed2027", "run5"), ("oversample+noise", BASE), ("loss weight 2x", BASE),
-         ("oversample+noise", "loss weight 2x")]
+         ("oversample+noise", "loss weight 2x"), ("oversample+noise ep30", BASE),
+         ("oversample+noise ep30", "oversample+noise")]
 
 
 def _paired(predictions, y, m):
@@ -111,7 +115,8 @@ def main():
             "best_epoch": report["best_epoch"], "validation_masked_bce": report["validation_masked_bce"],
             "epochs_completed": len(history), "history": history,
             **{k: run_config[k] for k in ("oversample", "label_noise", "label_weights") if k in run_config},
-            **{k: report[k] for k in ("oversample", "label_weights") if k in report},
+            **{k: report[k] for k in ("oversample", "label_weights", "stopped") if k in report},
+            **{k: run_config[k] for k in ("epochs", "patience", "divergence_stop") if k in run_config},
         })
     result["recipe"] = {k: json.loads((RUNS[BASE][0] / "config.json").read_text())[k]
                         for k in ("image_model", "image_unfreeze_last", "image_size", "windows_per_plane",
