@@ -538,6 +538,9 @@ def validate_config(config: dict) -> None:
         label_columns(config["label_noise"]["labels"])
         if not config["label_noise"]["sigma"] > 0:
             raise ValueError("label_noise sigma must be positive")
+    if "divergence_stop" in config:
+        if not config["divergence_stop"]["margin"] > 0 or config["divergence_stop"]["epochs"] < 1:
+            raise ValueError("divergence_stop needs a positive margin and epochs")
     if "label_weights" in config:
         label_columns(list(config["label_weights"]))
         if any(w <= 0 for w in config["label_weights"].values()):
@@ -618,7 +621,8 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     )
 
     best = {"validation_masked_bce": float("inf"), "epoch": 0, "state": None}
-    stale = 0
+    stale, above, stopped = 0, 0, "max_epochs"
+    divergence = config.get("divergence_stop")
     for epoch in range(1, config["epochs"] + 1):
         model.train()
         epoch_started, losses, objectives, train_valid = time.perf_counter(), [], [], []
@@ -683,8 +687,22 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         else:
             stale += 1
             if stale >= config["patience"]:
+                stopped = "patience"
+                break
+        # Divergence stop: end only once validation BCE sits clearly above its best for
+        # several epochs in a row, rather than after a run of epochs that merely fail to improve.
+        if divergence:
+            above = above + 1 if validation_bce > best["validation_masked_bce"] + divergence["margin"] else 0
+            if above >= divergence["epochs"]:
+                stopped = "divergence"
                 break
 
+    if config.get("save_last"):
+        # The final epoch's full training state, so a later run can extend this one.
+        last = {"config": config, "epoch": epoch,
+                "trainable_state_dict": {k: v.detach().cpu() for k, v in model.state_dict().items() if k in trainable},
+                "optimizer": optimizer.state_dict(), "scheduler": scheduler.state_dict(), "scaler": scaler.state_dict()}
+        write_atomic(output / "last.pt", lambda t: torch.save(last, t))
     model.load_state_dict(best["state"], strict=False)
     write_atomic(output / "best.pt", lambda t: torch.save(
         {"config": config, "epoch": best["epoch"], "trainable_state_dict": best["state"]}, t))
@@ -744,6 +762,7 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     report = {
         "rung": config["name"],
         "best_epoch": best["epoch"],
+        "stopped": stopped,
         "validation_masked_bce": best["validation_masked_bce"],
         "lm_test": {**lm_test, "studies": len(test_y),
                     "manifest_sha256": test_identity["manifest_sha256"]},
