@@ -6,7 +6,8 @@ positive for Lateral Meniscus, Lateral OA or Synovitis, other labels masked on t
 draws, plus fresh N(0, 0.1) noise on the two lateral soft targets; (B) 2x loss weight on
 the three labels, renormalised to mean 1. "A ep30" reruns A with a 30-epoch cosine budget,
 patience off and a divergence stop; "A ep50" resumes it from last.pt with a warm restart at 0.5x LR
-over epochs 31-50. Every run is read from its own ``predictions.npz``
+over epochs 31-50. "u9-b1 ep30" is u9-b1 under A ep30's budget and stopping rule, the matched
+control for epochs. "u9-b1 ep43" matches A ep30's training draws (43 x 3,438 vs 30 x 4,946). Every run is read from its own ``predictions.npz``
 and must match run 5 study for study. Intervals are study bootstraps shared across runs
 (:func:`lm_proxy.paired_intervals`), so each delta is paired. The run-5 seed replicate
 gives the training-noise reference.
@@ -35,6 +36,8 @@ RUNS = {  # key -> (run directory, title)
     "run5": (FINETUNE / "r4a-k8-omnirad-base-soft-336", "Run 5 (u3, seed 2026)"),
     "run5 seed2027": (FINETUNE / "r4a-k8-omnirad-base-soft-336-seed2027", "Run 5 (u3, seed 2027)"),
     BASE: (FINETUNE / "r4a-k8-omnirad-base-soft-336-u9-b1", "u9-b1 (base)"),
+    "u9-b1 ep30": (FINETUNE / "r4a-k8-omnirad-base-soft-336-u9-b1-ep30", "u9-b1 · 30 epochs (matched epochs)"),
+    "u9-b1 ep43": (FINETUNE / "r4a-k8-omnirad-base-soft-336-u9-b1-ep43", "u9-b1 · 43 epochs (matched draws)"),
     "oversample+noise": (FINETUNE / "r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise",
                          "A · oversample + lateral noise"),
     "loss weight 2x": (FINETUNE / "r4a-k8-omnirad-base-soft-336-u9-b1-lat-w2", "B · 2× loss weight"),
@@ -43,12 +46,15 @@ RUNS = {  # key -> (run directory, title)
     "oversample+noise ep50": (FINETUNE / "r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep50",
                               "A · extended to 50 (warm restart)"),
 }
-ARMS = ["oversample+noise", "loss weight 2x", "oversample+noise ep30", "oversample+noise ep50"]
+ARMS = ["oversample+noise", "loss weight 2x", "u9-b1 ep30", "u9-b1 ep43", "oversample+noise ep30",
+        "oversample+noise ep50"]
 TARGETS = ["Lateral Meniscus", "Lateral OA", "Synovitis"]
 PAIRS = [("run5 seed2027", "run5"), ("oversample+noise", BASE), ("loss weight 2x", BASE),
          ("oversample+noise", "loss weight 2x"), ("oversample+noise ep30", BASE),
          ("oversample+noise ep30", "oversample+noise"), ("oversample+noise ep50", BASE),
-         ("oversample+noise ep50", "oversample+noise ep30")]
+         ("oversample+noise ep50", "oversample+noise ep30"), ("u9-b1 ep30", BASE),
+         ("oversample+noise ep30", "u9-b1 ep30"), ("oversample+noise ep50", "u9-b1 ep30"),
+         ("u9-b1 ep43", BASE), ("oversample+noise ep30", "u9-b1 ep43"), ("oversample+noise ep50", "u9-b1 ep43")]
 
 
 def _paired(predictions, y, m):
@@ -135,7 +141,7 @@ def main():
             print(f"  {key:40s} {value['difference']:+.4f} [{low:+.4f}, {high:+.4f}]")
         for label, pairs in result["paired_target_labels"][split].items():
             for key, value in pairs.items():
-                if key.endswith(f" - {BASE}"):
+                if key.endswith((f" - {BASE}", " - u9-b1 ep30", " - u9-b1 ep43")):
                     low, high = value["ci95"]
                     print(f"  {label:18s} {key:32s} {value['difference']:+.4f} [{low:+.4f}, {high:+.4f}]")
     if missing:
