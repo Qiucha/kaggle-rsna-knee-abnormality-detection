@@ -36,7 +36,7 @@ import pandas as pd
 import torch
 from torch import nn
 
-from .artifacts import sha256_file, sha256_text, write_atomic, write_json
+from .artifacts import read_json, sha256_file, sha256_text, write_atomic, write_json
 from .data import KneeReportDataset, slot_identity
 from .lm_proxy import load_test_population, masked_macro_auroc
 from .lm_supervision import load_population
@@ -541,6 +541,8 @@ def validate_config(config: dict) -> None:
     if "divergence_stop" in config:
         if not config["divergence_stop"]["margin"] > 0 or config["divergence_stop"]["epochs"] < 1:
             raise ValueError("divergence_stop needs a positive margin and epochs")
+    if "resume_from" in config and not config["resume_from"]["lr_scale"] > 0:
+        raise ValueError("resume_from needs a positive lr_scale")
     if "label_weights" in config:
         label_columns(list(config["label_weights"]))
         if any(w <= 0 for w in config["label_weights"].values()):
@@ -599,8 +601,24 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     validation_loader = _loader(groups["validation"], config, training=False)
     accumulation = config.get("grad_accumulation", 1)
     steps_per_epoch = math.ceil(len(train_loader) / accumulation)
-    scheduler = _scheduler(optimizer, config["epochs"] * steps_per_epoch, config["warmup_fraction"])
     scaler = torch.amp.GradScaler(enabled=config["amp"])
+    resume = config.get("resume_from")
+    start_epoch = 0
+    if resume:
+        # Warm restart: weights, optimizer moments and AMP scale from the parent's last.pt,
+        # then a fresh warmup + cosine over the remaining epochs at lr_scale x the base rates.
+        parent = ROOT / resume["run"]
+        last = torch.load(parent / "last.pt", map_location="cpu", weights_only=False)
+        model.load_state_dict(last["trainable_state_dict"], strict=False)
+        optimizer.load_state_dict(last["optimizer"])
+        scaler.load_state_dict(last["scaler"])
+        for group, base in zip(optimizer.param_groups, (config["lr_backbone"], config["lr_head"])):
+            group["lr"] = base * resume["lr_scale"]
+            group.pop("initial_lr", None)
+        start_epoch = last["epoch"]
+        if start_epoch >= config["epochs"]:
+            raise ValueError("resume_from parent already reached the epoch budget")
+    scheduler = _scheduler(optimizer, (config["epochs"] - start_epoch) * steps_per_epoch, config["warmup_fraction"])
     y_all = torch.as_tensor(train_y, device=device)
     m_all = torch.as_tensor(train_w, device=device)
     # The logged training BCE stays unweighted and noise-free, comparable with the base rung.
@@ -621,9 +639,15 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     )
 
     best = {"validation_masked_bce": float("inf"), "epoch": 0, "state": None}
+    if resume:
+        # The parent's history and best checkpoint carry over: the extension must beat it.
+        (output / "history.jsonl").write_text((parent / "history.jsonl").read_text())
+        parent_best = torch.load(parent / "best.pt", map_location="cpu", weights_only=False)
+        best = {"validation_masked_bce": read_json(parent / "report.json")["validation_masked_bce"],
+                "epoch": parent_best["epoch"], "state": parent_best["trainable_state_dict"]}
     stale, above, stopped = 0, 0, "max_epochs"
     divergence = config.get("divergence_stop")
-    for epoch in range(1, config["epochs"] + 1):
+    for epoch in range(start_epoch + 1, config["epochs"] + 1):
         model.train()
         epoch_started, losses, objectives, train_valid = time.perf_counter(), [], [], []
         optimizer.zero_grad(set_to_none=True)
@@ -652,7 +676,7 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
                 optimizer.zero_grad(set_to_none=True)
             if config.get("max_steps") and batch >= config["max_steps"]:
                 break
-        if windowed and epoch == 1:
+        if windowed and epoch == start_epoch + 1:
             window_counts = {"train": masked_window_counts(np.concatenate(train_valid))}
         probabilities, uids = predict(model, validation_loader, device, config["amp"])
         order = {u: i for i, u in enumerate(uids)}

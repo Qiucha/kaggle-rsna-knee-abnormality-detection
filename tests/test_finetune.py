@@ -337,6 +337,7 @@ def test_label_noise_touches_only_its_columns_and_stays_in_range():
     {"label_weights": {"Synovitis": -1.0}},
     {"divergence_stop": {"margin": 0.0, "epochs": 3}},
     {"divergence_stop": {"margin": 0.02, "epochs": 0}},
+    {"resume_from": {"run": "checkpoints/finetune/x", "lr_scale": 0.0}},
 ])
 def test_invalid_rebalancing_configs_are_rejected(change):
     config = {"targets": "soft", "image_unfreeze_last": 3, "slices_per_plane": 3,
