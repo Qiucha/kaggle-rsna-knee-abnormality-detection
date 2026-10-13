@@ -69,10 +69,19 @@ study bootstrap of the seed-averaged predictions.
 
 ## Reproduce
 
-Run from the repository root. The prerequisite is a trained u9-b1 rung: train
-`configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json` (committed on branch
-`feat/ensemble-selection`) with `scripts/finetune_supervised.py` into
-`checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1`.
+Run from the repository root. The prerequisite is a trained u9-b1 rung. Its config
+`configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json` is committed on branch
+`feat/ensemble-selection` (local only as of 2026-10-13), not on this one:
+
+```bash
+git show "feat/ensemble-selection:configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json" \
+  > configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json
+python scripts/finetune_supervised.py \
+  --config configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json \
+  --output checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1
+```
+
+Then extract the features and fit the heads:
 
 ```bash
 python scripts/extract_setting_features.py \
