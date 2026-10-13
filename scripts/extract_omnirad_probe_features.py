@@ -14,8 +14,7 @@ Identity checks run first and abort the extraction if they fail:
   and differs in the unfrozen blocks, so the CLIP checkpoint is the adaptation of that
   baseline and nothing else.
 
-The code root defaults to this repository; set ``NOVO_CODE_ROOT`` to read another
-source tree. It is only read, never written.
+Code, configs and checkpoints are read from this repository; only ``--output`` is written.
 
 Usage: extract_omnirad_probe_features.py --output DIR [--limit N] [--device cuda]
 """
@@ -32,8 +31,8 @@ import numpy as np
 import pandas as pd
 import torch
 
-CODE_ROOT = Path(os.environ.get("NOVO_CODE_ROOT", Path(__file__).resolve().parents[1]))
-sys.path.insert(0, str(CODE_ROOT / "src"))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 
 from contrastive_learning.artifacts import sha256_file, write_atomic, write_json  # noqa: E402
 from contrastive_learning.labels import read_lm_labels  # noqa: E402
@@ -125,6 +124,14 @@ def read_header(record) -> dict:
     return {}
 
 
+def _savez(**arrays):
+    """A write_atomic writer that closes its handle, so the bytes are flushed before the rename."""
+    def write(target: Path) -> None:
+        with target.open("wb") as handle:
+            np.savez_compressed(handle, **arrays)
+    return write
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--output", type=Path, required=True)
@@ -137,7 +144,7 @@ def main() -> None:
     out = args.output
     (out / "parts").mkdir(parents=True, exist_ok=True)
 
-    checkpoint = CODE_ROOT / CLIP_CHECKPOINT
+    checkpoint = ROOT / CLIP_CHECKPOINT
     sha = sha256_file(checkpoint)
     if sha != CLIP_SHA256:
         raise ValueError(f"CLIP checkpoint changed: {sha}")
@@ -151,10 +158,10 @@ def main() -> None:
     if args.identity_only:
         return
 
-    groups, targets, masks, population = load_population(CONFIG, CODE_ROOT)
-    records, _ = read_cohort_manifest(CODE_ROOT / CONFIG["cohort_manifest"])
-    table = read_lm_labels(CODE_ROOT / CONFIG["lm_labels_csv"], LABELS)
-    gold_frame = pd.read_csv(CODE_ROOT / CONFIG["gold_labels_csv"], dtype={UID: str})
+    groups, targets, masks, population = load_population(CONFIG, ROOT)
+    records, _ = read_cohort_manifest(ROOT / CONFIG["cohort_manifest"])
+    table = read_lm_labels(ROOT / CONFIG["lm_labels_csv"], LABELS)
+    gold_frame = pd.read_csv(ROOT / CONFIG["gold_labels_csv"], dtype={UID: str})
     test_rows, test_y, test_m = lm_test_population(records, table, validate_ids(gold_frame))
     splits = {
         "train": (groups["train"], targets["train"], masks["train"]),
@@ -170,7 +177,7 @@ def main() -> None:
         population_arrays[f"{split}_targets"] = y
         population_arrays[f"{split}_masks"] = m
     write_atomic(out / "population.npz",
-                 lambda t: np.savez_compressed(t.open("wb"), labels=np.asarray(LABELS), **population_arrays))
+                 _savez(labels=np.asarray(LABELS), **population_arrays))
 
     device = args.device
     clip.to(device)
@@ -201,7 +208,7 @@ def main() -> None:
             arrays = {arm: np.concatenate(v) for arm, v in parts.items()}
             if not all(np.isfinite(a).all() for a in arrays.values()):
                 raise ValueError("Nonfinite features")
-            write_atomic(part, lambda t: np.savez_compressed(t.open("wb"), **arrays))
+            write_atomic(part, _savez(**arrays))
             print(f"{split}: {min(start + CHUNK, len(rows))}/{len(rows)}", flush=True)
 
     for arm, tower in zip(ARMS, (base, clip)):
@@ -216,7 +223,7 @@ def main() -> None:
             ])
             if len(assembled[f"{split}_{arm}"]) != len(rows):
                 raise ValueError(f"Feature count mismatch for {split}/{arm}")
-    write_atomic(out / "features.npz", lambda t: np.savez_compressed(t.open("wb"), **assembled))
+    write_atomic(out / "features.npz", _savez(**assembled))
     if not (out / "features.npz").stat().st_size:
         raise ValueError("features.npz is empty")
 
@@ -226,7 +233,7 @@ def main() -> None:
         write_json(out / "acquisition.json", meta)
     write_json(out / "run.json", {
         "clip_checkpoint": CLIP_CHECKPOINT, "clip_sha256": sha, "image_kwargs": image_kwargs,
-        "code_root": str(CODE_ROOT), "limit": args.limit,
+        "code_root": str(ROOT), "limit": args.limit,
         "studies": {s: len(r) for s, (r, _, _) in splits.items()},
     })
     print("done", flush=True)

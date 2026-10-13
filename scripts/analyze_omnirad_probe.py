@@ -25,14 +25,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from pathlib import Path
 
 import numpy as np
 
-CODE_ROOT = Path(os.environ.get("NOVO_CODE_ROOT", Path(__file__).resolve().parents[1]))
-sys.path.insert(0, str(CODE_ROOT / "src"))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 
 from scipy.stats import rankdata  # noqa: E402
 

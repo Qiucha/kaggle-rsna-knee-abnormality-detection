@@ -17,14 +17,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from pathlib import Path
 
 import numpy as np
 
-CODE_ROOT = Path(os.environ.get("NOVO_CODE_ROOT", Path(__file__).resolve().parents[1]))
-sys.path.insert(0, str(CODE_ROOT / "src"))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 
 from contrastive_learning.lm_proxy import masked_macro_auroc, paired_intervals  # noqa: E402
 
@@ -58,7 +57,7 @@ def main() -> None:
             "base-head": aligned(uids, heads[f"{key}_uids"], heads[f"{key}_base_mlp"]),
         }
         for name, rung in FINETUNED.items():
-            path = CODE_ROOT / "checkpoints/finetune" / rung / "predictions.npz"
+            path = ROOT / "checkpoints/finetune" / rung / "predictions.npz"
             if not path.exists():
                 continue
             with np.load(path) as f:
