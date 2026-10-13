@@ -4,6 +4,7 @@ Reads checkpoints/kaggle/*/leaderboard-submission.json. Submissions without a re
 """
 
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,6 +38,13 @@ def main():
                      "outcome": j.get("outcome"), "source": str(path.relative_to(ROOT))})
     rows.sort(key=lambda r: (r["recorded"] or "", r["submission"] or 0))
     out = ROOT / "digest/leaderboard-history-v1.json"
+    # The records live in git-ignored checkpoints/kaggle, so a checkout without them
+    # would silently rewrite the history as empty. Refuse to drop a recorded bundle.
+    if out.exists() and "--allow-drop" not in sys.argv[1:]:
+        recorded = {r["bundle"] for r in json.loads(out.read_text())["submissions"]}
+        if dropped := sorted(recorded - {r["bundle"] for r in rows}):
+            raise SystemExit(f"Refusing to drop recorded submissions (no leaderboard-submission.json "
+                             f"under checkpoints/kaggle): {', '.join(dropped)}. Pass --allow-drop to override.")
     best = max(rows, key=lambda r: r["public"], default=None)  # no recorded submissions -> no best
     out.write_text(json.dumps({"submissions": rows, "best": best and best["bundle"]}, indent=1))
     print(out)
