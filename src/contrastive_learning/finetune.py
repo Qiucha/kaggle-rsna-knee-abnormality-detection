@@ -36,6 +36,7 @@ import pandas as pd
 import torch
 from torch import nn
 
+from . import paths
 from .artifacts import read_json, sha256_file, sha256_text, write_atomic, write_json
 from .data import KneeReportDataset, slot_identity
 from .lm_proxy import load_test_population, masked_macro_auroc
@@ -341,7 +342,8 @@ class RandomSliceDataset(torch.utils.data.Dataset):
 
     Every epoch decodes DICOMs again, which is too slow over the WSL ``/mnt`` mount.
     ``mirror["to"]`` is a byte-identical local copy of the ``<study>/<series>`` tree,
-    found by slot identity wherever the source tree is mounted.
+    found by slot identity wherever the source tree is mounted. It is a host setting,
+    filled in by :func:`with_host_mirror`.
     """
 
     def __init__(self, records, kwargs: dict, mirror: dict | None = None):
@@ -587,6 +589,20 @@ def validate_config(config: dict) -> None:
         label_columns(list(config["label_weights"]))
         if any(w <= 0 for w in config["label_weights"].values()):
             raise ValueError("label_weights must be positive")
+
+
+def with_host_mirror(config: dict, paths_config: Path | None = None) -> dict:
+    """Name this machine's ``train_series`` mirror in a rung's configuration.
+
+    Where the mirror lives is a property of the host, not of the experiment, so
+    committed rungs leave ``train_series_mirror`` out and ``paths.json`` supplies it.
+    A rung that still states one (an older run's ``config.json``) keeps it. Called by
+    entry points, so the run's own ``config.json`` records the concrete path.
+    """
+    if config.get("train_series_mirror") is not None:
+        return config
+    mirror = paths.load_settings(paths_config).get("train_series_mirror")
+    return config if mirror is None else {**config, "train_series_mirror": {"to": str(mirror)}}
 
 
 def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:

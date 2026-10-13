@@ -36,7 +36,8 @@ def main():
                      "outcome": j.get("outcome"), "source": str(path.relative_to(ROOT))})
     rows.sort(key=lambda r: (r["recorded"] or "", r["submission"] or 0))
     out = ROOT / "digest/leaderboard-history-v1.json"
-    out.write_text(json.dumps({"submissions": rows, "best": max(rows, key=lambda r: r["public"])["bundle"]}, indent=1))
+    best = max(rows, key=lambda r: r["public"], default=None)  # no recorded submissions -> no best
+    out.write_text(json.dumps({"submissions": rows, "best": best and best["bundle"]}, indent=1))
     print(out)
 
 

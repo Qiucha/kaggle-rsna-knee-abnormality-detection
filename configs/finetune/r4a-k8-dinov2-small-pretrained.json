@@ -38,9 +38,6 @@
   "amp": true,
   "seed": 2026,
   "train_slice_sampling": "random",
-  "train_series_mirror": {
-    "to": "/home/q/novo-mirror/train_series"
-  },
   "grad_accumulation": 4,
   "windows_per_plane": 8,
   "pooling": "mean",
