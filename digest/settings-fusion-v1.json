@@ -14,10 +14,10 @@
       "pretrained"
     ],
     "epochs": 200,
-    "features": "/home/q/Projects/novo-project/checkpoints/settings-fusion/u9-b1-features",
+    "features": "checkpoints/settings-fusion/u9-b1-features",
     "gate_tolerance": 0.02,
     "lr": 0.001,
-    "output": "/home/q/Projects/novo-project/checkpoints/settings-fusion/u9-b1-heads.json",
+    "output": "checkpoints/settings-fusion/u9-b1-heads.json",
     "patience": 15,
     "resamples": 1000,
     "seeds": [
