@@ -20,7 +20,10 @@ historical experiments and are not current instructions.
 For offline Kaggle inference, supervised label-head fitting, and current checkpoint
 selection, see the [submission and benchmark guide](digest/kaggle-submission-pipeline.md).
 
-## Start here: the current best pipeline (2026-10-03)
+**To train a variant of the best model or submit one to Kaggle, follow
+[TRAIN_AND_SUBMIT.md](TRAIN_AND_SUBMIT.md).**
+
+## Start here: the current best pipeline (updated 2026-10-13)
 
 The leaderboard models are no longer contrastive encoders with a fitted head. They
 are **image backbones fine-tuned end to end on LM-extracted labels** (the "R4a"
@@ -31,8 +34,8 @@ the two lines of work relate.
 
 | What | Where |
 | --- | --- |
-| Best public score, 0.879 (run 5, submission 56789799) | `configs/finetune/r4a-k8-omnirad-base-soft-336.json` (OmniRad-base, soft targets, 336 px) |
-| Previous best, 0.839 | `configs/finetune/r4a-k8-omnirad-base-pretrained.json` (OmniRad-base, hard verdict targets, 224 px) |
+| Best public score, 0.890 (A30, submission 57094902, 2026-10-12) | `configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30.json` (u9-b1 + lateral-label oversampling and noise, 30 epochs) |
+| Previous bests: 0.888 (u9-b1), 0.879 (run 5) | `configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json` (OmniRad-base, soft targets, 336 px, 9 blocks unfrozen); `r4a-k8-omnirad-base-soft-336.json` (3 blocks) |
 | Three-member candidate, not yet submitted | soft-target R4a (`r4a-soft-224-k8-mean.json`) + OmniRad-base + OmniRad-base soft 336 (`r4a-k8-omnirad-base-soft-336.json`), combined by per-label rank mean |
 | Train one member | `.venv-cuda/bin/python scripts/finetune_supervised.py --config configs/finetune/<rung>.json --output checkpoints/finetune/<rung>` |
 | Export members as one Kaggle bundle | `scripts/export_finetune_bundle.py --run <run dir> [--run ...] --output checkpoints/kaggle/<name>` |
@@ -252,15 +255,17 @@ cp configs/paths.template.json paths.json   # then edit data_root
 `paths.json` is git-ignored and read from the repository root; set
 `CONTRASTIVE_PATHS_CONFIG` or pass `--paths-config` to keep it elsewhere. It may
 assign `data_root` (the DICOM mount, required by anything that reads DICOM data),
-`reports_csv`, `cohort_manifest`, `output_dir`, and `image_cache_dir`. Relative
+`reports_csv`, `cohort_manifest`, `output_dir`, `image_cache_dir`, and
+`train_series_mirror` (an optional fast local copy of `train_series` for fine-tuning). Relative
 values resolve against the file's own directory, and a command-line flag always
 overrides the file, so a frozen experiment matrix runs unchanged on a new host.
 `run_contrastive_matrix.py` trains in subprocesses that inherit the environment, so
 `CONTRASTIVE_PATHS_CONFIG` reaches them without a flag of its own.
 
-To resume a run recorded before this change, `data_root` must resolve to the value
-in that run's `config.json`. A resume compares every immutable setting, so a
-different mount — including no mount where one was recorded — is rejected.
+A resume compares every immutable setting with the run's `config.json`, except
+where this host keeps its data (`data_root` and the paths derived from it), which
+may differ: series are matched by `<study>/<series>`, so moving the mount does not
+change the data.
 
 ### Private and local artifacts
 
