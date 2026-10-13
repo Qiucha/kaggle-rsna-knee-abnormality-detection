@@ -67,10 +67,13 @@ def _combined_note(by_id) -> str:
         return ""
     lm, gold = s["vs_parent"]["lm_test"], s["vs_parent"]["gold"]
     return ("<li><strong>OmniRad-B soft 336 (2026-10-02)</strong> stacks soft labels and 336 px on OmniRad-base. "
-            f"It has the best LM-test ({num(s['lm_test']['macro'])}) and gold-58 ({num(s['gold']['macro'])}) of any "
-            f"single run, but against OmniRad-base the LM-test gain is {num(lm['difference'], '.4f', True)} "
+            f"It scores LM-test {num(s['lm_test']['macro'])} and gold-58 {num(s['gold']['macro'])}; "
+            f"against OmniRad-base the LM-test gain is {num(lm['difference'], '.4f', True)} "
             f"{_ci(*lm['ci95'])}, which does not pass the bar on its own; gold {num(gold['difference'], '.3f', True)} "
-            f"{_ci(*gold['ci95'])}. Its value is as an ensemble member: see ticket 14 in the leaderboard map.</li>")
+            f"{_ci(*gold['ci95'])}. Submitted alone (2026-10-03) it scored "
+            + (f"<strong>{num(s['public']['score'])} public</strong>, the best so far and +0.040 over OmniRad-base's 0.839: "
+               "far more than either local measure predicted (+0.007 LM-test, +0.013 gold). " if s.get("public") else "")
+            + "It is also a member of the proposed 3-member ensemble (ticket 14).</li>")
 
 
 def _coatnet_note(by_id) -> str:

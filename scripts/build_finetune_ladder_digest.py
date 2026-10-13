@@ -96,6 +96,7 @@ STEPS = [
      "change": "R3's change on R4a: input resolution rises from 224 to 336 px (576 tokens per window instead of 256), "
                "on a new K8 336 window cache. Starts from pretrained DINOv2-small because R0 is fixed at 224."},
     {"id": "OmniRad-B-soft-336", "run": "r4a-k8-omnirad-base-soft-336", "parent": "OmniRad-B", "group": "combined",
+     "kaggle": "r4a-k8-omnirad-base-soft-336",
      "short": "OmniRad-B soft 336", "label": "R4a K8 · OmniRad-base, soft labels, 336 px",
      "change": "Stacks the two single-change wins on OmniRad-base: soft LM targets (from R4a soft) and 336 px input "
                "(from DINOv2-S 336), batch 2 × accumulation 8. Two changes at once, so the delta is not attributable.",
