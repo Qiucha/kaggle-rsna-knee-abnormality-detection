@@ -54,6 +54,9 @@ own. Single-seed differences under about 0.024 are within run-to-run noise.
 - The DICOM tree (set `data_root` in `paths.json`, see
   `configs/paths.template.json`) and, for the soft R4a member, the contrastive
   init checkpoint named in its config's `init_checkpoint`.
+- The Hugging Face model snapshots each config pins by `*_revision`. Configs that
+  set `local_files_only: true` never download, so fetch the pinned revisions into
+  the Hugging Face cache first (e.g. `huggingface-cli download <model> --revision <sha>`).
 - Optionally, a local copy of `train_series` for fine-tuning rungs that draw fresh
   slices every epoch: set `train_series_mirror` in `paths.json`. Unset, they read
   from `data_root`.
