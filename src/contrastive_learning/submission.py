@@ -404,6 +404,24 @@ def export_member(path: Path, backbone, config, adaptation, head) -> None:
     write_atomic(path, lambda temporary: torch.save(payload, temporary))
 
 
+
+# The fp32 feature path reproduces a bundle's predictions to this; configs whose
+# features run under fp16 autocast (K8 windows) set a looser ``reload_tolerance``.
+DEFAULT_RELOAD_TOLERANCE = 1e-5
+
+
+def reload_tolerance(config: dict) -> float:
+    """The absolute and relative tolerance a config allows on bundle reload."""
+    tolerance = float(config.get("reload_tolerance", DEFAULT_RELOAD_TOLERANCE))
+    if not tolerance > 0:
+        raise ValueError("reload_tolerance must be positive")
+    return tolerance
+
+
+def assert_reload_matches(actual, desired, tolerance: float = DEFAULT_RELOAD_TOLERANCE) -> None:
+    """A reloaded bundle must reproduce the predictions it was exported with."""
+    np.testing.assert_allclose(actual, desired, atol=tolerance, rtol=tolerance)
+
 def load_member(path: Path, device):
     from transformers import AutoConfig, AutoModel
 

@@ -153,3 +153,17 @@ def test_incomplete_compact_image_delta_fails(tmp_path, monkeypatch):
     torch.save({"config": config.as_dict(), "trainable_state_dict": {}}, path)
     with pytest.raises(ValueError, match="Incomplete image delta"):
         load_encoder(path)
+
+
+def test_bundle_reload_check_defaults_to_the_fp32_tolerance_and_takes_a_config_override():
+    from contrastive_learning.submission import assert_reload_matches, reload_tolerance
+
+    expected = np.array([[0.5, 0.25]])
+    assert reload_tolerance({}) == 1e-5
+    assert_reload_matches(expected + 5e-6, expected, reload_tolerance({}))
+    with pytest.raises(AssertionError):
+        assert_reload_matches(expected + 2e-4, expected, reload_tolerance({}))
+    # K8 features under fp16 autocast drift ~1e-4 between the cached batch and a batch-1 reload.
+    assert_reload_matches(expected + 2e-4, expected, reload_tolerance({"reload_tolerance": 1e-3}))
+    with pytest.raises(ValueError, match="reload_tolerance"):
+        reload_tolerance({"reload_tolerance": 0})
