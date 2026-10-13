@@ -321,6 +321,7 @@ def evaluate_checkpoint(
         text_model_revision=config.text_model_revision,
         text_pooling=config.text_pooling,
         image_plane_pooling=config.image_plane_pooling,
+        image_drop_path_rate=config.image_drop_path_rate,
         use_lora=config.use_lora,
         lora_rank=config.lora_rank,
         lora_alpha=config.lora_alpha,
