@@ -31,3 +31,15 @@ CLIP also made scanner identity easier to read: manufacturer kNN accuracy 0.6319
 Reading: LM labels come from the reports CLIP aligns to, so the LM-test gain may overstate what CLIP adds; gold-58 is the independent check and its interval includes zero. On gold, every frozen head trails every fine-tune. One CLIP training seed; head-seed noise only; gold-58 is exploratory.
 
 [Probes page](site/pages/probes.html) · [Machine-readable snapshot](omnirad-clip-frozen-probe-v1.json)
+
+## Reproduce
+
+From the repository root on a CUDA host, with `paths.json` naming `data_root`:
+
+1. `python scripts/extract_omnirad_probe_features.py --output <features>`: frozen K8 336 features from both towers, after identity checks.
+2. `python scripts/analyze_omnirad_probe.py --features <features> --output <analysis>`: heads, grouping and acquisition control (`results.json`, `head-predictions.npz`).
+3. `python scripts/compare_headonly_vs_finetune.py --heads <analysis>/head-predictions.npz --features <features> --output <analysis>/headonly-vs-finetune.json`.
+4. `python scripts/build_omnirad_probe_digest.py --source <analysis>`. The default source is the archived `.scratch/archive/omnirad-probe/full-analysis`.
+
+To probe another checkpoint, change `CLIP_CHECKPOINT` and `CLIP_SHA256` together at the top of the extract script.
+Not in git: the CLIP checkpoint (`omnirad-clip-run5-v1`, epoch 18), the run-5 fine-tune predictions under `checkpoints/finetune/`, the cohort manifest, `data/lm_label/lm_labels_kaggle.csv` and the pinned Hugging Face snapshots.
