@@ -168,7 +168,13 @@ def fit(arm, data, config, seed, args):
         logits = torch.logit(torch.as_tensor(probabilities).clamp(1e-6, 1 - 1e-6))
         bce = float(masked_bce(logits, torch.as_tensor(data["validation"]["y"]),
                                torch.as_tensor(data["validation"]["m"])))
-        history.append({"epoch": epoch, "train_masked_bce": float(np.mean(losses)), "validation_masked_bce": bce})
+        try:
+            auroc = masked_macro_auroc(probabilities, data["validation"]["y"],
+                                       data["validation"]["m"])["macro_auroc"]
+        except ValueError:  # no label with both classes observed, e.g. under --limit
+            auroc = None
+        history.append({"epoch": epoch, "train_masked_bce": float(np.mean(losses)), "validation_masked_bce": bce,
+                        "validation_macro_auroc": auroc})
         if bce < best["bce"] - 1e-5:
             best = {"bce": bce, "epoch": epoch,
                     "state": {k: v.detach().clone() for k, v in model.state_dict().items()}}
