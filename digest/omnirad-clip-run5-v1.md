@@ -42,10 +42,54 @@ Live artifacts:
 - `checkpoints/pipelines/omnirad-clip-run5-v1/comparison.json`: intervals and pass checks.
 - `checkpoints/pipelines/omnirad-clip-run5-v1/completion-report.md`: report written automatically on completion or failure.
 
-The config contains the isolated runner's absolute path. Training and checkpoint reload require the isolated code. Preserve this worktree until its code is integrated or a portable bundle is exported; the exact patch is archived at `checkpoints/pipelines/omnirad-clip-run5-v1/isolated-pipeline-code.patch`. To reproduce on another checkout, set `pipeline_script` to its `scripts/run_clip_then_finetune.py` and supply that host's paths config.
+When this ran, the queued config named the isolated worktree's runner by absolute path. That code is now in the repository (`src/contrastive_learning/clip_pipeline.py`, `scripts/run_clip_then_finetune.py`), and the committed config holds no host path: `scripts/finetune_supervised.py` runs both stages in-process for any config that names `contrastive_pretrain_config`, and the series mirror comes from `paths.json`. The patch that actually ran is archived at `checkpoints/pipelines/omnirad-clip-run5-v1/isolated-pipeline-code.patch`.
 
 The completion report is automatic on disk. This session has no scheduled agent wake-up capability; generating that report does not itself send a new chat message.
 
 ## Recovery on 2026-10-04
 
 All 20 contrastive epochs finished at 06:50 Taipei; epoch 18 was selected (mean Recall@1 0.192071). The in-process supervised stage was killed with exit 247 at 13:30 without recording an epoch; its exact cause is not recoverable from the surviving logs. The host subsequently restarted and interrupted the 30-epoch arm after epoch 20. The hard-label and seed-2027 arms have complete pathology scores and paired intervals in `run5-followups-v1.json`. These results were rendered on the fine-tuning digest page before any recovery job started. The supervised stage restarted at 23:19 from the completed selected contrastive checkpoint in a fresh process. Checkpoint reuse requires all epochs, the identical pinned contrastive recipe, and SHA256 `574b5048ebd7d9e74ca748fa84f9e17b859af91fc1caa7183716a67e1ab6f30a`. The interrupted output and logs are archived; CLIP pre-training is not rerun. The 30-epoch arm restarts its original recipe because it has no resumable weights. The queue rebuilds the follow-up snapshot and digest page before each later GPU job, and pauses if a job fails.
+
+## Reproduce
+
+Run both stages from the repository root on a CUDA host (the pipeline refuses any other device):
+
+```bash
+python scripts/finetune_supervised.py \
+  --config configs/finetune/r4a-k8-omnirad-base-soft-336-from-clip.json \
+  --output checkpoints/finetune/<new-name> \
+  [--paths-config paths.json]
+```
+
+`scripts/run_clip_then_finetune.py` takes the same arguments. The fine-tuning config names the pre-training config
+(`configs/contrastive/omnirad-clip-run5-v1.json`) in `contrastive_pretrain_config`. As committed, it reuses the finished
+CLIP checkpoint (`reuse_completed_contrastive_checkpoint`, checked against `reuse_checkpoint_sha256`) and only reruns the
+supervised stage and the comparison.
+
+**A new pre-training seed** changes these keys together:
+
+- In a copy of the contrastive config: `seed`, plus a new `name` and `output_dir`.
+- In a copy of the fine-tuning config:
+  - `name`;
+  - `contrastive_pretrain_config` → the new contrastive config;
+  - `init_checkpoint` → `<new output_dir>/best.pt` (the pipeline checks this);
+  - a new `pipeline_status_dir`;
+  - `reuse_completed_contrastive_checkpoint: false`, and drop `reuse_checkpoint_sha256`.
+
+Keep the supervised `seed` and every other supervised key. The pipeline rejects any departure from run 5's recorded
+recipe (`comparison_baseline`/config.json) apart from `name` and host settings. It also fixes the pre-training recipe:
+batch 32, last 6 blocks, K8 uniform pooling and gradient replay.
+
+**Prerequisites not in git** (see the README's "Not in git" list):
+
+- `paths.json`:
+  - `data_root`: the DICOM mount, needed for cohort reads.
+  - Optionally `train_series_mirror`: a byte-identical local copy of `train_series`.
+- `data/processed/contrastive-cohort-gold-holdout-v1.jsonl`, matching `manifest_sha256`.
+- `data/lm_label/lm_labels_kaggle.csv` (third party).
+- The pinned Hugging Face snapshots: `Snarcy/OmniRad-base`, `facebook/dinov2-base` (architecture) and
+  `intfloat/multilingual-e5-base`. Both configs set `local_files_only`.
+- For the comparison:
+  - Run 5's output, `checkpoints/finetune/r4a-k8-omnirad-base-soft-336` (`config.json`, `predictions.npz`).
+  - Optionally, the seed-2027 replicate's predictions. Without them the verdict stays pending
+    (`allow_pending_seed_comparison`).
