@@ -2,9 +2,11 @@
 
 import argparse
 import sys
+import subprocess
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 from contrastive_learning.artifacts import read_json
 from contrastive_learning.finetune import run_finetune, with_host_mirror
 
@@ -19,7 +21,15 @@ def main():
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Output already exists; use a new experiment directory")
-    config = with_host_mirror(read_json(args.config), args.paths_config)
+    config = read_json(args.config)
+    if config.get("pipeline_script"):
+        # A queued two-stage experiment uses its isolated, tested source tree.
+        raise SystemExit(subprocess.call([
+            # A relative path is relative to the repository root, not the working directory.
+            sys.executable, str(ROOT / config["pipeline_script"]), "--config", str(args.config),
+            "--output", str(args.output), "--device", args.device,
+        ]))
+    config = with_host_mirror(config, args.paths_config)
     run_finetune(config, args.output, device=args.device)
 
 

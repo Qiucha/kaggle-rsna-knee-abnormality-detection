@@ -226,8 +226,21 @@ def load_backbone(config: dict) -> tuple[nn.Module, dict]:
         from .submission import load_encoder
 
         backbone, run_config, adaptation = load_encoder(ROOT / config["init_checkpoint"])
-        if run_config.image_kwargs != image_kwargs(config):
+        expected_images = image_kwargs(config)
+        if run_config.windows_per_plane:
+            expected_images["windows"] = config.get("windows_per_plane")
+        if run_config.image_kwargs != expected_images:
             raise ValueError("init_checkpoint was trained on different image settings")
+        if config.get("init_unfreeze_last") is not None:
+            if adaptation["use_lora"]:
+                raise ValueError("init_unfreeze_last requires a full-block checkpoint without LoRA")
+            for key in ("image_model", "image_model_revision", "image_model_format",
+                        "image_model_base", "image_model_base_revision"):
+                if config.get(key) != getattr(run_config, key):
+                    raise ValueError(f"init_checkpoint differs from the fine-tuning {key}")
+            # Keep every contrastively learned weight, but match the supervised recipe's depth.
+            freeze_then_unfreeze_last(backbone, config["init_unfreeze_last"])
+            adaptation = {**adaptation, "image_unfreeze_last": config["init_unfreeze_last"]}
         return backbone.train(), adaptation
     if config.get("image_model_format") == "timm_dinov2":
         # e.g. OmniRad: timm weights renamed onto HF's Dinov2Model, config from the base.
@@ -443,6 +456,11 @@ def _scheduler(optimizer, total_steps: int, warmup_fraction: float):
 
 
 def validate_config(config: dict) -> None:
+    if config.get("init_unfreeze_last") is not None and (
+        not config.get("init_checkpoint")
+        or config["init_unfreeze_last"] != config["image_unfreeze_last"]
+    ):
+        raise ValueError("init_unfreeze_last requires init_checkpoint and must match image_unfreeze_last")
     if config["targets"] not in TARGETS:
         raise ValueError(f"targets must be one of {TARGETS}")
     if config.get("train_slice_sampling", "fixed") not in SLICE_SAMPLING:
@@ -563,6 +581,11 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
                 raise ValueError(f"Nonfinite training loss at epoch {epoch}")
             scaler.scale(loss / accumulation).backward()
             losses.append(float(loss))
+            if config.get("log_progress") and (batch == 1 or batch % 100 == 0):
+                progress = {"epoch": epoch, "training_batch": batch, "training_batches": len(train_loader),
+                            "epoch_seconds_so_far": time.perf_counter() - epoch_started}
+                write_json(output / "progress.json", progress)
+                print(json.dumps({"training_progress": progress}), flush=True)
             if windowed:
                 train_valid.append(inputs[1].numpy())
             # Step every `accumulation` micro-batches, and flush a partial group at epoch end.
