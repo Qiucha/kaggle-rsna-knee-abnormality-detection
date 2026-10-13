@@ -67,6 +67,28 @@ B crosses the gold-58 veto (−0.024). Neither arm has an LM-test interval above
 - The cost lands mostly on MCL (gold −0.104 for A, −0.138 for B; LM-test −0.088 for B), with smaller losses
   on Medial Meniscus, ACL, Effusion (A, gold −0.099) and Fracture (A, LM-test −0.048).
 
+## Reproduce
+
+Each arm is one committed config under `configs/finetune/`, trained one at a time from the repository root with the
+GPU environment. With `X` the config name (for example `r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30`):
+
+```bash
+python scripts/finetune_supervised.py --config configs/finetune/X.json --output checkpoints/finetune/X
+python scripts/compare_lateral_rebalance.py --output digest/lateral-rebalance-v1.json
+python scripts/build_digest_site.py
+```
+
+- Arms: `...-u9-b1-lat-os-noise` (A), `...-u9-b1-lat-w2` (B), `...-u9-b1-lat-os-noise-ep30` (A30), and the queued
+  `...-u9-b1-ep30` / `...-u9-b1-ep43` (matched-epoch and matched-draw u9-b1 controls) and `...-u9-b1-lat-os-noise-ep50`
+  (A50). Rerun the comparison and the site after each run; arms without `predictions.npz` are listed as missing.
+- A30 and the controls set `"save_last": true`, so the run keeps `last.pt`. A50 is a warm restart:
+  `"resume_from": {"run": "checkpoints/finetune/...-lat-os-noise-ep30", "lr_scale": 0.5}` loads A30's `last.pt`,
+  `best.pt`, `history.jsonl` and `report.json`, so A30 must finish first and keep those files.
+- The rebalancing keys are `oversample` (labels, copies), `label_noise` (labels, sigma), `label_weights`,
+  `divergence_stop` (margin, epochs) and `resume_from` (run, lr_scale); change those and `name` for a new variant.
+- Inputs not in git: `data_root` (and optionally `train_series_mirror`) in `paths.json`, the cohort manifest and LM
+  labels CSV named in each config, and for the comparison the finished run 5 (both seeds) and u9-b1 run directories.
+
 ## If revisited
 
 The Lateral Meniscus LM-test gain is real but bought with other labels. Options worth trying: a smaller
