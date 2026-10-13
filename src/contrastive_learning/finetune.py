@@ -58,6 +58,10 @@ ROOT = Path(__file__).resolve().parents[2]
 TARGETS = ("verdict", "soft")
 SLICE_SAMPLING = ("fixed", "random")
 POOLING = ("mean", "attention", "grouped")
+# Offsets from config["seed"] for the independent RNG streams a rung may add, so each
+# option draws from its own generator and leaves sampling, dropout and the others alone.
+LABEL_NOISE_SEED_OFFSET = 1
+AUGMENTATION_SEED_OFFSET = 2
 IMAGE_AUGMENTATION_DEFAULTS = {
     "rotation_degrees": 8.0, "zoom": 0.08, "shift": 0.05, "intensity": 0.10,
 }
@@ -656,7 +660,7 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         weight_decay=config["weight_decay"],
     )
     generator = torch.Generator().manual_seed(config["seed"])
-    augmentation_generator = (torch.Generator(device=device).manual_seed(config["seed"] + 2)
+    augmentation_generator = (torch.Generator(device=device).manual_seed(config["seed"] + AUGMENTATION_SEED_OFFSET)
                               if augmentation is not None else None)
     train_loader = _loader(groups["train"], config, training=True, generator=generator, rows=epoch_rows)
     validation_loader = _loader(groups["validation"], config, training=False)
@@ -689,7 +693,7 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     noise = config.get("label_noise")
     if noise:
         noise_columns = label_columns(noise["labels"])
-        noise_generator = torch.Generator(device=device).manual_seed(config["seed"] + 1)
+        noise_generator = torch.Generator(device=device).manual_seed(config["seed"] + LABEL_NOISE_SEED_OFFSET)
     # Fixed full-split observation rates keep minibatch losses on one macro scale.
     # They come from the hard mask, so UNK weight adds to a label's loss without
     # rescaling its observed cells.
@@ -852,7 +856,8 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     report = {
         "rung": config["name"],
         **({"image_augmentation": {**augmentation, "shared_across_windows": True,
-                                   "seed": config["seed"] + 2}} if augmentation is not None else {}),
+                                   "seed": config["seed"] + AUGMENTATION_SEED_OFFSET}}
+           if augmentation is not None else {}),
         "best_epoch": best["epoch"],
         "stopped": stopped,
         "validation_masked_bce": best["validation_masked_bce"],
