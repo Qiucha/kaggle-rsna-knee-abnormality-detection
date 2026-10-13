@@ -54,8 +54,9 @@ own. Single-seed differences under about 0.024 are within run-to-run noise.
 - The DICOM tree (set `data_root` in `paths.json`, see
   `configs/paths.template.json`) and, for the soft R4a member, the contrastive
   init checkpoint named in its config's `init_checkpoint`.
-- `train_series_mirror.to` in each fine-tuning config points at one machine's
-  local copy of `train_series`. Edit it, or delete the key, to read from `data_root`.
+- Optionally, a local copy of `train_series` for fine-tuning rungs that draw fresh
+  slices every epoch: set `train_series_mirror` in `paths.json`. Unset, they read
+  from `data_root`.
 
 Image caches are keyed by `PREPROCESSING_VERSION`, the image settings and each
 series' `<study>/<series>` identity. Commit `084d086` (2026-09-29, exact-extent
