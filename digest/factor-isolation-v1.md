@@ -19,7 +19,7 @@ The OmniRad swap changes model size and pretraining. No unadapted LM-test score 
 Sources: saved summary, metrics.jsonl, config.json, benchmark.json, gold-predictions.npz,
 bundle checksums and existing LM-test feature caches. Predictions are checked against reported AUROCs.
 
-[Adaptation page](site/pages/adaptation.html)
+[Phase 1 page](site/pages/phase1.html#factor-isolation)
 [Verified data](factor-isolation-v1.json)
 
 ## Reproduce
