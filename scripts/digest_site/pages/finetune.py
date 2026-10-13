@@ -57,6 +57,56 @@ def _load():
     return j, ({s["id"]: s for s in j["steps"]} if j else {})
 
 
+def _scored_runs(j):
+    snapshot = data.read_json("run5-followups-v1.json") or {}
+    return j["steps"] + [{"short": run["title"], "lm_test": {"macro": run["lm_test"]},
+                          "gold": {"macro": run["gold"]}} for run in snapshot.get("completed", [])]
+
+
+def run5_followups_section(ctx) -> str:
+    snapshot = data.read_json("run5-followups-v1.json")
+    if not snapshot:
+        return ""
+    completed = snapshot["completed"]
+    rows = []
+    for run in completed:
+        deltas = []
+        for split in ("lm_test", "gold"):
+            delta = snapshot["paired"][split].get(run["name"])
+            deltas.append(f"{num(delta['difference'], '.4f', True)} {_ci(*delta['ci95'])}" if delta else "baseline")
+        rows.append([run["title"], num(run["lm_test"]), deltas[0], num(run["gold"]), deltas[1], run["best_epoch"]])
+    score_table = table(["Completed run", "LM-test", "Δ vs run 5 [95% CI]", "Gold-58",
+                         "Δ vs run 5 [95% CI]", "Best epoch"], rows, num_cols=(1, 3, 5))
+    remaining = snapshot["unfinished"]
+    queue_table = table(["Unfinished run", "Status", "Completed epochs"],
+        [[run["title"], run["status"], f"{run['epochs_completed']}/{run['max_epochs']}"] for run in remaining])
+    pre = snapshot["contrastive_pretraining"]
+    retrieval = (f"K8 plain CLIP pre-training completed {pre['epochs_completed']}/{pre['max_epochs']} epochs. "
+                 f"It selected epoch {pre['selected_epoch']} with mean retrieval Recall@1 "
+                 f"{num(pre['best_mean_recall_at_1'])}. " if pre["completed"] else "K8 plain CLIP pre-training is unfinished. ")
+    noise = snapshot["absolute_lm_test_seed_difference"]
+    noise_text = (f"The measured absolute seed difference is <strong>{num(noise, '.6f')}</strong> LM-test AUROC. "
+                  if noise is not None else "The seed-noise comparison is pending. ")
+    confirmation = snapshot.get("contrastive_confirmation")
+    if confirmation:
+        verdict = "awaits the seed comparison" if confirmation["passed"] is None else "passes" if confirmation["passed"] else "does not pass"
+        verdict_text = f"The completed contrastive confirmation <strong>{verdict}</strong> the predeclared pass rule."
+    else:
+        verdict_text = "The contrastive confirmation has no final pathology score until its supervised follow-up finishes."
+    body = (f"<p>Updated {esc(snapshot['updated_at'])}. {len(completed) - 1} queue runs have final scores.</p>"
+            + score_table + f"<p>{noise_text}{verdict_text}</p><p>{retrieval}"
+            "Retrieval Recall@1 measures image–report matching; it is separate from pathology AUROC.</p>"
+            + (queue_table if remaining else "<p>All queued runs are complete.</p>"))
+    notes = (f"<p>{esc(snapshot['note'])} Paired intervals use 2,000 shared study bootstrap resamples, seed 2030. "
+             "The contrastive pass rule requires a positive LM-test interval, a gold drop smaller than 0.024, "
+             "and an LM-test gain larger than the seed difference. Interrupted supervised runs restart "
+             "their original recipe because this trainer saves weights only at completion.</p>"
+             f'<p>Sources: <a href="{ctx.raw("run5-followups-v1.json")}">result snapshot</a>, '
+             f'<a href="{ctx.doc("run5-followups-v1.md")}">results and queue</a>, '
+             f'<a href="{ctx.doc("omnirad-clip-run5-v1.md")}">CLIP protocol</a>.</p>')
+    return section("run5-followups", "Run-5 follow-ups: completed scores and remaining work", body, notes=notes)
+
+
 # --------------------------------------------------------------------------- 1. steps
 
 
@@ -364,13 +414,15 @@ def build(ctx) -> Page:
     if not j:
         return Page(title=info.title, subtitle="",
                     sections=[section("missing", "Fine-tuning ladder", notice(f"<code>{SRC}</code> is missing."))])
-    sections, blobs = [], {}
+    followups = run5_followups_section(ctx)
+    sections, blobs = ([followups] if followups else []), {}
     for s, b in (steps_section(ctx, j, by_id), curves_section(ctx, j), per_label_section(ctx, j, by_id),
                  windows_section(ctx, j)):
         sections.append(s)
         blobs.update(b)
-    r0, best = by_id["R0"], max(j["steps"], key=lambda s: s["lm_test"]["macro"])
-    best_gold = max(j["steps"], key=lambda s: s["gold"]["macro"])
+    scored = _scored_runs(j)
+    r0, best = by_id["R0"], max(scored, key=lambda s: s["lm_test"]["macro"])
+    best_gold = max(scored, key=lambda s: s["gold"]["macro"])
     r4 = by_id.get("R4a-K8")
     kpis = [{"label": "Best LM-test", "value": num(best["lm_test"]["macro"]),
              "sub": f"{esc(best['short'])} · R0 {num(r0['lm_test']['macro'])}"},
@@ -390,7 +442,7 @@ def summary() -> dict:
     info = BY_SLUG[SLUG]
     if not j:
         return {"stage": info.number, "headline": None, "value": None, "value_label": None, "caveat": None, "href": None}
-    best = max(j["steps"], key=lambda s: s["lm_test"]["macro"])
+    best = max(_scored_runs(j), key=lambda s: s["lm_test"]["macro"])
     return {"stage": info.number, "headline": f"Multi-slice fine-tuning ({best['short']}) leads",
             "value": num(best["lm_test"]["macro"]), "value_label": "LM-test macro AUROC",
-            "caveat": "Single seed per step; OmniRad-base R4a scores 0.839 public", "href": "#steps"}
+            "caveat": "Gold-58 exploratory; run-5 follow-ups include its seed replicate", "href": "#run5-followups"}

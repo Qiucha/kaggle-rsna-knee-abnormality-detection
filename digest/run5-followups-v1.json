@@ -1,0 +1,263 @@
+{
+  "absolute_lm_test_seed_difference": 0.0028711864428762057,
+  "baseline": "r4a-k8-omnirad-base-soft-336",
+  "bootstrap": {
+    "resamples": 2000,
+    "seed": 2030
+  },
+  "completed": [
+    {
+      "actual_run": "r4a-k8-omnirad-base-soft-336",
+      "best_epoch": 17,
+      "epochs_completed": 20,
+      "gold": 0.8266710098089459,
+      "hours": 3.6898761169627767,
+      "lm_test": 0.8775061374989838,
+      "name": "r4a-k8-omnirad-base-soft-336",
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336/report.json",
+      "title": "Run 5: soft 336, seed 2026"
+    },
+    {
+      "actual_run": "r4a-k8-omnirad-base-hard-336",
+      "best_epoch": 5,
+      "epochs_completed": 10,
+      "gold": 0.8054573498253306,
+      "hours": 1.861059952171943,
+      "lm_test": 0.8584049083176623,
+      "name": "r4a-k8-omnirad-base-hard-336",
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-hard-336/report.json",
+      "title": "Hard labels at 336"
+    },
+    {
+      "actual_run": "r4a-k8-omnirad-base-soft-336-from-clip",
+      "best_epoch": 11,
+      "epochs_completed": 16,
+      "gold": 0.8248059570031966,
+      "hours": 2.943690771468611,
+      "lm_test": 0.8800973667601081,
+      "name": "r4a-k8-omnirad-base-soft-336-from-clip",
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-from-clip/report.json",
+      "title": "K8 plain CLIP \u2192 run-5 fine-tuning"
+    },
+    {
+      "actual_run": "r4a-k8-omnirad-base-soft-336-seed2027",
+      "best_epoch": 16,
+      "epochs_completed": 20,
+      "gold": 0.8332736153804569,
+      "hours": 3.931802220221111,
+      "lm_test": 0.8746349510561076,
+      "name": "r4a-k8-omnirad-base-soft-336-seed2027",
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-seed2027/report.json",
+      "title": "Run 5: seed 2027"
+    },
+    {
+      "actual_run": "r4a-k8-omnirad-base-soft-336-ep30",
+      "best_epoch": 16,
+      "epochs_completed": 21,
+      "gold": 0.8443561792345192,
+      "hours": 3.8591784629805552,
+      "lm_test": 0.8751434619051416,
+      "name": "r4a-k8-omnirad-base-soft-336-ep30",
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-ep30/report.json",
+      "title": "30-epoch limit"
+    }
+  ],
+  "contrastive_confirmation": {
+    "absolute_lm_test_seed_difference": 0.0028711864428762057,
+    "bootstrap": {
+      "resamples": 2000,
+      "seed": 2030
+    },
+    "gold": {
+      "macro_auroc": {
+        "candidate": 0.8248059570031966,
+        "run5": 0.8266710098089458,
+        "seed2027": 0.833273615380457
+      },
+      "paired": {
+        "candidate - run5": {
+          "ci95": [
+            -0.030166232640801795,
+            0.025990181093720317
+          ],
+          "difference": -0.0018650528057492233
+        },
+        "candidate - seed2027": {
+          "ci95": [
+            -0.03745132588080757,
+            0.018889840157906738
+          ],
+          "difference": -0.008467658377260379
+        },
+        "run5 - seed2027": {
+          "ci95": [
+            -0.02912867233986715,
+            0.015291865868551992
+          ],
+          "difference": -0.006602605571511155
+        }
+      }
+    },
+    "lm_test": {
+      "macro_auroc": {
+        "candidate": 0.8800973667601081,
+        "run5": 0.8775061374989838,
+        "seed2027": 0.8746349510561076
+      },
+      "paired": {
+        "candidate - run5": {
+          "ci95": [
+            -0.008917106311494487,
+            0.01421364367176579
+          ],
+          "difference": 0.002591229261124317
+        },
+        "candidate - seed2027": {
+          "ci95": [
+            -0.006068327654628843,
+            0.01829827308768847
+          ],
+          "difference": 0.005462415704000523
+        },
+        "run5 - seed2027": {
+          "ci95": [
+            -0.006146474951111916,
+            0.011024353832945328
+          ],
+          "difference": 0.0028711864428762057
+        }
+      }
+    },
+    "pass_checks": {
+      "gold_drop_less_than_0_024": true,
+      "lm_test_ci_excludes_zero_in_positive_direction": false,
+      "lm_test_gain_exceeds_absolute_seed_difference": false
+    },
+    "pass_rule": {
+      "gain_gt_absolute_seed_difference": true,
+      "gold_delta_gt": -0.024,
+      "lm_test_ci_lower_gt": 0.0
+    },
+    "passed": false,
+    "predictions_sha256": {
+      "candidate": "450691ebdd6e80e01bb20c130bfbae89ff842536fd245ba5cab2e468298a9c80",
+      "run5": "d5765dec078b8823ea2099d12ab8fe26c773065be38fa6878912a3a0d8dd49b1",
+      "seed2027": "ff73daa85ce3c4a1e796e2addfaa90c7d177458432fa11c0c9cb2fe0e3827917"
+    },
+    "seed_comparison_pending": false
+  },
+  "contrastive_pretraining": {
+    "best_mean_recall_at_1": 0.19207081198692322,
+    "checkpoint": "checkpoints/contrastive/omnirad-clip-run5-v1/omnirad-base-e5-base-clip-k8-336-u6-bs32-seed2026/best.pt",
+    "checkpoint_sha256": "574b5048ebd7d9e74ca748fa84f9e17b859af91fc1caa7183716a67e1ab6f30a",
+    "completed": true,
+    "epochs_completed": 20,
+    "max_epochs": 20,
+    "selected_epoch": 18
+  },
+  "note": "LM-test uses LM labels; gold-58 is exploratory. No interrupted run has a final AUROC.",
+  "paired": {
+    "gold": {
+      "r4a-k8-omnirad-base-hard-336": {
+        "ci95": [
+          -0.04692294305405063,
+          0.005078071229867987
+        ],
+        "difference": -0.02121365998361524
+      },
+      "r4a-k8-omnirad-base-soft-336-ep30": {
+        "ci95": [
+          0.003243790267040527,
+          0.03188126811236544
+        ],
+        "difference": 0.01768516942557341
+      },
+      "r4a-k8-omnirad-base-soft-336-from-clip": {
+        "ci95": [
+          -0.03016623264080179,
+          0.025990181093720335
+        ],
+        "difference": -0.0018650528057492233
+      },
+      "r4a-k8-omnirad-base-soft-336-seed2027": {
+        "ci95": [
+          -0.015291865868551992,
+          0.02912867233986715
+        ],
+        "difference": 0.006602605571511155
+      }
+    },
+    "lm_test": {
+      "r4a-k8-omnirad-base-hard-336": {
+        "ci95": [
+          -0.0346246617357355,
+          -0.004300532496325025
+        ],
+        "difference": -0.01910122918132151
+      },
+      "r4a-k8-omnirad-base-soft-336-ep30": {
+        "ci95": [
+          -0.008736160962938942,
+          0.003994259608708203
+        ],
+        "difference": -0.0023626755938421784
+      },
+      "r4a-k8-omnirad-base-soft-336-from-clip": {
+        "ci95": [
+          -0.008917106311494486,
+          0.01421364367176579
+        ],
+        "difference": 0.002591229261124317
+      },
+      "r4a-k8-omnirad-base-soft-336-seed2027": {
+        "ci95": [
+          -0.011024353832945328,
+          0.006146474951111916
+        ],
+        "difference": -0.0028711864428762057
+      }
+    }
+  },
+  "predictions_sha256": {
+    "r4a-k8-omnirad-base-hard-336": "d2703e400f50a66c84eb7dca88f0d40b832b98828ed4050615bcbeea5886a105",
+    "r4a-k8-omnirad-base-soft-336": "d5765dec078b8823ea2099d12ab8fe26c773065be38fa6878912a3a0d8dd49b1",
+    "r4a-k8-omnirad-base-soft-336-ep30": "2a89fc6371c6686a0227ad9bc4562d9257298b7f91622f918841e13f77f4df78",
+    "r4a-k8-omnirad-base-soft-336-from-clip": "450691ebdd6e80e01bb20c130bfbae89ff842536fd245ba5cab2e468298a9c80",
+    "r4a-k8-omnirad-base-soft-336-seed2027": "ff73daa85ce3c4a1e796e2addfaa90c7d177458432fa11c0c9cb2fe0e3827917"
+  },
+  "unfinished": [
+    {
+      "epochs_completed": 12,
+      "max_epochs": 20,
+      "name": "r4a-k8-omnirad-base-soft-336-u6",
+      "report": null,
+      "status": "running",
+      "title": "Unfreeze 6 image blocks"
+    },
+    {
+      "epochs_completed": 0,
+      "max_epochs": 20,
+      "name": "r4a-k8-omnirad-base-soft-384",
+      "report": null,
+      "status": "queued",
+      "title": "384 px"
+    },
+    {
+      "epochs_completed": 0,
+      "max_epochs": 20,
+      "name": "r4a-k8-dinov2-small-soft-336",
+      "report": null,
+      "status": "queued",
+      "title": "DINOv2-small soft 336"
+    },
+    {
+      "epochs_completed": 0,
+      "max_epochs": 20,
+      "name": "r4a-k8-coatnet-384-soft-s123",
+      "report": null,
+      "status": "queued",
+      "title": "CoAtNet stages 1\u20133"
+    }
+  ],
+  "updated_at": "2026-10-05 09:02:56 +0800"
+}
