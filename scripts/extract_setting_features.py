@@ -51,6 +51,19 @@ SLOTS = [f"{role}/{plane}" for role in ("primary", "secondary") for plane in PLA
 ENCODERS = ("finetuned", "pretrained")
 
 
+def repo_path(path: Path) -> str:
+    """``path`` relative to the repository when inside it, else absolute: portable provenance.
+
+    ``abspath`` rather than ``resolve``: ``checkpoints/`` may be a symlink to another
+    disk, and resolving it would record that host's location.
+    """
+    path = Path(os.path.abspath(path))
+    try:
+        return str(path.relative_to(finetune.ROOT))
+    except ValueError:
+        return str(path)
+
+
 def series_flags(series_csv: Path) -> tuple[dict, dict]:
     """``{study: [rows in manifest order]}`` and ``{series uid: fat-suppression bit}``."""
     by_study, flags = {}, {}
@@ -204,7 +217,7 @@ def main():
 
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output / "splits.json").write_text(json.dumps(
-        {"checkpoint": str(args.checkpoint), "slots": SLOTS, "encoders": list(ENCODERS),
+        {"checkpoint": repo_path(args.checkpoint), "slots": SLOTS, "encoders": list(ENCODERS),
          "splits": {name: [r.study_uid for r in rows] for name, rows in splits.items()}}, indent=1))
 
     encoders = load_encoders(config, args.checkpoint, args.device)

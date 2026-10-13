@@ -23,6 +23,7 @@ with study-bootstrap intervals, and per-label deltas; training histories alongsi
 import argparse
 import json
 import math
+import os
 import sys
 from pathlib import Path
 
@@ -40,6 +41,19 @@ from contrastive_learning.supervised_head import masked_bce
 
 ARMS = ("A_primary_mean", "B_concat_secondary", "C_slot_mean", "D_label_attention")
 PLANES = 3
+
+
+def repo_path(path: Path) -> str:
+    """``path`` relative to the repository when inside it, else absolute: portable provenance.
+
+    ``abspath`` rather than ``resolve``: ``checkpoints/`` may be a symlink to another
+    disk, and resolving it would record that host's location.
+    """
+    path = Path(os.path.abspath(path))
+    try:
+        return str(path.relative_to(finetune.ROOT))
+    except ValueError:
+        return str(path)
 
 
 def load_shards(directory: Path, encoder: str) -> dict:
@@ -282,7 +296,8 @@ def main():
     args = parser.parse_args()
 
     meta = read_json(args.features / "splits.json")
-    checkpoint = Path(meta["checkpoint"])
+    # Recorded repo-relative when inside the repository; anchor it there, not at the cwd.
+    checkpoint = finetune.ROOT / meta["checkpoint"]
     config = read_json(checkpoint / "config.json")
     groups, targets, masks, _ = load_population(config, finetune.ROOT)
     test_rows, test_y, test_m, _ = load_test_population(finetune.ROOT / config["cohort_manifest"],
@@ -294,8 +309,8 @@ def main():
         "lm_test": (test_rows, test_y, test_m),
         "gold": (groups["gold"], targets["gold"], masks["gold"]),
     }
-    report = {"config": {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()},
-              "checkpoint": str(checkpoint), "encoders": {}}
+    report = {"config": {k: repo_path(v) if isinstance(v, Path) else v for k, v in vars(args).items()},
+              "checkpoint": meta["checkpoint"], "encoders": {}}
     for encoder in args.encoders:
         features = load_shards(args.features, encoder)
         data = {}
