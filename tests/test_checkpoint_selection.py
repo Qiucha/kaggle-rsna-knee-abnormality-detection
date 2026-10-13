@@ -21,6 +21,19 @@ def test_resume_retains_loss_for_recall_ties(tmp_path):
     assert resumed.best_metrics == rows[1]
 
 
+def test_a_run_resumes_after_its_dicom_mount_moves(tmp_path):
+    config = TrainConfig(output_dir=tmp_path / 'run', epochs=3, data_root=tmp_path / 'old-mount')
+    initialize_run(config)
+    row = dict(epoch=1, **{'mean_r@1': 0.25, 'validation_loss': 1.0})
+    (config.output_dir / 'metrics.jsonl').write_text(json.dumps(row) + '\n')
+    for name in ('last.pt', 'best.pt'):
+        torch.save(dict(epoch=1, metrics=row), config.output_dir / name)
+    moved = replace(config, data_root=tmp_path / 'new-mount', resume=config.output_dir / 'last.pt')
+    assert initialize_run(moved).best_metrics == row
+    with pytest.raises(ValueError, match='incompatible'):
+        initialize_run(replace(moved, seed=config.seed + 1))
+
+
 def test_training_resume_and_finalization_agree_on_ties(tmp_path, monkeypatch):
     from types import SimpleNamespace
     from contrastive_learning import training
