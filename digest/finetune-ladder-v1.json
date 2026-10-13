@@ -3026,6 +3026,7 @@
         }
       ],
       "id": "OmniRad-B-soft-336",
+      "kaggle": "r4a-k8-omnirad-base-soft-336",
       "label": "R4a K8 \u00b7 OmniRad-base, soft labels, 336 px",
       "lm_test": {
         "macro": 0.8775061374989838,
@@ -3046,6 +3047,10 @@
       },
       "minutes": 221.4,
       "parent": "OmniRad-B",
+      "public": {
+        "score": 0.879,
+        "submission": 56789799
+      },
       "run": "r4a-k8-omnirad-base-soft-336",
       "short": "OmniRad-B soft 336",
       "vs_also": {
@@ -3334,6 +3339,394 @@
           ],
           "difference": -0.014433014612976969,
           "source": "coatnet-384-compare.json"
+        }
+      },
+      "window_counts": {
+        "gold": {
+          "masked_planes": 0,
+          "masked_windows": 0,
+          "short_planes": 0,
+          "studies": 58,
+          "windows": 1392
+        },
+        "lm_test": {
+          "masked_planes": 0,
+          "masked_windows": 0,
+          "short_planes": 0,
+          "studies": 432,
+          "windows": 10368
+        },
+        "train": {
+          "masked_planes": 0,
+          "masked_windows": 0,
+          "short_planes": 0,
+          "studies": 3438,
+          "windows": 82512
+        },
+        "validation": {
+          "masked_planes": 0,
+          "masked_windows": 0,
+          "short_planes": 0,
+          "studies": 426,
+          "windows": 10224
+        }
+      }
+    },
+    {
+      "best_epoch": 8,
+      "change": "UNK verdicts stop being masked: they train toward the CSV's UNK value (0.28) at loss weight 0.2, added on top of the observed cells (normalisation stays on the hard mask). Aimed at Lateral OA, 33% UNK in training, whose gold-58 UNK cases are all negative.",
+      "gold": {
+        "macro": 0.8091730688813695,
+        "per_label": {
+          "ACL": 0.7916666666666667,
+          "Baker's": 0.9365942028985508,
+          "Contusion": 0.8299595141700404,
+          "Effusion": 0.8956521739130434,
+          "Fracture": 0.8395833333333333,
+          "Lateral Meniscus": 0.7372670807453415,
+          "Lateral OA": 0.6808510638297873,
+          "MCL": 0.746031746031746,
+          "Medial Meniscus": 0.798076923076923,
+          "Medial OA": 0.9193798449612404,
+          "PF OA": 0.8301158301158301,
+          "Synovitis": 0.7048984468339307
+        }
+      },
+      "group": "lateral",
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.700067870734736,
+          "validation_macro_auroc": 0.8159222746955876,
+          "validation_masked_bce": 0.5153824687004089
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.6597966112716254,
+          "validation_macro_auroc": 0.8282174851694813,
+          "validation_masked_bce": 0.49035581946372986
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.6448021295458771,
+          "validation_macro_auroc": 0.8435691160366866,
+          "validation_masked_bce": 0.4833851158618927
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.630531433744486,
+          "validation_macro_auroc": 0.8460236536298124,
+          "validation_masked_bce": 0.4771929681301117
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.6203306064356205,
+          "validation_macro_auroc": 0.8497215780764712,
+          "validation_masked_bce": 0.4792264699935913
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.609589273534542,
+          "validation_macro_auroc": 0.8532253741479772,
+          "validation_masked_bce": 0.47714391350746155
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.6002782555513604,
+          "validation_macro_auroc": 0.852206255261001,
+          "validation_masked_bce": 0.46393996477127075
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.5906153137254161,
+          "validation_macro_auroc": 0.8542259271033489,
+          "validation_masked_bce": 0.46122151613235474
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.5820656598307365,
+          "validation_macro_auroc": 0.8540872180080655,
+          "validation_masked_bce": 0.46289101243019104
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.5728287933524265,
+          "validation_macro_auroc": 0.8504692290244306,
+          "validation_masked_bce": 0.46530237793922424
+        },
+        {
+          "epoch": 11,
+          "train_masked_bce": 0.5649067716196526,
+          "validation_macro_auroc": 0.8475073043944062,
+          "validation_masked_bce": 0.467445969581604
+        },
+        {
+          "epoch": 12,
+          "train_masked_bce": 0.5578289468967638,
+          "validation_macro_auroc": 0.8439987456488088,
+          "validation_masked_bce": 0.46673867106437683
+        },
+        {
+          "epoch": 13,
+          "train_masked_bce": 0.55061183190623,
+          "validation_macro_auroc": 0.8421037300097023,
+          "validation_masked_bce": 0.4729885160923004
+        }
+      ],
+      "id": "R4a-soft-unk",
+      "label": "R4a K8 soft \u00b7 UNK cells trained at weight 0.2 (ticket 18)",
+      "lm_test": {
+        "macro": 0.8662228350093338,
+        "per_label": {
+          "ACL": 0.8582838563754595,
+          "Baker's": 0.9145828071061716,
+          "Contusion": 0.8707540521494009,
+          "Effusion": 0.8812528229448962,
+          "Fracture": 0.9439416792357969,
+          "Lateral Meniscus": 0.8093552465233881,
+          "Lateral OA": 0.8499099909990999,
+          "MCL": 0.8229591836734694,
+          "Medial Meniscus": 0.8019567078390608,
+          "Medial OA": 0.9068381063705435,
+          "PF OA": 0.8524866257182485,
+          "Synovitis": 0.8823529411764706
+        }
+      },
+      "minutes": 60.2,
+      "parent": "R4a-soft",
+      "run": "r4a-soft-224-k8-mean-unk02",
+      "short": "R4a soft UNK 0.2",
+      "vs_parent": {
+        "gold": {
+          "ci95": [
+            -0.0394245008243431,
+            0.013309155444121057
+          ],
+          "difference": -0.013108168451202107,
+          "source": "lateral-unk-compare.json"
+        },
+        "lm_test": {
+          "ci95": [
+            -0.01529397293064149,
+            0.007151562281864696
+          ],
+          "difference": -0.0037127303219974817,
+          "source": "lateral-unk-compare.json"
+        }
+      },
+      "vs_r0": {
+        "gold": {
+          "ci95": [
+            0.010694903533424923,
+            0.07782298117467938
+          ],
+          "difference": 0.043243323444989934,
+          "source": "lateral-unk-compare.json"
+        },
+        "lm_test": {
+          "ci95": [
+            0.018088205646866227,
+            0.04636577084445979
+          ],
+          "difference": 0.03262778573958158,
+          "source": "lateral-unk-compare.json"
+        }
+      },
+      "window_counts": {
+        "gold": {
+          "masked_planes": 0,
+          "masked_windows": 0,
+          "short_planes": 0,
+          "studies": 58,
+          "windows": 1392
+        },
+        "lm_test": {
+          "masked_planes": 0,
+          "masked_windows": 0,
+          "short_planes": 0,
+          "studies": 432,
+          "windows": 10368
+        },
+        "train": {
+          "masked_planes": 0,
+          "masked_windows": 0,
+          "short_planes": 0,
+          "studies": 3438,
+          "windows": 82512
+        },
+        "validation": {
+          "masked_planes": 0,
+          "masked_windows": 0,
+          "short_planes": 0,
+          "studies": 426,
+          "windows": 10224
+        }
+      }
+    },
+    {
+      "best_epoch": 9,
+      "change": "Grouped pooling: each plane's 8 windows pool into 2 contiguous halves along the slice axis (on sagittal, medial vs lateral half; slice order is the same direction in every study and right knees are mirrored), and the 3 planes \u00d7 2 halves are concatenated instead of averaged, so the head (6\u00d7 wider input) sees slice position and plane. Exports through the same dense_v1 head.",
+      "gold": {
+        "macro": 0.8068833012135439,
+        "per_label": {
+          "ACL": 0.8198529411764706,
+          "Baker's": 0.9130434782608696,
+          "Contusion": 0.7597840755735493,
+          "Effusion": 0.867080745341615,
+          "Fracture": 0.8625,
+          "Lateral Meniscus": 0.6819875776397515,
+          "Lateral OA": 0.6982591876208898,
+          "MCL": 0.8276643990929704,
+          "Medial Meniscus": 0.859375,
+          "Medial OA": 0.8418604651162791,
+          "PF OA": 0.8391248391248392,
+          "Synovitis": 0.7120669056152926
+        }
+      },
+      "group": "lateral",
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.591095697949099,
+          "validation_macro_auroc": 0.8072931075672204,
+          "validation_masked_bce": 0.4983450174331665
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.5605481178261513,
+          "validation_macro_auroc": 0.8244717805996603,
+          "validation_masked_bce": 0.47787269949913025
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.5436642014529816,
+          "validation_macro_auroc": 0.8275591597731619,
+          "validation_masked_bce": 0.48500770330429077
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.5252097396656524,
+          "validation_macro_auroc": 0.8353840925048507,
+          "validation_masked_bce": 0.47185105085372925
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.5093998758598816,
+          "validation_macro_auroc": 0.8444325179913257,
+          "validation_masked_bce": 0.47018006443977356
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.4940347473808499,
+          "validation_macro_auroc": 0.843492649525262,
+          "validation_masked_bce": 0.46424198150634766
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.4817082792520523,
+          "validation_macro_auroc": 0.8430599547753973,
+          "validation_masked_bce": 0.4581776559352875
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.4695548721350903,
+          "validation_macro_auroc": 0.8431326609140196,
+          "validation_masked_bce": 0.45911675691604614
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.4575417477897433,
+          "validation_macro_auroc": 0.8413868769137781,
+          "validation_masked_bce": 0.4562365412712097
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.4496866064362748,
+          "validation_macro_auroc": 0.8378321590371506,
+          "validation_masked_bce": 0.4581129848957062
+        },
+        {
+          "epoch": 11,
+          "train_masked_bce": 0.4405377193072508,
+          "validation_macro_auroc": 0.8321102912285377,
+          "validation_masked_bce": 0.4619449973106384
+        },
+        {
+          "epoch": 12,
+          "train_masked_bce": 0.43425375027365465,
+          "validation_macro_auroc": 0.8349370315563571,
+          "validation_masked_bce": 0.46145695447921753
+        },
+        {
+          "epoch": 13,
+          "train_masked_bce": 0.42880512862357983,
+          "validation_macro_auroc": 0.8388965391195812,
+          "validation_masked_bce": 0.46369290351867676
+        },
+        {
+          "epoch": 14,
+          "train_masked_bce": 0.4230407671526421,
+          "validation_macro_auroc": 0.8380998038341746,
+          "validation_masked_bce": 0.45885008573532104
+        }
+      ],
+      "id": "R4a-soft-grouped",
+      "label": "R4a K8 soft \u00b7 slice-position and plane-aware pooling (ticket 18)",
+      "lm_test": {
+        "macro": 0.8549580111268472,
+        "per_label": {
+          "ACL": 0.84748374328527,
+          "Baker's": 0.9166877157531363,
+          "Contusion": 0.8310782241014799,
+          "Effusion": 0.8752964092140921,
+          "Fracture": 0.8770739064856712,
+          "Lateral Meniscus": 0.7877054361567636,
+          "Lateral OA": 0.8403590359035904,
+          "MCL": 0.7862466725820763,
+          "Medial Meniscus": 0.8246545187721658,
+          "Medial OA": 0.9054354178842782,
+          "PF OA": 0.861386302093653,
+          "Synovitis": 0.9060887512899897
+        }
+      },
+      "minutes": 64.5,
+      "parent": "R4a-soft",
+      "run": "r4a-soft-224-k8-grouped2",
+      "short": "R4a soft grouped",
+      "vs_parent": {
+        "gold": {
+          "ci95": [
+            -0.03875851574045577,
+            0.006261681101199609
+          ],
+          "difference": -0.015397936119027622,
+          "source": "lateral-grouped-compare.json"
+        },
+        "lm_test": {
+          "ci95": [
+            -0.02667688562189856,
+            -0.0033439617985414672
+          ],
+          "difference": -0.0149775542044841,
+          "source": "lateral-grouped-compare.json"
+        }
+      },
+      "vs_r0": {
+        "gold": {
+          "ci95": [
+            0.008413556675811602,
+            0.07309665128833215
+          ],
+          "difference": 0.04095355577716442,
+          "source": "lateral-grouped-compare.json"
+        },
+        "lm_test": {
+          "ci95": [
+            0.006370527241963808,
+            0.03532428543548179
+          ],
+          "difference": 0.021362961857094964,
+          "source": "lateral-grouped-compare.json"
         }
       },
       "window_counts": {
