@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from contrastive_learning.artifacts import read_json
-from contrastive_learning.finetune import run_finetune
+from contrastive_learning.finetune import run_finetune, with_host_mirror
 
 
 def main():
@@ -14,10 +14,13 @@ def main():
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--device", default="cuda")
+    parser.add_argument("--paths-config", type=Path,
+                        help="Host paths file (default: $CONTRASTIVE_PATHS_CONFIG, then paths.json at the repository root)")
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Output already exists; use a new experiment directory")
-    run_finetune(read_json(args.config), args.output, device=args.device)
+    config = with_host_mirror(read_json(args.config), args.paths_config)
+    run_finetune(config, args.output, device=args.device)
 
 
 if __name__ == "__main__":

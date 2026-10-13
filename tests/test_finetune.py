@@ -124,6 +124,21 @@ def test_random_slices_read_from_the_local_mirror(tmp_path):
         dataset._series(Path("/any/train_series/study/other"))
 
 
+def test_the_mirror_comes_from_the_host_unless_the_rung_names_one(tmp_path):
+    import json
+
+    from contrastive_learning.finetune import with_host_mirror
+
+    host = tmp_path / "paths.json"
+    host.write_text(json.dumps({"train_series_mirror": "mirror"}))
+    resolved = with_host_mirror({"seed": 1}, host)
+    assert resolved["train_series_mirror"] == {"to": str(tmp_path / "mirror")}
+    stated = {"train_series_mirror": {"to": "/elsewhere"}}
+    assert with_host_mirror(stated, host) == stated
+    host.write_text("{}")
+    assert "train_series_mirror" not in with_host_mirror({"seed": 1}, host)
+
+
 def test_eval_windows_sit_inside_the_strata_training_draws_from():
     from contrastive_learning.preprocessing import window_indices
 
