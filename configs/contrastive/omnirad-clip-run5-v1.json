@@ -45,9 +45,6 @@
   "selection_policy": "mean_r@1 descending, validation_loss ascending, earliest epoch",
   "windows_per_plane": 8,
   "window_cache_dir": "checkpoints/finetune/window-cache-k8-336",
-  "train_series_mirror": {
-    "to": "/home/q/novo-mirror/train_series"
-  },
   "contrastive_microbatch_size": 1,
   "loader_prefetch_factor": 1
 }
