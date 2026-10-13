@@ -239,6 +239,15 @@ def collect_embeddings(
     model.eval()
     image_parts, text_parts, study_uids = [], [], []
     for batch in loader:
+        if "valid" in batch:
+            from .gradient_cache import encode_chunk
+
+            # Match study embeddings while keeping the K8 image batch off GPU.
+            for start in range(len(batch["images"])):
+                image_parts.append(encode_chunk(model, batch, start, start + 1, device, tower="image").cpu())
+                text_parts.append(encode_chunk(model, batch, start, start + 1, device, tower="text").cpu())
+            study_uids.extend(batch["study_uid"])
+            continue
         images, input_ids, attention_mask = move_batch(batch, device)
         image_parts.append(model.encode_images(images).cpu())
         text_parts.append(model.encode_text(input_ids, attention_mask).cpu())
@@ -321,6 +330,7 @@ def evaluate_checkpoint(
         text_model_revision=config.text_model_revision,
         text_pooling=config.text_pooling,
         image_plane_pooling=config.image_plane_pooling,
+        windows_per_plane=config.windows_per_plane,
         image_drop_path_rate=config.image_drop_path_rate,
         use_lora=config.use_lora,
         lora_rank=config.lora_rank,

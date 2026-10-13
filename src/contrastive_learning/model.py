@@ -165,6 +165,7 @@ class ImageTower(_FrozenAwareModule):
         n_planes: int = 3,
         *,
         plane_pooling: str = "attention",
+        windows_per_plane: int = 0,
     ):
         super().__init__()
         if plane_pooling not in PLANE_POOLINGS:
@@ -172,6 +173,9 @@ class ImageTower(_FrozenAwareModule):
                 f"plane pooling must be one of {sorted(PLANE_POOLINGS)}, got {plane_pooling!r}"
             )
         self.plane_pooling = plane_pooling
+        self.windows_per_plane = windows_per_plane
+        if windows_per_plane and plane_pooling != "uniform":
+            raise ValueError("Windowed CLIP uses run 5's masked mean pooling")
         self.backbone = backbone
         hidden = int(backbone.config.hidden_size)
         # Each plane is described by its CLS token concatenated with its mean patch
@@ -202,13 +206,28 @@ class ImageTower(_FrozenAwareModule):
         self.register_buffer("std", torch.tensor(_IMAGENET_STD).view(1, 3, 1, 1))
         self.backbone_frozen = not any(parameter.requires_grad for parameter in backbone.parameters())
 
-    def forward(self, images: torch.Tensor) -> torch.Tensor:
+    def forward(self, images: torch.Tensor, valid: torch.Tensor | None = None) -> torch.Tensor:
         """Encode ``[B, planes, 3 slice channels, H, W]`` into ``[B, embedding_dim]``.
 
         The three sampled slices occupy the RGB channels the pretrained backbone
         expects, which is why ``slices_per_plane`` is fixed at three.
         """
-        if images.ndim != 5 or images.shape[1:3] != (self.n_planes, 3):
+        if self.windows_per_plane:
+            if (images.ndim != 6 or images.shape[1:4] != (self.n_planes, self.windows_per_plane, 3)
+                    or valid is None or valid.shape != images.shape[:3] or valid.dtype != torch.bool):
+                raise ValueError("Expected window images [B, planes, K, 3, H, W] and boolean validity mask")
+            if not valid.flatten(1).any(1).all():
+                raise ValueError("A windowed contrastive study has no readable plane")
+            from .submission import pool_windows
+
+            flat = images.reshape(-1, *images.shape[-3:])[valid.reshape(-1)].float()
+            tokens = self.backbone(pixel_values=(flat - self.mean) / self.std).last_hidden_state
+            first_patch = 1 + int(getattr(self.backbone.config, "num_register_tokens", 0))
+            features = torch.cat((tokens[:, 0], tokens[:, first_patch:].mean(1)), dim=-1)
+            padded = features.new_zeros(valid.numel(), features.shape[-1])
+            padded[valid.reshape(-1)] = features
+            return self.projection(pool_windows(padded.reshape(*valid.shape, -1), valid))
+        if valid is not None or images.ndim != 5 or images.shape[1:3] != (self.n_planes, 3):
             raise ValueError(
                 "Expected [B, planes, 3 slice channels, H, W] with "
                 f"{self.n_planes} planes, got {tuple(images.shape)}"
@@ -272,17 +291,18 @@ class ImageReportContrastiveModel(nn.Module):
         self.text_tower = text_tower
         self.logit_scale = nn.Parameter(torch.tensor(math.log(1.0 / temperature)))
 
-    def encode_images(self, images: torch.Tensor) -> torch.Tensor:
-        return self.image_tower(images)
+    def encode_images(self, images: torch.Tensor, valid: torch.Tensor | None = None) -> torch.Tensor:
+        return self.image_tower(images, valid)
 
     def encode_text(self, input_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
         return self.text_tower(input_ids, attention_mask)
 
     def forward(
-        self, images: torch.Tensor, input_ids: torch.Tensor, attention_mask: torch.Tensor
+        self, images: torch.Tensor, input_ids: torch.Tensor, attention_mask: torch.Tensor,
+        *, valid: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Return scaled ``[B, B]`` similarity logits and both embedding batches."""
-        image_embeddings = self.encode_images(images)
+        image_embeddings = self.encode_images(images, valid)
         text_embeddings = self.encode_text(input_ids, attention_mask)
         logits = self.logit_scale.exp() * image_embeddings @ text_embeddings.T
         return logits, image_embeddings, text_embeddings
@@ -442,6 +462,7 @@ def build_model(
     text_model_revision: str | None = None,
     text_pooling: str = "cls",
     image_plane_pooling: str = "attention",
+    windows_per_plane: int = 0,
     image_drop_path_rate: float = 0.0,
     use_lora: bool = False,
     lora_rank: int = 16,
@@ -525,7 +546,8 @@ def build_model(
         _enable_gradient_checkpointing_for_dinov2(image_backbone)
 
     model = ImageReportContrastiveModel(
-        ImageTower(image_backbone, embedding_dim, plane_pooling=image_plane_pooling),
+        ImageTower(image_backbone, embedding_dim, plane_pooling=image_plane_pooling,
+                   windows_per_plane=windows_per_plane),
         TextTower(text_backbone, embedding_dim, pooling=text_pooling),
     )
     return model, tokenizer, {
@@ -542,5 +564,6 @@ def build_model(
         "image_model_format": image_model_format,
         "image_model_base": image_model_base,
         "image_model_base_revision": image_model_base_revision,
+        "windows_per_plane": windows_per_plane,
         "text_revision": getattr(text_backbone.config, "_commit_hash", text_model_revision),
     }

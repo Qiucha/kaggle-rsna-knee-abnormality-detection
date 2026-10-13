@@ -57,6 +57,7 @@ _PATH_FIELDS = (
     "image_cache_dir",
     "resume",
     "lm_label_csv",
+    "window_cache_dir",
 )
 
 DEFAULT_CACHE_STUDIES = 64
@@ -100,6 +101,12 @@ class TrainConfig:
     slices_per_plane: int = 3
     slice_band_low: float = 0.20
     slice_band_high: float = 0.80
+    windows_per_plane: int = 0
+    window_cache_dir: Path | None = None
+    train_series_mirror: dict[str, str] | None = None
+    # One loss across batch_size studies; replay each small chunk for its gradients.
+    contrastive_microbatch_size: int = 0
+    loader_prefetch_factor: int = 2
 
     # --- Optimization ------------------------------------------------------ #
     embedding_dim: int = 256
@@ -200,6 +207,19 @@ class TrainConfig:
         if self.batch_size < 2:
             # In-batch negatives are the training signal; a batch of one has none.
             raise ValueError("Contrastive training requires batch_size >= 2")
+        if self.windows_per_plane < 0 or self.contrastive_microbatch_size < 0:
+            raise ValueError("Window and microbatch counts cannot be negative")
+        if self.loader_prefetch_factor < 1:
+            raise ValueError("loader_prefetch_factor must be positive")
+        if self.contrastive_microbatch_size > self.batch_size:
+            raise ValueError("contrastive_microbatch_size must not exceed batch_size")
+        if self.contrastive_microbatch_size and (self.use_declip or self.label_similarity_weight):
+            raise ValueError("Gradient replay currently supports plain CLIP only")
+        if self.windows_per_plane and (
+            self.window_cache_dir is None or self.cohort_manifest is None
+            or self.image_plane_pooling != "uniform" or not self.contrastive_microbatch_size
+        ):
+            raise ValueError("Windowed CLIP requires a cohort, window cache, uniform pooling and microbatch replay")
         if self.epochs < 1:
             raise ValueError("epochs must be >= 1")
         if self.image_unfreeze_last < 0 or self.text_unfreeze_last < 0:
@@ -278,7 +298,10 @@ class TrainConfig:
     @property
     def image_kwargs(self) -> dict[str, Any]:
         """Image preprocessing settings shared by training, evaluation, and caching."""
-        return preprocessing.image_kwargs(self)
+        settings = preprocessing.image_kwargs(self)
+        if self.windows_per_plane:
+            settings["windows"] = self.windows_per_plane
+        return settings
 
     @property
     def memory_cache_size(self) -> int:

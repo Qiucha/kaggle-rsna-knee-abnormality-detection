@@ -155,8 +155,22 @@ def _train_epoch(
     total_loss_nn = 0.0
     total_loss_img_ss = 0.0
     for batch in loader:
-        images, input_ids, attention_mask = move_batch(batch, device)
         optimizer.zero_grad(set_to_none=True)
+        if config.contrastive_microbatch_size:
+            from .gradient_cache import backward_cached_clip
+
+            loss = backward_cached_clip(model, batch, device, scaler, config)
+            scaler.unscale_(optimizer)
+            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.grad_clip_norm)
+            scaler.step(optimizer)
+            scaler.update()
+            with torch.no_grad():
+                model.logit_scale.clamp_(max=math.log(config.max_inverse_temperature))
+            scheduler.step()
+            total_loss += float(loss)
+            total_grad_norm += float(grad_norm)
+            continue
+        images, input_ids, attention_mask = move_batch(batch, device)
         save_ctx = (
             torch.autograd.graph.save_on_cpu(pin_memory=True)
             if (config.save_on_cpu and device.type == "cuda")
@@ -286,6 +300,7 @@ def run_training(config: TrainConfig) -> dict[str, Any]:
         text_model_revision=config.text_model_revision,
         text_pooling=config.text_pooling,
         image_plane_pooling=config.image_plane_pooling,
+        windows_per_plane=config.windows_per_plane,
         image_drop_path_rate=config.image_drop_path_rate,
         use_lora=config.use_lora,
         lora_rank=config.lora_rank,

@@ -137,6 +137,11 @@ def build_parser() -> argparse.ArgumentParser:
     image.add_argument("--image-model-format", choices=("huggingface", "timm_dinov2"), default="huggingface")
     image.add_argument("--image-model-base")
     image.add_argument("--image-model-base-revision")
+    image.add_argument("--windows-per-plane", type=int, default=0)
+    image.add_argument("--window-cache-dir", type=Path)
+    image.add_argument("--train-series-mirror", type=json.loads)
+    image.add_argument("--contrastive-microbatch-size", type=int, default=0)
+    image.add_argument("--loader-prefetch-factor", type=int, default=2)
     image.add_argument("--image-unfreeze-last", type=int, default=3)
     image.add_argument(
         "--image-plane-pooling", choices=("attention", "uniform"), default="attention"
@@ -145,6 +150,7 @@ def build_parser() -> argparse.ArgumentParser:
     # Physical extent of the centre crop. read_slot crops or pads to exactly this,
     # so every series lands at crop_mm / image_size millimetres per pixel.
     image.add_argument("--crop-mm", type=float, default=130.0)
+    image.add_argument("--image-size", type=int, default=224)
 
     optimization = parser.add_argument_group("optimization")
     optimization.add_argument("--embedding-dim", type=int, default=256)
