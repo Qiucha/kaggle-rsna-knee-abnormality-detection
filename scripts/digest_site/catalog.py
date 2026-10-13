@@ -547,6 +547,11 @@ ENTRIES: list[Entry] = [
     E("codec-declip-v1.md", "encoders", "submission", "result", "current",
       "Does the codec pipeline change training, and does DeCLIP beat plain CLIP?",
       "One contrastive seed per arm; replicate row measures run-to-run noise"),
+    E("factor-isolation-v1.json", "encoders", "submission", "result", "current",
+      "Machine-readable factor-isolation arms: retrieval, frozen-head scores and paired deltas."),
+    E("factor-isolation-v1.md", "encoders", "submission", "result", "current",
+      "One contrastive factor per arm: which one moves the frozen LM head?",
+      "Single seed per arm; K8 helps LM-test only, gold-58 exploratory"),
     E("selected-kaggle-model.md", "submission", "", "result", "current",
       "Which exact model was submitted to Kaggle, with what settings."),
     # --- library: reviews & research notes -----------------------------------
