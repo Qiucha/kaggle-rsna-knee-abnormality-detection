@@ -70,6 +70,14 @@ def test_a_flag_overrides_the_configuration_which_overrides_the_default(tmp_path
     assert overridden.output_dir == Path("/flag")
 
 
+
+def test_the_configured_series_mirror_reaches_the_contrastive_config_as_a_path(tmp_path):
+    config = write_paths(tmp_path, train_series_mirror="/mirror/train_series")
+    configured = cli.config_from_args(["--paths-config", str(config)])
+    assert configured.train_series_mirror == Path("/mirror/train_series")
+    flagged = cli.config_from_args(["--paths-config", str(config), "--train-series-mirror", "/flag"])
+    assert flagged.train_series_mirror == Path("/flag")
+
 def test_an_unconfigured_mount_is_reported_where_it_is_needed(tmp_path):
     config = TrainConfig(cohort_manifest=tmp_path / "cohort.jsonl")
     # A manifest-driven run never resolves a mount, so it records neither derived path.

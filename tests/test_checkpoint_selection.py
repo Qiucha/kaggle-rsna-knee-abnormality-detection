@@ -34,6 +34,20 @@ def test_a_run_resumes_after_its_dicom_mount_moves(tmp_path):
         initialize_run(replace(moved, seed=config.seed + 1))
 
 
+
+def test_a_run_recorded_with_the_old_mirror_dict_resumes_with_a_mirror_path(tmp_path):
+    config = TrainConfig(output_dir=tmp_path / 'run', epochs=3)
+    initialize_run(config)
+    saved = json.loads((config.output_dir / 'config.json').read_text())
+    saved['train_series_mirror'] = {'to': str(tmp_path / 'old-mirror')}
+    (config.output_dir / 'config.json').write_text(json.dumps(saved))
+    row = dict(epoch=1, **{'mean_r@1': 0.25, 'validation_loss': 1.0})
+    (config.output_dir / 'metrics.jsonl').write_text(json.dumps(row) + '\n')
+    for name in ('last.pt', 'best.pt'):
+        torch.save(dict(epoch=1, metrics=row), config.output_dir / name)
+    moved = replace(config, train_series_mirror=tmp_path / 'new-mirror', resume=config.output_dir / 'last.pt')
+    assert initialize_run(moved).best_metrics == row
+
 def test_training_resume_and_finalization_agree_on_ties(tmp_path, monkeypatch):
     from types import SimpleNamespace
     from contrastive_learning import training

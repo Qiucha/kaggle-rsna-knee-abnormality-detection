@@ -139,7 +139,7 @@ def build_parser() -> argparse.ArgumentParser:
     image.add_argument("--image-model-base-revision")
     image.add_argument("--windows-per-plane", type=int, default=0)
     image.add_argument("--window-cache-dir", type=Path)
-    image.add_argument("--train-series-mirror", type=json.loads)
+    image.add_argument("--train-series-mirror", type=Path)
     image.add_argument("--contrastive-microbatch-size", type=int, default=0)
     image.add_argument("--loader-prefetch-factor", type=int, default=2)
     image.add_argument("--image-unfreeze-last", type=int, default=3)
@@ -286,7 +286,7 @@ def _apply_path_settings(values: dict[str, Any]) -> None:
     """
     configured = paths.load_settings(values.pop("paths_config", None))
     for name in paths.PATH_SETTINGS:
-        # Settings for other entry points (the fine-tuning mirror) are not TrainConfig fields.
+        # Skip settings that are not TrainConfig fields, should one be added for another entry point.
         if name not in _TRAIN_FIELDS:
             continue
         if values.get(name) is None:

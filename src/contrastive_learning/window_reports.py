@@ -11,7 +11,9 @@ class WindowReportDataset(Dataset):
         self.records = list(records)
         settings = {**config.image_kwargs, "windows_per_plane": config.windows_per_plane,
                     "window_cache_dir": str(config.window_cache_dir),
-                    "train_series_mirror": config.train_series_mirror}
+                    # The run-5 window reader takes the fine-tuning config's {"to": path} shape.
+                    "train_series_mirror": ({"to": str(config.train_series_mirror)}
+                                            if config.train_series_mirror is not None else None)}
         settings.pop("windows", None)
         self.windows = WindowDataset(self.records, settings, training=training)
         self.label_table = label_table

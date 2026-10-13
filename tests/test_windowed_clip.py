@@ -187,3 +187,21 @@ def test_windowed_evaluation_encodes_every_study_with_bounded_chunks():
     torch.testing.assert_close(images, model.encode_images(batch["images"], batch["valid"]))
     torch.testing.assert_close(texts, model.encode_text(batch["input_ids"], batch["attention_mask"]))
     assert uids == list("abcde")
+
+
+def test_report_dataset_hands_the_mirror_path_to_the_window_reader_as_its_dict_shape(tmp_path):
+    config = window_config(tmp_path)
+    config.train_series_mirror = tmp_path / "mirror"
+    clip = WindowReportDataset(records(), config, training=True)
+    assert clip.windows.mirror == {"to": str(tmp_path / "mirror")}
+    config.train_series_mirror = None
+    assert WindowReportDataset(records(), config, training=True).windows.mirror is None
+
+
+def test_recorded_mirror_dicts_load_as_a_path_and_other_shapes_are_rejected(tmp_path):
+    recorded = TrainConfig.from_dict({"train_series_mirror": {"to": "/mirror/train_series"}})
+    assert recorded.train_series_mirror == Path("/mirror/train_series")
+    assert recorded.as_dict()["train_series_mirror"] == "/mirror/train_series"
+    assert TrainConfig.from_dict({"train_series_mirror": "/mirror"}).train_series_mirror == Path("/mirror")
+    with pytest.raises(ValueError, match="train_series_mirror"):
+        TrainConfig.from_dict({"train_series_mirror": {"from": "/a", "to": "/b"}})

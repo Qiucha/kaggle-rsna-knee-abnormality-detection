@@ -58,6 +58,7 @@ _PATH_FIELDS = (
     "resume",
     "lm_label_csv",
     "window_cache_dir",
+    "train_series_mirror",
 )
 
 DEFAULT_CACHE_STUDIES = 64
@@ -103,7 +104,8 @@ class TrainConfig:
     slice_band_high: float = 0.80
     windows_per_plane: int = 0
     window_cache_dir: Path | None = None
-    train_series_mirror: dict[str, str] | None = None
+    # Byte-identical local copy of the <study>/<series> tree; a host setting from paths.json.
+    train_series_mirror: Path | None = None
     # One loss across batch_size studies; replay each small chunk for its gradients.
     contrastive_microbatch_size: int = 0
     loader_prefetch_factor: int = 2
@@ -317,6 +319,12 @@ class TrainConfig:
         """
         names = {field.name for field in fields(cls)}
         values = {key: item for key, item in value.items() if key in names}
+        mirror = values.get("train_series_mirror")
+        if isinstance(mirror, dict):
+            # Runs recorded before the mirror became a plain path stored {"to": path}.
+            if set(mirror) != {"to"}:
+                raise ValueError(f"Unsupported recorded train_series_mirror: {mirror!r}")
+            values["train_series_mirror"] = mirror["to"]
         for name in _PATH_FIELDS:
             if values.get(name) is not None:
                 values[name] = Path(values[name])
