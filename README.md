@@ -84,6 +84,12 @@ stage we are satisfied with. The reference recipe is run 5,
 more epochs, deeper unfreezing, 384 px) will be reviewed before the next
 direction is set.
 
+Supervised fine-tuning also supports optional training image augmentation through
+an `image_augmentation` config object. The [augmentation trial](digest/finetune-image-augmentation-v1.md)
+adds coherent rotation, zoom, translation and intensity gain to the u9-b1
+30-epoch oversampling-and-target-noise recipe. Omit the object to retain the
+existing behavior; evaluation and inference always use unaugmented images.
+
 **Track 2: report-based representation learning.** The LM labels compress each
 report into twelve YES/NO/UNK verdicts, and weak supervision on those verdicts is
 limited by the size of the labelled cohort (about 3,400 training studies). Track 2
