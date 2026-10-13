@@ -9,7 +9,7 @@ from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from contrastive_learning.artifacts import read_json, sha256_file, write_json
 from contrastive_learning.lm_proxy import load_test_population, paired_intervals
 
@@ -44,7 +44,7 @@ def history(path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--project", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument("--project", type=Path, default=Path(__file__).resolve().parents[2])
     args = parser.parse_args()
     root = args.project.resolve()
     run_dir = root / "checkpoints/finetune"

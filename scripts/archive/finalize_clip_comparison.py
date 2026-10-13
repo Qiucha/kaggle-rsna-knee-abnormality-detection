@@ -6,7 +6,7 @@ import time
 import traceback
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from contrastive_learning.artifacts import read_json, write_json
 from contrastive_learning.clip_pipeline import ROOT, compare_to_run5
 
