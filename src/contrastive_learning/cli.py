@@ -25,6 +25,7 @@ from contrastive_learning.training import run_training
 # configuration, read from the dataclass so the two cannot drift apart. They are
 # repository-relative, hence portable as they stand; the settings missing from this
 # mapping -- data_root above all -- have no sensible default and must be configured.
+_TRAIN_FIELDS = {field.name for field in fields(TrainConfig)}
 _PATH_DEFAULTS = {
     field.name: field.default
     for field in fields(TrainConfig)
@@ -276,6 +277,9 @@ def _apply_path_settings(values: dict[str, Any]) -> None:
     """
     configured = paths.load_settings(values.pop("paths_config", None))
     for name in paths.PATH_SETTINGS:
+        # Settings for other entry points (the fine-tuning mirror) are not TrainConfig fields.
+        if name not in _TRAIN_FIELDS:
+            continue
         if values.get(name) is None:
             values[name] = configured.get(name, _PATH_DEFAULTS.get(name))
 
