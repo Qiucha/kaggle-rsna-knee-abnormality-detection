@@ -94,6 +94,8 @@ def test_frozen_baseline_matches_resolved_config(monkeypatch, tmp_path):
     root = Path(__file__).resolve().parents[1]
     matrix = json.loads((root / 'configs/contrastive/full-multilingual-matrix.json').read_text())
     expected = json.loads((root / 'configs/contrastive/full-projection-v1-resolved.json').read_text())
+    # Older frozen configs omit later optional fields; restore their legacy defaults.
+    expected = TrainConfig.from_dict(expected).as_dict()
     paths_config = tmp_path / 'paths.json'
     paths_config.write_text(json.dumps({'data_root': expected['data_root']}))
     captured = []

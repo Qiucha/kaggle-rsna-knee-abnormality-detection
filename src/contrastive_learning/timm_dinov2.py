@@ -70,7 +70,7 @@ def convert_state_dict(timm_state: dict[str, torch.Tensor]) -> dict[str, torch.T
 
 
 def load_timm_dinov2(repo: str, revision: str, *, base_model: str, base_revision: str,
-                     local_files_only: bool = True):
+                     local_files_only: bool = True, drop_path_rate: float = 0.0):
     """``repo``'s weights in a ``Dinov2Model`` whose config comes from ``base_model``.
 
     The base supplies width, depth and heads. ``image_size`` is set from the stored
@@ -91,6 +91,9 @@ def load_timm_dinov2(repo: str, revision: str, *, base_model: str, base_revision
     config.patch_size = state["embeddings.patch_embeddings.projection.weight"].shape[-1]
     grid = int(round((state["embeddings.position_embeddings"].shape[1] - 1) ** 0.5))
     config.image_size = grid * config.patch_size
+    config.drop_path_rate = drop_path_rate
+    # The config source is the architecture, but these are the radiology weights.
+    config._commit_hash = revision
     model = Dinov2Model(config)
     model.load_state_dict(state, strict=True)
     return model

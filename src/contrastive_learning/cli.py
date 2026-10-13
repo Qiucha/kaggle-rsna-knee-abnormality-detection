@@ -134,6 +134,9 @@ def build_parser() -> argparse.ArgumentParser:
     image = parser.add_argument_group("image tower")
     image.add_argument("--image-model", default="facebook/dinov2-small")
     image.add_argument("--image-model-revision")
+    image.add_argument("--image-model-format", choices=("huggingface", "timm_dinov2"), default="huggingface")
+    image.add_argument("--image-model-base")
+    image.add_argument("--image-model-base-revision")
     image.add_argument("--image-unfreeze-last", type=int, default=3)
     image.add_argument(
         "--image-plane-pooling", choices=("attention", "uniform"), default="attention"

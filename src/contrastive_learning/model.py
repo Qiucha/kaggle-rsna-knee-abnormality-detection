@@ -398,6 +398,36 @@ def _enable_gradient_checkpointing_for_dinov2(backbone: nn.Module) -> None:
             encoder._custom_checkpointing_patched = True
 
 
+def load_image_backbone(
+    name: str, revision: str | None, *, image_model_format: str = "huggingface",
+    image_model_base: str | None = None, image_model_base_revision: str | None = None,
+    image_drop_path_rate: float = 0.0, pretrained: bool = True,
+    local_files_only: bool = False,
+) -> nn.Module:
+    """Restore the same pinned image architecture for training and checkpoint reload."""
+    from transformers import AutoConfig, AutoModel
+
+    if image_model_format == "timm_dinov2":
+        if not all((revision, image_model_base, image_model_base_revision)):
+            raise ValueError("timm_dinov2 requires pinned image weights and base architecture")
+        from .timm_dinov2 import load_timm_dinov2
+
+        # The position grid comes from the weights, even for a full checkpoint.
+        return load_timm_dinov2(
+            name, revision, base_model=image_model_base, base_revision=image_model_base_revision,
+            local_files_only=local_files_only, drop_path_rate=image_drop_path_rate,
+        )
+    if image_model_format != "huggingface":
+        raise ValueError(f"Unsupported image_model_format: {image_model_format}")
+    options = dict(revision=revision, local_files_only=local_files_only)
+    if pretrained and image_drop_path_rate == 0.0:
+        return AutoModel.from_pretrained(name, **options)
+    architecture = AutoConfig.from_pretrained(name, **options)
+    architecture.drop_path_rate = image_drop_path_rate
+    return (AutoModel.from_pretrained(name, config=architecture, **options) if pretrained
+            else AutoModel.from_config(architecture))
+
+
 def build_model(
     image_model_name: str,
     text_model_name: str,
@@ -406,6 +436,9 @@ def build_model(
     text_unfreeze_last: int,
     *,
     image_model_revision: str | None = None,
+    image_model_format: str = "huggingface",
+    image_model_base: str | None = None,
+    image_model_base_revision: str | None = None,
     text_model_revision: str | None = None,
     text_pooling: str = "cls",
     image_plane_pooling: str = "attention",
@@ -431,27 +464,17 @@ def build_model(
     """
     from transformers import AutoConfig, AutoModel, AutoTokenizer
 
-    def image_config():
-        config = AutoConfig.from_pretrained(
-            image_model_name, revision=image_model_revision, local_files_only=local_files_only
-        )
-        config.drop_path_rate = image_drop_path_rate
-        return config
-
+    image_backbone = load_image_backbone(
+        image_model_name, image_model_revision, image_model_format=image_model_format,
+        image_model_base=image_model_base, image_model_base_revision=image_model_base_revision,
+        image_drop_path_rate=image_drop_path_rate, pretrained=pretrained_backbones,
+        local_files_only=local_files_only,
+    )
     if pretrained_backbones:
-        # A zero rate takes the plain path, so every run recorded before this knob
-        # existed rebuilds byte-identically rather than through a config override.
-        image_backbone = AutoModel.from_pretrained(
-            image_model_name,
-            revision=image_model_revision,
-            local_files_only=local_files_only,
-            **({} if image_drop_path_rate == 0.0 else {"config": image_config()}),
-        )
         text_backbone = AutoModel.from_pretrained(
             text_model_name, revision=text_model_revision, local_files_only=local_files_only
         )
     else:
-        image_backbone = AutoModel.from_config(image_config())
         text_backbone = AutoModel.from_config(
             AutoConfig.from_pretrained(
                 text_model_name, revision=text_model_revision, local_files_only=local_files_only
@@ -516,5 +539,8 @@ def build_model(
         "lora_dropout": lora_dropout if use_lora else None,
         "gradient_checkpointing": gradient_checkpointing,
         "image_revision": getattr(image_backbone.config, "_commit_hash", image_model_revision),
+        "image_model_format": image_model_format,
+        "image_model_base": image_model_base,
+        "image_model_base_revision": image_model_base_revision,
         "text_revision": getattr(text_backbone.config, "_commit_hash", text_model_revision),
     }

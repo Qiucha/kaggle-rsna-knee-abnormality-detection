@@ -91,6 +91,10 @@ class TrainConfig:
     # --- Image tower and preprocessing ------------------------------------- #
     image_model: str = "facebook/dinov2-small"
     image_model_revision: str | None = None
+    # Radiology weights published in timm format use a pinned HF architecture.
+    image_model_format: str = "huggingface"
+    image_model_base: str | None = None
+    image_model_base_revision: str | None = None
     image_size: int = 224
     crop_mm: float = 130.0
     slices_per_plane: int = 3
@@ -187,6 +191,12 @@ class TrainConfig:
             raise ValueError("DINOv2 requires exactly three sampled slices as input channels")
         if self.image_size % 14:
             raise ValueError("DINOv2 image_size must be divisible by its 14-pixel patch size")
+        if self.image_model_format not in {"huggingface", "timm_dinov2"}:
+            raise ValueError("Unsupported contrastive image_model_format")
+        if self.image_model_format == "timm_dinov2" and not all((
+            self.image_model_revision, self.image_model_base, self.image_model_base_revision
+        )):
+            raise ValueError("timm_dinov2 requires pinned image weights and base architecture")
         if self.batch_size < 2:
             # In-batch negatives are the training signal; a batch of one has none.
             raise ValueError("Contrastive training requires batch_size >= 2")
