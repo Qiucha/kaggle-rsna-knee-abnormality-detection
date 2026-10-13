@@ -7,14 +7,17 @@ import json
 import math
 import time
 import traceback
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
 import torch
 
+from . import paths
 from .artifacts import read_json, read_jsonl, sha256_file, write_json
 from .config import TrainConfig
-from .finetune import ROOT, WindowModel, image_kwargs, load_backbone, run_finetune, validate_config
+from .finetune import (ROOT, WindowModel, image_kwargs, load_backbone, run_finetune, validate_config,
+                       with_host_mirror)
 from .inputs import load_cohort
 from .lm_proxy import load_test_population, masked_macro_auroc, paired_intervals
 from .lm_supervision import load_population
@@ -22,9 +25,34 @@ from .model import build_model
 from .training import _optimizer, _scheduler, _train_epoch, run_training, seed_everything
 
 
-def validate_pipeline(fine: dict, pre_value: dict) -> TrainConfig:
-    """Reject changes that would invalidate the promised plain-CLIP comparison."""
+# Where this machine keeps its data, not part of either recipe: run 5 recorded its
+# mirror, the committed configs leave it to paths.json.
+HOST_SETTINGS = ("data_root", "series_csv", "series_root", "train_series_mirror")
+
+
+def pretraining_config(pre_value: dict, paths_config: Path | None = None) -> TrainConfig:
+    """The pre-training settings, with this host's series mirror unless they state one."""
     pre = TrainConfig.from_dict(pre_value)
+    if pre.train_series_mirror is None:
+        mirror = paths.load_settings(paths_config).get("train_series_mirror")
+        if mirror is not None:
+            pre = replace(pre, train_series_mirror=mirror)
+    return pre
+
+
+def baseline_differences(fine: dict, baseline: dict) -> list[str]:
+    """Recipe keys where the fine-tuning stage departs from run 5's recorded config."""
+    return [key for key, value in baseline.items()
+            if key != "name" and key not in HOST_SETTINGS and fine.get(key) != value]
+
+
+def _recipe(config: TrainConfig) -> dict:
+    return {key: value for key, value in config.as_dict().items() if key not in HOST_SETTINGS}
+
+
+def validate_pipeline(fine: dict, pre_value: dict, paths_config: Path | None = None) -> TrainConfig:
+    """Reject changes that would invalidate the promised plain-CLIP comparison."""
+    pre = pretraining_config(pre_value, paths_config)
     pre.validate_training()
     validate_config(fine)
     if pre.use_declip or pre.use_lora or pre.label_similarity_weight or pre.lm_label_csv:
@@ -47,7 +75,7 @@ def validate_pipeline(fine: dict, pre_value: dict) -> TrainConfig:
     if manifest_sha != fine["manifest_sha256"] or manifest_sha != pre_value["manifest_sha256"]:
         raise ValueError("The frozen gold-holdout manifest checksum differs")
     baseline = read_json(ROOT / fine["comparison_baseline"] / "config.json")
-    if any(fine.get(key) != value for key, value in baseline.items() if key != "name"):
+    if baseline_differences(fine, baseline):
         raise ValueError("The supervised recipe differs from run 5 beyond its initialization")
     # This validates the gold exclusion, patient groups, and supervised populations.
     groups, _, _, _ = load_population(fine, ROOT)
@@ -218,7 +246,7 @@ def compare_to_run5(fine: dict, output: Path, status_dir: Path) -> dict:
 def reuse_pretraining(pre: TrainConfig, expected_sha: str) -> dict:
     """Require the original complete recipe and selected checkpoint before reuse."""
     saved = TrainConfig.from_dict(read_json(pre.output_dir / "config.json"))
-    if saved.as_dict() != pre.as_dict():
+    if _recipe(saved) != _recipe(pre):
         raise ValueError("Saved contrastive pre-training recipe differs from the approved recipe")
     metrics = read_jsonl(pre.output_dir / "metrics.jsonl")
     if [row["epoch"] for row in metrics] != list(range(1, pre.epochs + 1)):
@@ -230,7 +258,14 @@ def reuse_pretraining(pre: TrainConfig, expected_sha: str) -> dict:
             "pretraining_reused": True}
 
 
-def run_pipeline(fine: dict, output: Path, *, device: str = "cuda") -> dict:
+def run_pipeline(fine: dict, output: Path, *, device: str = "cuda",
+                 paths_config: Path | None = None) -> dict:
+    """Pre-train (or reuse) the CLIP checkpoint, fine-tune from it, then compare to run 5.
+
+    Both stages read this host's series mirror from ``paths_config`` (default:
+    ``$CONTRASTIVE_PATHS_CONFIG``, then ``paths.json`` at the repository root).
+    """
+    fine = with_host_mirror(fine, paths_config)
     status_dir = ROOT / fine["pipeline_status_dir"]
     status_dir.mkdir(parents=True, exist_ok=True)
     status = {"pipeline": fine["name"], "started_at": time.strftime("%Y-%m-%d %H:%M:%S %z"),
@@ -244,7 +279,7 @@ def run_pipeline(fine: dict, output: Path, *, device: str = "cuda") -> dict:
     try:
         update("validation")
         pre_value = read_json(ROOT / fine["contrastive_pretrain_config"])
-        pre = validate_pipeline(fine, pre_value)
+        pre = validate_pipeline(fine, pre_value, paths_config)
         reuse = fine.get("reuse_completed_contrastive_checkpoint", False)
         if Path(output).exists() or (pre.output_dir.exists() and not reuse):
             raise FileExistsError("Experiment output exists; inspect it before resuming or replacing it")

@@ -51,7 +51,6 @@
   "init_checkpoint": "checkpoints/contrastive/omnirad-clip-run5-v1/omnirad-base-e5-base-clip-k8-336-u6-bs32-seed2026/best.pt",
   "init_unfreeze_last": 3,
   "contrastive_pretrain_config": "configs/contrastive/omnirad-clip-run5-v1.json",
-  "pipeline_script": "scripts/run_clip_then_finetune.py",
   "pipeline_status_dir": "checkpoints/pipelines/omnirad-clip-run5-v1",
   "comparison_baseline": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336",
   "comparison_seed": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-seed2027",

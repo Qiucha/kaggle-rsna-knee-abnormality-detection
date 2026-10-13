@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from contrastive_learning.artifacts import read_json, write_json
-from contrastive_learning.config import TrainConfig
+from contrastive_learning.clip_pipeline import pretraining_config
 from contrastive_learning.inputs import load_cohort
 from contrastive_learning.window_reports import WindowReportDataset
 
@@ -16,8 +16,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
+    parser.add_argument("--paths-config", type=Path,
+                        help="Host paths file naming the series mirror (default: $CONTRASTIVE_PATHS_CONFIG, then paths.json)")
     args = parser.parse_args()
-    config = TrainConfig.from_dict(read_json(args.config))
+    config = pretraining_config(read_json(args.config), args.paths_config)
     records = load_cohort(config, for_training=True).split("train")
     dataset = WindowReportDataset(records, config, training=True)
     failures = []

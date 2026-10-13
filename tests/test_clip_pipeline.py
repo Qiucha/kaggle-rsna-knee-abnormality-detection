@@ -1,4 +1,5 @@
 import copy
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -193,3 +194,77 @@ def test_reuse_pretraining_requires_all_epochs_matching_recipe_and_checkpoint(tm
     changed = TrainConfig(output_dir=tmp_path, epochs=2, seed=2027)
     with pytest.raises(ValueError, match="recipe differs"):
         clip_pipeline.reuse_pretraining(changed, checksum)
+
+
+def test_the_host_mirror_reaches_both_pipeline_stages(tmp_path, monkeypatch):
+    import json
+    from contrastive_learning import clip_pipeline
+
+    host = tmp_path / "paths.json"
+    host.write_text(json.dumps({"train_series_mirror": str(tmp_path / "mirror")}))
+    pre = clip_pipeline.pretraining_config({"output_dir": str(tmp_path / "contrastive")}, host)
+    assert pre.train_series_mirror == tmp_path / "mirror"
+    stated = clip_pipeline.pretraining_config({"train_series_mirror": {"to": "/stated"}}, host)
+    assert stated.train_series_mirror == Path("/stated")
+
+    seen = {}
+    fine = {"name": "pipeline", "pipeline_status_dir": "status", "contrastive_pretrain_config": "pretrain",
+            "init_checkpoint": "contrastive/best.pt", "reuse_completed_contrastive_checkpoint": True}
+    monkeypatch.setattr(clip_pipeline, "ROOT", tmp_path)
+    monkeypatch.setattr(clip_pipeline, "read_json", lambda *args: {})
+
+    def validate(fine, pre_value, paths_config):
+        seen["pre_paths"] = paths_config
+        return pre
+
+    monkeypatch.setattr(clip_pipeline, "validate_pipeline", validate)
+    monkeypatch.setattr(clip_pipeline, "reuse_pretraining", lambda *args: {})
+    monkeypatch.setattr(clip_pipeline, "sha256_file", lambda *args: "sha")
+    monkeypatch.setattr(clip_pipeline, "run_finetune", lambda config, *args, **kwargs: seen.update(fine=config) or {})
+    monkeypatch.setattr(clip_pipeline, "compare_to_run5", lambda *args: {"seed_comparison_pending": True,
+                                                                          "passed": None})
+    clip_pipeline.run_pipeline(fine, tmp_path / "supervised", paths_config=host)
+    assert seen["pre_paths"] == host
+    assert seen["fine"]["train_series_mirror"] == {"to": str(tmp_path / "mirror")}
+
+
+def test_the_run5_recipe_check_ignores_where_this_host_keeps_its_data():
+    from contrastive_learning import clip_pipeline
+
+    baseline = {"name": "run5", "seed": 2026, "train_series_mirror": {"to": "/old-host/mirror"}}
+    assert clip_pipeline.baseline_differences({"name": "clip", "seed": 2026}, baseline) == []
+    assert clip_pipeline.baseline_differences({"name": "clip", "seed": 2027}, baseline) == ["seed"]
+
+
+def test_a_two_stage_config_runs_its_pipeline_in_process_with_the_host_paths(tmp_path, monkeypatch):
+    import importlib.util
+    import json
+    from contrastive_learning import clip_pipeline
+
+    script = Path(__file__).resolve().parents[1] / "scripts/finetune_supervised.py"
+    spec = importlib.util.spec_from_file_location("finetune_supervised_script", script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    config = tmp_path / "config.json"
+    config.write_text(json.dumps({"contrastive_pretrain_config": "pretrain"}))
+    calls = []
+    monkeypatch.setattr(clip_pipeline, "run_pipeline", lambda *args, **kwargs: calls.append((args, kwargs)))
+    monkeypatch.setattr(module, "run_finetune", lambda *args, **kwargs: pytest.fail("ran a single stage"))
+    monkeypatch.setattr("sys.argv", ["finetune_supervised.py", "--config", str(config), "--output",
+                                     str(tmp_path / "out"), "--paths-config", str(tmp_path / "paths.json")])
+    module.main()
+    (fine, output), options = calls[0]
+    assert fine == {"contrastive_pretrain_config": "pretrain"} and output == tmp_path / "out"
+    assert options == {"device": "cuda", "paths_config": tmp_path / "paths.json"}
+
+
+def test_reusing_pretraining_ignores_a_moved_series_mirror(tmp_path):
+    from contrastive_learning import clip_pipeline
+    from contrastive_learning.artifacts import sha256_file, write_json, write_jsonl
+
+    recorded = TrainConfig(output_dir=tmp_path, epochs=1).as_dict()
+    write_json(tmp_path / "config.json", {**recorded, "train_series_mirror": {"to": "/old-host/mirror"}})
+    (tmp_path / "best.pt").write_bytes(b"selected checkpoint")
+    write_jsonl(tmp_path / "metrics.jsonl", [{"epoch": 1, "mean_r@1": 0.2}])
+    pre = TrainConfig(output_dir=tmp_path, epochs=1, train_series_mirror=tmp_path / "mirror")
+    assert clip_pipeline.reuse_pretraining(pre, sha256_file(tmp_path / "best.pt"))["pretraining_reused"]

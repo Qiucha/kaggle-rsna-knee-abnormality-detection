@@ -2,11 +2,11 @@
 
 import argparse
 import sys
-import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+from contrastive_learning import clip_pipeline
 from contrastive_learning.artifacts import read_json
 from contrastive_learning.finetune import run_finetune, with_host_mirror
 
@@ -22,13 +22,10 @@ def main():
     if args.output.exists():
         parser.error("Output already exists; use a new experiment directory")
     config = read_json(args.config)
-    if config.get("pipeline_script"):
-        # A queued two-stage experiment uses its isolated, tested source tree.
-        raise SystemExit(subprocess.call([
-            # A relative path is relative to the repository root, not the working directory.
-            sys.executable, str(ROOT / config["pipeline_script"]), "--config", str(args.config),
-            "--output", str(args.output), "--device", args.device,
-        ]))
+    if config.get("contrastive_pretrain_config"):
+        # A two-stage experiment: CLIP pre-training, then this rung from its checkpoint.
+        clip_pipeline.run_pipeline(config, args.output, device=args.device, paths_config=args.paths_config)
+        return
     config = with_host_mirror(config, args.paths_config)
     run_finetune(config, args.output, device=args.device)
 
