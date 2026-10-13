@@ -552,6 +552,11 @@ ENTRIES: list[Entry] = [
     E("factor-isolation-v1.md", "encoders", "submission", "result", "current",
       "One contrastive factor per arm: which one moves the frozen LM head?",
       "Single seed per arm; K8 helps LM-test only, gold-58 exploratory"),
+    E("combined-lora-k8-336-v1.json", "encoders", "submission", "result", "current",
+      "Machine-readable combined CLIP + LoRA + K8 + 336 arms with frozen-head scores."),
+    E("combined-lora-k8-336-v1.md", "encoders", "submission", "result", "current",
+      "Combined CLIP + LoRA + K8 + 336 arms, scored with frozen MLP heads.",
+      "Heads only, no Kaggle submission; single seed per arm"),
     E("selected-kaggle-model.md", "submission", "", "result", "current",
       "Which exact model was submitted to Kaggle, with what settings."),
     # --- library: reviews & research notes -----------------------------------
