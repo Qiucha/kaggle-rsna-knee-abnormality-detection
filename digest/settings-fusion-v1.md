@@ -66,3 +66,34 @@ study bootstrap of the seed-averaged predictions.
 - **Limits.** These are frozen features: a backbone fine-tuned on six slots could still learn
   something the heads cannot reach. The result gives no reason to pay the cost of that run (about
   1.8× decode and inference on Kaggle, and more exposure to the JPEG-Lossless gap).
+
+## Reproduce
+
+Run from the repository root. The prerequisite is a trained u9-b1 rung: train
+`configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json` (committed on branch
+`feat/ensemble-selection`) with `scripts/finetune_supervised.py` into
+`checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1`.
+
+```bash
+python scripts/extract_setting_features.py \
+  --checkpoint checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1 \
+  --output checkpoints/settings-fusion/u9-b1-features
+python scripts/train_setting_heads.py \
+  --features checkpoints/settings-fusion/u9-b1-features \
+  --output checkpoints/settings-fusion/u9-b1-heads.json --device cuda
+```
+
+Inputs not in git:
+
+- `paths.json` with `data_root`: the DICOM tree (`train_series/`) and its `train_series.csv`.
+- The cohort manifest `data/processed/contrastive-cohort-gold-holdout-v1.jsonl` and the
+  LM labels `data/lm_label/lm_labels_kaggle.csv` (third-party, never commit).
+- The trained rung directory: `config.json`, `best.pt` and `predictions.npz` (the sanity
+  gate reads the last two).
+- The Hugging Face snapshots the rung pins (`Snarcy/OmniRad-base`, `facebook/dinov2-base`)
+  in the local cache.
+- Optionally the rung's evaluation window cache `checkpoints/finetune/window-cache-k8-336`;
+  without it the primary windows are decoded from the DICOM tree.
+
+To vary a run: `--limit N` for a smoke test, `--encoders`, `--arms` and `--seeds` to
+select what the heads fit, and `--checkpoint` to probe another windowed rung.
