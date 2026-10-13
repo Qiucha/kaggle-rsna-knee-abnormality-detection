@@ -268,3 +268,23 @@ def test_reusing_pretraining_ignores_a_moved_series_mirror(tmp_path):
     write_jsonl(tmp_path / "metrics.jsonl", [{"epoch": 1, "mean_r@1": 0.2}])
     pre = TrainConfig(output_dir=tmp_path, epochs=1, train_series_mirror=tmp_path / "mirror")
     assert clip_pipeline.reuse_pretraining(pre, sha256_file(tmp_path / "best.pt"))["pretraining_reused"]
+
+
+def test_pretraining_paths_resolve_against_the_repository_not_the_working_directory(tmp_path, monkeypatch):
+    from contrastive_learning import clip_pipeline
+    from contrastive_learning.artifacts import sha256_file, write_json, write_jsonl
+
+    monkeypatch.setattr(clip_pipeline, "ROOT", tmp_path / "repo")
+    monkeypatch.chdir(tmp_path)
+    recorded = {"output_dir": "checkpoints/clip", "cohort_manifest": "data/cohort.jsonl",
+                "window_cache_dir": str(tmp_path / "elsewhere"), "epochs": 1}
+    (tmp_path / "paths.json").write_text("{}")
+    pre = clip_pipeline.pretraining_config(recorded, tmp_path / "paths.json")
+    assert pre.output_dir == tmp_path / "repo/checkpoints/clip"
+    assert pre.cohort_manifest == tmp_path / "repo/data/cohort.jsonl"
+    assert pre.window_cache_dir == tmp_path / "elsewhere"
+    # The finished run recorded repo-relative paths; reusing it still matches.
+    write_json(pre.output_dir / "config.json", TrainConfig.from_dict(recorded).as_dict())
+    (pre.output_dir / "best.pt").write_bytes(b"selected checkpoint")
+    write_jsonl(pre.output_dir / "metrics.jsonl", [{"epoch": 1, "mean_r@1": 0.2}])
+    assert clip_pipeline.reuse_pretraining(pre, sha256_file(pre.output_dir / "best.pt"))["pretraining_reused"]

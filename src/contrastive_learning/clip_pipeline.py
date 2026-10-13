@@ -15,7 +15,7 @@ import torch
 
 from . import paths
 from .artifacts import read_json, read_jsonl, sha256_file, write_json
-from .config import TrainConfig
+from .config import _PATH_FIELDS, TrainConfig
 from .finetune import (ROOT, WindowModel, image_kwargs, load_backbone, run_finetune, validate_config,
                        with_host_mirror)
 from .inputs import load_cohort
@@ -31,13 +31,19 @@ HOST_SETTINGS = ("data_root", "series_csv", "series_root", "train_series_mirror"
 
 
 def pretraining_config(pre_value: dict, paths_config: Path | None = None) -> TrainConfig:
-    """The pre-training settings, with this host's series mirror unless they state one."""
+    """The pre-training settings, with this host's series mirror unless they state one.
+
+    Repo-relative paths are anchored at ROOT, as the fine-tuning stage anchors its own,
+    so the pipeline reads and writes the same files from any working directory.
+    """
     pre = TrainConfig.from_dict(pre_value)
+    rebased = {name: ROOT / getattr(pre, name) for name in _PATH_FIELDS
+               if getattr(pre, name) is not None and not getattr(pre, name).is_absolute()}
     if pre.train_series_mirror is None:
         mirror = paths.load_settings(paths_config).get("train_series_mirror")
         if mirror is not None:
-            pre = replace(pre, train_series_mirror=mirror)
-    return pre
+            rebased["train_series_mirror"] = mirror
+    return replace(pre, **rebased)
 
 
 def baseline_differences(fine: dict, baseline: dict) -> list[str]:
@@ -47,7 +53,15 @@ def baseline_differences(fine: dict, baseline: dict) -> list[str]:
 
 
 def _recipe(config: TrainConfig) -> dict:
-    return {key: value for key, value in config.as_dict().items() if key not in HOST_SETTINGS}
+    """Settings that define the run: host settings dropped, paths inside ROOT repo-relative."""
+    recipe = {}
+    for key, value in config.as_dict().items():
+        if key in HOST_SETTINGS:
+            continue
+        if key in _PATH_FIELDS and value is not None and Path(value).is_relative_to(ROOT):
+            value = str(Path(value).relative_to(ROOT))
+        recipe[key] = value
+    return recipe
 
 
 def validate_pipeline(fine: dict, pre_value: dict, paths_config: Path | None = None) -> TrainConfig:
@@ -63,14 +77,16 @@ def validate_pipeline(fine: dict, pre_value: dict, paths_config: Path | None = N
         raise ValueError("Pre-training and fine-tuning image preprocessing differ")
     if pre.windows_per_plane != 8 or pre.image_plane_pooling != "uniform" or not pre.contrastive_microbatch_size:
         raise ValueError("CLIP must use run 5's K8 masked mean pipeline with 32-study gradient replay")
-    if Path(fine["init_checkpoint"]) != pre.output_dir / "best.pt":
+    if ROOT / fine["init_checkpoint"] != pre.output_dir / "best.pt":
         raise ValueError("Fine-tuning must start from the selected CLIP checkpoint")
     if fine.get("init_unfreeze_last") != 3:
         raise ValueError("The supervised stage must match run 5's last-three-block adaptation")
     for key in ("image_model", "image_model_revision", "image_model_format",
-                "image_model_base", "image_model_base_revision", "cohort_manifest"):
+                "image_model_base", "image_model_base_revision"):
         if str(getattr(pre, key)) != str(fine[key]):
             raise ValueError(f"Pre-training and fine-tuning {key} differ")
+    if pre.cohort_manifest != ROOT / fine["cohort_manifest"]:
+        raise ValueError("Pre-training and fine-tuning cohort_manifest differ")
     manifest_sha = sha256_file(ROOT / pre.cohort_manifest)
     if manifest_sha != fine["manifest_sha256"] or manifest_sha != pre_value["manifest_sha256"]:
         raise ValueError("The frozen gold-holdout manifest checksum differs")
