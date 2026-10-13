@@ -38,9 +38,6 @@
   ],
   "slices_per_plane": 3,
   "targets": "soft",
-  "train_series_mirror": {
-    "to": "/home/q/novo-mirror/train_series"
-  },
   "train_slice_sampling": "random",
   "unk_weight": 0.2,
   "warmup_fraction": 0.1,
