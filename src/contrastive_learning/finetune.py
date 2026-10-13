@@ -62,9 +62,11 @@ POOLING = ("mean", "attention", "grouped")
 # option draws from its own generator and leaves sampling, dropout and the others alone.
 LABEL_NOISE_SEED_OFFSET = 1
 AUGMENTATION_SEED_OFFSET = 2
-IMAGE_AUGMENTATION_DEFAULTS = {
-    "rotation_degrees": 8.0, "zoom": 0.08, "shift": 0.05, "intensity": 0.10,
+# image_augmentation parameter -> (default, upper limit); every lower limit is 0.
+IMAGE_AUGMENTATION_PARAMETERS = {
+    "rotation_degrees": (8.0, 180.0), "zoom": (0.08, 1.0), "shift": (0.05, 1.0), "intensity": (0.10, 1.0),
 }
+IMAGE_AUGMENTATION_DEFAULTS = {name: default for name, (default, _) in IMAGE_AUGMENTATION_PARAMETERS.items()}
 
 
 def image_augmentation_settings(config: dict) -> dict | None:
@@ -72,14 +74,14 @@ def image_augmentation_settings(config: dict) -> dict | None:
     if "image_augmentation" not in config:
         return None
     spec = config["image_augmentation"]
-    if not isinstance(spec, dict) or set(spec) - set(IMAGE_AUGMENTATION_DEFAULTS):
-        raise ValueError("image_augmentation must be an object with rotation_degrees, zoom, shift, intensity")
+    if not isinstance(spec, dict) or set(spec) - set(IMAGE_AUGMENTATION_PARAMETERS):
+        raise ValueError(f"image_augmentation must be an object with {', '.join(IMAGE_AUGMENTATION_PARAMETERS)}")
     settings = {**IMAGE_AUGMENTATION_DEFAULTS, **spec}
-    limits = {"rotation_degrees": 180.0, "zoom": 1.0, "shift": 1.0, "intensity": 1.0}
     for name, value in settings.items():
+        limit = IMAGE_AUGMENTATION_PARAMETERS[name][1]
         if (isinstance(value, bool) or not isinstance(value, (int, float))
-                or not math.isfinite(value) or not 0 <= value <= limits[name]):
-            raise ValueError(f"image_augmentation {name} must be finite and in [0, {limits[name]}]")
+                or not math.isfinite(value) or not 0 <= value <= limit):
+            raise ValueError(f"image_augmentation {name} must be finite and in [0, {limit}]")
     return settings
 
 
