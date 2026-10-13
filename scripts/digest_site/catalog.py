@@ -24,7 +24,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from .sitemap import BY_SLUG
+from .sitemap import BY_SLUG, home_of
 
 STATUSES = ("current", "superseded", "amended", "retracted", "not-adopted", "null", "historical", "excluded")
 
@@ -76,8 +76,20 @@ class Entry:
         return (self.page, *self.also_on)
 
 
+# Encoder-choice files from before factor isolation live on the recipe-history page, not on Phase 1.
+RECIPE_HISTORY_PREFIXES = ("declip-", "label-similarity-", "size-matched-", "tower-size-")
+
+
+def _page(slug: str, path: str) -> str:
+    if slug == "encoders" and path.startswith(RECIPE_HISTORY_PREFIXES):
+        return "recipe"
+    return home_of(slug)
+
+
 def E(path, page, also, kind, status, purpose, caveat="", original=""):
-    also_on = tuple(a for a in also.split(",") if a)
+    """Rows keep the legacy stage slugs they were written with; they resolve to the page that now holds them."""
+    page = _page(page, path)
+    also_on = tuple(dict.fromkeys(s for s in (_page(a, path) for a in also.split(",") if a) if s != page))
     return Entry(path, page, also_on, kind, status, purpose, caveat, original)
 
 
@@ -498,6 +510,15 @@ ENTRIES: list[Entry] = [
     E("lm-mlp-v1.md", "submission", "encoders", "result", "current",
       "Does an LM-label-supervised MLP head beat linear and gold-only heads?",
       "56-case protocol; not a leaderboard improvement"),
+    E("combined-lora-k8-336-v1.json", "encoders", "finetune", "result", "current",
+      "Combined CLIP + LoRA + K8 + 336 retrieval, verified frozen-head scores and pending arms."),
+    E("combined-lora-k8-336-v1.md", "encoders", "finetune", "result", "current",
+      "Completed combined LoRA training and heads, with unfinished arms clearly marked."),
+    E("factor-isolation-v1.json", "encoders", "submission", "result", "current",
+      "Verified factor-isolation retrieval and completed LM-head scores; matched controls pending.",
+      "Single contrastive seed; gold-58 exploratory"),
+    E("factor-isolation-v1.md", "encoders", "submission", "result", "current",
+      "Four completed factor-isolation arms: pooling, K8 windows, resolution and OmniRad-base."),
     E("finetune-r4-multislice-design.md", "finetune", "submission", "protocol", "current",
       "R4 fine-tuning rung: K-window multi-slice input with per-label attention, decisions."),
     E("finetune-ladder-v1.json", "finetune", "submission", "result", "current",
@@ -508,30 +529,24 @@ ENTRIES: list[Entry] = [
       "Gold-58 exploratory; interrupted runs have no final AUROC"),
     E("run5-followups-v1.md", "finetune", "submission", "result", "current",
       "Completed run-5 follow-up results and remaining work."),
-    E("omnirad-clip-frozen-probe-v1.md", "finetune", "encoders", "result", "current",
-      "Does plain CLIP pre-training make OmniRad-base a better frozen encoder; head-only vs full fine-tune.",
-      "Gold-58 exploratory; one pre-training run"),
-    E("omnirad-clip-frozen-probe-v1.json", "finetune", "encoders", "probe", "current",
-      "Frozen-tower probe scores, paired intervals and per-label deltas behind the OmniRad CLIP probe write-up."),
-    E("omnirad-clip-run5-v1.md", "finetune", "encoders", "protocol", "current",
-      "Plain CLIP OmniRad/E5 pre-training with run-5 K8 inputs, followed by matched fine-tuning.",
-      "The pass rule includes the run-5 seed-noise threshold"),
-    E("ensemble-selection-v1.json", "finetune", "submission", "result", "current",
-      "Machine-readable ensemble-selection results: hand-picked combinations, direct comparisons, out-of-sample rules.",
-      "All designs scored on the same 432 LM-test studies; gold-58 exploratory"),
-    E("ensemble-selection-v1.md", "finetune", "submission", "result", "current",
-      "Which fine-tuned runs to rank-average, and how to choose them, against u9 alone.",
-      "Gold-58 is below u9 for every ensemble; none submitted"),
-    E("lateral-rebalance-v1.json", "finetune", "", "paired", "current",
+    E("leaderboard-history-v1.json", "submission", "phase2", "result", "current",
+      "Every recorded Kaggle public-leaderboard submission with its local LM-test and gold-58 scores.",
+      "Public split of the hidden test; one submission per bundle"),
+    E("settings-fusion-v1.json", "phase2", "", "paired", "current",
+      "Frozen-feature probe on u9-b1: do the non-fat-suppressed series add label information? Arms A–D, two encoders.",
+      "Frozen features only; three head seeds; gold-58 exploratory"),
+    E("settings-fusion-v1.md", "phase2", "", "result", "current",
+      "Settings fusion is a null: non-fat-suppressed series add nothing; keep three slots."),
+    E("lateral-rebalance-v1.json", "phase2", "", "paired", "current",
       "u9-b1 with weak lateral/synovitis labels oversampled + noised, or loss-weighted 2x, vs u9-b1.",
       "One training seed per arm; gold-58 exploratory"),
-    E("lateral-rebalance-v1.md", "finetune", "submission", "result", "current",
+    E("lateral-rebalance-v1.md", "phase2", "", "result", "current",
       "Weak-label oversampling: loses at 20 epochs, best single LM-test at 30 epochs.",
       "One seed per arm; 30-epoch gain not yet separated from longer training"),
-    E("finetune-image-augmentation-v1.json", "finetune", "", "paired", "current",
+    E("finetune-image-augmentation-v1.json", "phase2", "", "paired", "current",
       "A30 (u9-b1 + lateral oversample, 30 epochs) with training-time image augmentation, vs A30 and u9-b1.",
       "One training seed per run; gold-58 exploratory"),
-    E("finetune-image-augmentation-v1.md", "finetune", "", "result", "not-adopted",
+    E("finetune-image-augmentation-v1.md", "phase2", "", "result", "not-adopted",
       "Image augmentation in label fine-tuning: implementation and result (no gain over A30).",
       "One seed; one augmentation strength"),
     E("slice-range-augmentation-investigation.md", "finetune", "data", "audit", "amended",
@@ -543,15 +558,19 @@ ENTRIES: list[Entry] = [
     E("knee-mri-augmentation-primary-sources.md", "finetune", "", "research", "current",
       "Primary-source check of knee MRI augmentation precedent (MRNet, TorchIO) for our ablation.",
       "External context only; no local measurement"),
-    E("leaderboard-history-v1.json", "submission", "finetune", "result", "current",
-      "Every recorded Kaggle public-leaderboard submission with its local LM-test and gold-58 scores.",
-      "Public split of the hidden test; one submission per bundle"),
-    E("settings-fusion-v1.json", "finetune", "data", "result", "null",
-      "Machine-readable settings-fusion probe: per-arm scores, paired deltas, per-label deltas.",
-      "Histories stripped; frozen features only"),
-    E("settings-fusion-v1.md", "finetune", "data", "result", "null",
-      "Do the non-fat-suppressed series add label information to the u9-b1 rung?",
-      "Frozen-feature heads; a six-slot fine-tune was not run"),
+    E("ensemble-selection-v1.json", "phase2", "submission", "result", "current",
+      "Rank-ensemble combinations vs u9, direct design comparisons, selection rules out of sample, per-label scores.",
+      "Combinations hand-picked after single-run scores (~0.004 shrinkage expected); gold-58 guard only"),
+    E("ensemble-selection-v1.md", "phase2", "submission", "result", "current",
+      "How to choose ensemble members: strong OmniRad core plus other backbones beats sibling stacks."),
+    E("omnirad-clip-frozen-probe-v1.md", "picking", "phase1,phase2", "result", "current",
+      "Does CLIP make OmniRad a better frozen encoder, and does it match fine-tuning?",
+      "One CLIP seed; LM-test gain may be report-style signal; gold-58 exploratory"),
+    E("omnirad-clip-frozen-probe-v1.json", "picking", "", "raw-data", "current",
+      "Frozen-probe readouts, kNN geometry, acquisition control and head-vs-fine-tune pairs."),
+    E("omnirad-clip-run5-v1.md", "picking", "finetune,encoders", "protocol", "current",
+      "Plain CLIP OmniRad/E5 pre-training with run-5 K8 inputs, followed by matched fine-tuning.",
+      "The pass rule includes the run-5 seed-noise threshold"),
     E("research/", "finetune", "encoders", "directory", "current",
       "Research notes, including the survey of MRI-pretrained backbones for fine-tuning."),
     E("next-model-candidates.md", "submission", "encoders", "protocol", "current",
@@ -583,16 +602,6 @@ ENTRIES: list[Entry] = [
     E("codec-declip-v1.md", "encoders", "submission", "result", "current",
       "Does the codec pipeline change training, and does DeCLIP beat plain CLIP?",
       "One contrastive seed per arm; replicate row measures run-to-run noise"),
-    E("factor-isolation-v1.json", "encoders", "submission", "result", "current",
-      "Machine-readable factor-isolation arms: retrieval, frozen-head scores and paired deltas."),
-    E("factor-isolation-v1.md", "encoders", "submission", "result", "current",
-      "One contrastive factor per arm: which one moves the frozen LM head?",
-      "Single seed per arm; K8 helps LM-test only, gold-58 exploratory"),
-    E("combined-lora-k8-336-v1.json", "encoders", "submission", "result", "current",
-      "Machine-readable combined CLIP + LoRA + K8 + 336 arms with frozen-head scores."),
-    E("combined-lora-k8-336-v1.md", "encoders", "submission", "result", "current",
-      "Combined CLIP + LoRA + K8 + 336 arms, scored with frozen MLP heads.",
-      "Heads only, no Kaggle submission; single seed per arm"),
     E("selected-kaggle-model.md", "submission", "", "result", "current",
       "Which exact model was submitted to Kaggle, with what settings."),
     # --- library: reviews & research notes -----------------------------------

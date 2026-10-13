@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 
 from .. import data
-from ..shell import chart, esc, notice, num, section, table
+from ..shell import chart, esc, group_major, notice, num, section, table
 
 FEATURE = "uniform_mean_768"
 
@@ -792,12 +792,12 @@ def curves_section(ctx) -> tuple[str, dict]:
              f"{num(peak_v, '.1%')} ({esc(peak['label'])}, single seed); switch the metric to see the loss divergence")
     caption = ("Per-epoch validation metrics from the checkpoint snapshots. Candidate pools are separate views: exposed runs "
                f"validate on {main} candidates, held-out runs on {', '.join(str(p) for p in pools[1:]) or '—'}; never one axis.")
-    blob = {"groups": CURVE_GROUPS, "series": series, "pools": pools,
+    blob = {"groups": CURVE_GROUPS, "series": group_major(series, CURVE_GROUPS), "pools": pools,
             "metrics": [{"key": k, "label": lab, "fmt": f, "best": b} for k, lab, f, b in CURVE_METRICS]}
     body = f"""<div data-role="metric"></div><div data-role="pool"></div><div data-role="filter"></div>
 {chart('curve', 'Per-epoch curve')}
 <div data-role="legend"></div>
-<p class="legend-hint">Hover a line or legend entry to highlight it; click to pin (solo); pills filter by group. Dashed = batch-size, 40-epoch or regularised variant.</p>
+<p class="legend-hint">Hover a line or legend entry to highlight it; click to pin, and click more to compare several at once; pills filter by group. Dashed = batch-size, 40-epoch or regularised variant.</p>
 """ + js("""
   var sec = document.getElementById('__SID__');
   var d = Charts.readJSON('data-__SID__');

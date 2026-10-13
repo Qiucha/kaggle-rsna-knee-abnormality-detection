@@ -28,3 +28,30 @@ def placeholder_page(slug: str, subtitle: str) -> Page:
 def placeholder_summary(slug: str) -> dict:
     info = BY_SLUG[slug]
     return {"stage": info.number, "headline": None, "value": None, "value_label": None, "caveat": None, "href": None}
+
+
+def part_divider(slug: str, lead: str = "") -> str:
+    """Heading that opens one legacy stage page inside a composed page (anchor ``part-<slug>``)."""
+    title = BY_SLUG[slug].title
+    p = f"<p>{lead}</p>" if lead else ""
+    return (f'<div class="part-divider" id="part-{esc(slug)}"><div class="site-kicker">Part</div>'
+            f"<h2>{esc(title)}</h2>{p}</div>")
+
+
+def compose(ctx, parts: list[tuple[str, str]], lead_sections: list[str] | None = None,
+            lead_data: dict | None = None) -> tuple[list[str], dict, list]:
+    """Concatenate whole legacy pages, each under a part divider. Returns (sections, data, kpis of the first part)."""
+    import importlib
+
+    sections, blobs, kpis = list(lead_sections or []), dict(lead_data or {}), []
+    for slug, lead in parts:
+        page = importlib.import_module(f"digest_site.pages.{slug}").build(ctx)
+        sections.append(part_divider(slug, lead))
+        sections.extend(page.sections)
+        clash = [k for k in page.data if k in blobs and blobs[k] != page.data[k]]
+        if clash:
+            raise SystemExit(f"composed page: {slug} reuses data ids {clash}")
+        blobs.update(page.data)
+        if not kpis and page.kpis:
+            kpis = page.kpis
+    return sections, blobs, kpis

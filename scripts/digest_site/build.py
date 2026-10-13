@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import fcntl
 import importlib
+import json
+import re
 import shutil
 import sys
 from dataclasses import dataclass
@@ -10,7 +13,7 @@ from pathlib import Path
 
 from . import catalog, data, docs, shell
 from .shell import Links
-from .sitemap import BY_SLUG, PAGE_SLUGS, TOPIC_SLUGS
+from .sitemap import BY_SLUG, LEGACY, PAGE_SLUGS, TOPIC_SLUGS
 
 DIGEST = data.DIGEST
 SITE = data.SITE
@@ -73,7 +76,8 @@ Open `index.html` (or `../index.html`, which redirects here). Everything in this
     .venv/bin/python scripts/build_digest_site.py          # build
     .venv/bin/python scripts/build_digest_site.py export   # refresh data/ snapshots from checkpoints/, then build
 
-- `pages/<slug>.html`: the eleven site pages, built by `scripts/digest_site/pages/<slug>.py`
+- `pages/<slug>.html`: the site pages, built by `scripts/digest_site/pages/<slug>.py`; the old stage-page
+  URLs (pipeline, data, text, adaptation, probes, encoders, finetune) are redirect stubs to their new home
 - `docs/<name>.html`: every `digest/*.md`, rendered in the site shell
 - `assets/`: shared `site.css`, `site.js`, `charts.js` (hand-owned)
 - `data/`: JSON snapshots of gitignored run histories (written only by `export`)
@@ -82,7 +86,44 @@ Every file in `digest/` must have a row in `scripts/digest_site/catalog.py`; the
 """
 
 
+REDIRECT = """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<title>Moved · Novo research digest</title>
+<script>
+(function () {{
+  var where = {where};
+  var id = decodeURIComponent((location.hash || '').slice(1));
+  location.replace((where[id] || '{fallback}') + (id && where[id] ? '#' + id : '#part-{slug}'));
+}})();
+</script>
+</head>
+<body><p>This page moved to <a href="{fallback}#part-{slug}">{fallback}</a>.</p></body>
+</html>
+"""
+
+
+def _redirects(ids_by_page: dict[str, list[str]]) -> None:
+    """Old stage-page URLs (README, markdown, bookmarks) forward to the section's new page, anchor preserved."""
+    shared = {sid: f"{slug}.html" for slug, ids in ids_by_page.items() for sid in ids}
+    for slug, (home, _) in LEGACY.items():
+        # an id that exists on this legacy page's new home wins (e.g. finetune#curves -> phase2, not recipe)
+        where = {**shared, **{sid: f"{home}.html" for sid in ids_by_page.get(home, [])}}
+        (SITE / "pages" / f"{slug}.html").write_text(
+            REDIRECT.format(where=json.dumps(where, sort_keys=True), fallback=f"{home}.html", slug=slug))
+
+
 def build() -> None:
+    """Serialised with an exclusive lock: chains and monitors may rebuild concurrently, and the build rm -rf's pages/."""
+    SITE.mkdir(parents=True, exist_ok=True)
+    with open(SITE.parent / ".site-build.lock", "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        _build()
+
+
+def _build() -> None:
     stale = catalog.check_complete(DIGEST)
     for path in stale:
         data.warn(f"catalog row {path} has no file in digest/")
@@ -91,16 +132,23 @@ def build() -> None:
         _clean(SITE / d)
 
     ctx = BuildContext(links=Links("pages"), digest=DIGEST, site=SITE)
-    summaries = {}
+    summaries, ids_by_page = {}, {}
     for slug in PAGE_SLUGS:
         mod = _module(slug)
         page = mod.build(ctx)
         html = shell.render_page(slug, page, ctx.links, with_evidence=(slug in TOPIC_SLUGS))
+        ids = re.findall(r'<(?:section|div) class="(?:card[^"]*|part-divider)" id="([^"]+)"', html)
+        dupes = sorted({i for i in ids if ids.count(i) > 1})
+        if dupes:
+            raise SystemExit(f"Build failed: {slug} has duplicate section ids {dupes}")
+        ids_by_page[slug] = ids
         (SITE / "pages" / f"{slug}.html").write_text(html)
         if slug in TOPIC_SLUGS:
             s = dict(mod.summary())
             s.setdefault("stage", BY_SLUG[slug].number)
             summaries[slug] = s
+
+    _redirects(ids_by_page)
 
     from . import home  # built last, from the summaries
 

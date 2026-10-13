@@ -248,7 +248,7 @@ def architecture_section(ctx) -> tuple[str, dict, dict]:
     b.appendChild(Charts.h('span', {class: 's', text: n.sub}));
     b.addEventListener('pointerenter', function () { if (!store.get().solo) store.set({hover: n.id}); });
     b.addEventListener('pointerleave', function () { store.set({hover: null}); });
-    b.addEventListener('click', function () { store.toggleSolo(n.id); });
+    b.addEventListener('click', function () { store.set({solo: store.get().solo === n.id ? null : n.id}); });  // one detail panel: single-select
     sec.querySelector('[data-lane=' + n.lane + '] .arch-row').appendChild(b);
   });
   var NAMES = {lora: 'LoRA adapter trained', train: 'trainable', frozen: 'frozen weights', data: 'data / reshape', off: 'not run in this mode'};

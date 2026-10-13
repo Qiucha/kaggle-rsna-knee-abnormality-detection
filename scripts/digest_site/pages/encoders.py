@@ -10,10 +10,11 @@ from __future__ import annotations
 import re
 
 from .. import data
-from ..shell import Page, caveat_badge, chart, esc, notice, num, section, status_badge, table
+from ..shell import Page, caveat_badge, chart, esc, group_major, notice, num, section, status_badge, table
 from ..sitemap import BY_SLUG
 from ._encoders_util import curve_ref, md_table, section_script
 from ._experiment_views import experiment_views
+from ._adaptation_sections import HELPERS
 
 SLUG = "encoders"
 SUBTITLE = ("Which image and text towers to pair, and three ideas that did not change the gold readout: "
@@ -358,7 +359,8 @@ def label_similarity_section(ctx) -> tuple[str, dict, dict]:
     epochs = lam01.get("epochs_compared")
     claim = (f"Label-similarity targets are a null: {in_band} of {len(rows)} paired gold Δ fall inside ±{NULL_BAND:g} and "
              f"{spans} of {len(rows)} intervals span zero " + status_badge("null"))
-    blob = {"groups": groups, "rows": rows, "loss": loss, "r1": r1 if same_pool else [], "band": NULL_BAND}
+    blob = {"groups": groups, "rows": rows, "loss": group_major(loss, groups),
+            "r1": group_major(r1, groups) if same_pool else [], "band": NULL_BAND}
     r1_mount = (chart('r1', f"Validation mean R@1 by epoch ({next(iter(pools))} candidates)") if same_pool
                 else notice("Runs use different candidate pools; R@1 not drawn on one axis."))
     body = (
@@ -475,7 +477,7 @@ def declip_section(ctx) -> tuple[str, dict, dict]:
     claim = ((f"DeCLIP + LoRA ({num(dl)}) lands {num(abs(dl - bl), '.4f')} {'below' if dl < bl else 'above'} the exposed LoRA baseline ({num(bl)}) it extends, with no paired interval"
               if dl is not None and bl is not None else "DeCLIP versus the exposed LoRA baseline")
              + " " + caveat_badge("exposed cohort") + " " + caveat_badge("single seed") + " " + caveat_badge("development statistic"))
-    blob = {"groups": groups, "rows": rows, "series": series}
+    blob = {"groups": groups, "rows": group_major(rows, groups), "series": group_major(series, groups)}
     body = (
         '<div data-role="filter"></div>\n<div class="grid-2">\n'
         f"<div>{chart('forest', 'Gold macro AUROC minus unadapted DINOv2, 95% CI')}</div>\n"
@@ -693,11 +695,221 @@ def next_section(ctx) -> tuple[str, dict]:
     return section(sid, claim, body, caption=caption, notes=notes), {f"data-{sid}": {"groups": groups, **series}}
 
 
+FACTOR_GROUPS = {"reference": {"label": "Codec reference", "color": "var(--g-anchor)"},
+                 "pooling": {"label": "Uniform pooling", "color": "var(--g-violet)"},
+                 "windows": {"label": "K8 windows", "color": "var(--g-teal)"},
+                 "resolution": {"label": "336 px", "color": "var(--g-amber)"},
+                 "model": {"label": "OmniRad-base", "color": "var(--g-rose)"}}
+FACTOR_GROUP_OF = {"reference": "reference", "dinov2-small-uniform-224": "pooling",
+                   "dinov2-small-k8-224": "windows", "dinov2-small-336": "resolution",
+                   "omnirad-base-lora-224": "model"}
+
+
+def factor_comparisons(ctx, snapshot):
+    sid = "factor-isolation-comparisons"
+    blob = {"groups": FACTOR_GROUPS, "paired": {}, "levels": {}}
+    rows = []
+    def delta(arm, split, comparator):
+        value = arm["paired"][split].get(comparator)
+        return (f"{num(value['difference'], '.4f', True)} {_ci(*value['ci95'])}" if value else "pending")
+    for split, key in (("gold", "gold_mlp"), ("lm_test", "lm_test_mlp")):
+        blob["levels"][split] = [{"id": name, "label": name, "group": FACTOR_GROUP_OF[name], "value": arm[key]}
+            for name, arm in snapshot.items() if arm[key] is not None]
+        blob["paired"][split] = {}
+        for comparator in ("reference", "comparator"):
+            blob["paired"][split][comparator] = [{"id": name, "label": name + " vs " +
+                ("codec reference" if comparator == "reference" else arm["comparator"]),
+                "group": FACTOR_GROUP_OF[name], "est": arm["paired"][split][comparator]["difference"],
+                "lo": arm["paired"][split][comparator]["ci95"][0],
+                "hi": arm["paired"][split][comparator]["ci95"][1]}
+                for name, arm in snapshot.items() if comparator in arm["paired"][split]]
+    for name, arm in snapshot.items():
+        is_reference = name == "reference"
+        rows.append([name, arm["purpose"], arm["comparator"] or "baseline",
+            num(arm["gold_mlp"]) if arm["gold_mlp"] is not None else "pending",
+            "baseline" if is_reference else delta(arm, "gold", "reference"),
+            "baseline" if is_reference else delta(arm, "gold", "comparator"),
+            num(arm["lm_test_mlp"]) if arm["lm_test_mlp"] is not None else "pending",
+            "baseline" if is_reference else delta(arm, "lm_test", "reference"),
+            "baseline" if is_reference else delta(arm, "lm_test", "comparator")])
+    plots = '<div class="grid-2">' + ''.join('<div>' + chart(key, title) + '</div>' for key, title in (
+        ("gold-level", "Gold-58 macro AUROC"), ("lm-level", "LM-test macro AUROC (432 studies)"))) + '</div>'
+    plots += '<div data-role="comparator"></div><div class="grid-2">' + ''.join('<div>' + chart(key, title) + '</div>'
+        for key, title in (("gold-delta", "Δ gold macro AUROC, paired 95% CI"),
+                           ("lm-delta", "Δ LM-test macro AUROC, paired 95% CI"))) + '</div>'
+    body = HELPERS + '<div data-role="filter"></div>' + plots + section_script(sid, """
+    Charts.filterBar(sec.querySelector('[data-role=filter]'), d.groups, store);
+    [['gold-level', 'gold'], ['lm-level', 'lm_test']].forEach(function (spec) {
+      Charts.barChart(sec.querySelector('[data-chart=' + spec[0] + ']'), d.levels[spec[1]],
+        {groups: d.groups, fmt: '.4f', axisFmt: '.2f', store: store, labelWidth: 235});
+    });
+    function draw(comparator) {
+      [['gold-delta', 'gold'], ['lm-delta', 'lm_test']].forEach(function (spec) {
+        var el = AdaptUI.remount(sec.querySelector('[data-chart=' + spec[0] + ']'));
+        var rows = d.paired[spec[1]][comparator];
+        if (!rows.length) { el.textContent = 'Paired comparisons pending.'; return; }
+        Charts.ciDotPlot(el, rows, {groups: d.groups, ref: 0, refLabel: 'no difference',
+          fmt: '+.4f', axisFmt: '+.3f', sort: false, store: store, labelWidth: 280,
+          xLabel: 'Candidate minus ' + (comparator === 'reference' ? 'codec reference' : 'matched comparator')});
+      });
+    }
+    AdaptUI.seg(sec.querySelector('[data-role=comparator]'), 'Compare with',
+      [{key: 'reference', label: 'Codec reference'}, {key: 'comparator', label: 'Matched comparator'}],
+      'reference', draw);
+    draw('reference');""")
+    pending = [name for name, arm in snapshot.items() if arm["lm_test_mlp"] is None]
+    caption = ("Reference = codec DINOv2-small + E5-base, attention pooling, one stack per plane, 224 px. "
+               "The matched K8 comparator uses uniform pooling at 224 px. Paired study bootstrap: 2,000 resamples, "
+               "seed 2030. Gold-58 is exploratory; LM-test measures agreement with LM verdicts.")
+    if pending:
+        body += '<p>Head evaluation pending: ' + esc(', '.join(pending)) + '.</p>'
+    tbl = table(["Arm", "Change", "Matched comparator", "Gold-58", "Δ gold vs reference [95% CI]",
+                 "Δ gold vs matched [95% CI]", "LM-test", "Δ LM-test vs reference [95% CI]",
+                 "Δ LM-test vs matched [95% CI]"], rows, num_cols=(3, 6))
+    return section(sid, "Factor isolation: pathology scores and paired differences", body, caption=caption,
+        table_html=tbl, table_summary="All arms, reference deltas and matched comparisons"), {"data-" + sid: blob}
+
+
+def factor_isolation_section(ctx) -> tuple[str, dict]:
+    snapshot = data.read_json("factor-isolation-v1.json")
+    if not snapshot:
+        return "", {}
+    groups = FACTOR_GROUPS
+    arms, baselines = [], {}
+    for name, arm in snapshot.items():
+        floor = arm["unadapted_head"]
+        if arm["unadapted_per_label"]:
+            baselines.setdefault(floor, {"label": floor.removeprefix("lm-mlp-"),
+                "short": "DINOv2-S unadapted" if name == "reference" else name + " unadapted",
+                "per_label": arm["unadapted_per_label"]})
+        arms.append({"id": name, "label": name, "short": name, "group": FACTOR_GROUP_OF[name],
+            "curve_root": "codec-declip-v1" if name == "reference" else "factor-isolation-v1",
+            "curve_run": "dinov2-small-e5-base-512-codec-seed2026" if name == "reference" else name,
+            "per_label": arm["gold_per_label"], "baseline": floor})
+    reference = snapshot["reference"]
+    plots, blob, missing = experiment_views("factor-isolation", arms, groups,
+        labels=list(reference["gold_per_label"]), baselines=baselines, default_mode="reference", reference_id="reference",
+        positives=reference["gold_positives"], lm_test_observed=reference["lm_test_observed"],
+        lm_test_per_label={name: arm["lm_test_per_label"] for name, arm in snapshot.items()})
+    for metric in ("train_masked_bce", "validation_masked_bce"):
+        blob[metric] = [{"id": name + "-" + seed, "label": name + " · " + seed,
+            "group": FACTOR_GROUP_OF[name], "points": [[row["epoch"], row[metric]] for row in saved["history"]]}
+            for name, arm in snapshot.items() for seed, saved in arm["head_histories"].items()]
+    plots += ('<h3>Frozen-tower MLP head loss (three seeds)</h3><div class="grid-2">'
+        + '<div>' + chart("head-train", "Head training masked BCE") + '</div>'
+        + '<div>' + chart("head-val", "Head validation masked BCE") + '</div></div>'
+        + section_script("factor-isolation", """
+    [['head-train', 'train_masked_bce', 'Head training BCE'],
+     ['head-val', 'validation_masked_bce', 'Head validation BCE']].forEach(function (spec) {
+      Charts.lineChart(sec.querySelector('[data-chart=' + spec[0] + ']'), d[spec[1]],
+        {groups: d.groups, yLabel: spec[2], yFmt: '.3f', best: 'min', store: store});
+    });"""))
+    head_rows = []
+    for name, arm in snapshot.items():
+        for seed, saved in arm["head_histories"].items():
+            selected = next(row for row in saved["history"] if row["epoch"] == saved["best_epoch"])
+            head_rows.append([name, seed.removeprefix("mlp-").removesuffix("-history"), saved["best_epoch"],
+                len(saved["history"]), num(selected["train_masked_bce"]), num(selected["validation_masked_bce"])])
+    head_table = table(["Arm", "Head seed", "Selected epoch", "Completed epochs", "Training BCE at selection",
+                        "Validation BCE at selection"], head_rows, num_cols=(2, 3, 4, 5))
+    head_selection = section("factor-head-selection", "Frozen-tower heads: selected epochs and validation loss",
+        '<p>Three MLP seeds per completed arm; each selects minimum validation masked BCE. ' 
+        'Gold and LM-test AUROC are evaluated afterward.</p>', table_html=head_table,
+        table_summary="Head fitting and selection, one row per seed")
+    settings_rows = []
+    for name, arm in snapshot.items():
+        cfg = arm["settings"]
+        settings_rows.append([name, cfg["image_model"], cfg["text_model"], cfg["image_size"], cfg["windows_per_plane"] or 1,
+            cfg["image_plane_pooling"], cfg["batch_size"], cfg["image_unfreeze_last"], cfg["text_unfreeze_last"],
+            f"{cfg['lora_rank']}/{cfg['lora_alpha']}", cfg["lr_image"], cfg["lr_text"], cfg["lr_projection"], cfg["weight_decay"], cfg["warmup_fraction"], cfg["seed"],
+            arm["contrastive"]["selected_epoch"], num(arm["contrastive"]["mean_r@1"])])
+    settings = table(["Arm", "Image model", "Text model", "Input px", "Windows/plane", "Plane pooling", "Batch",
+        "Image blocks", "Text blocks", "LoRA rank/alpha", "Image LR", "Text LR", "Projection LR", "Weight decay", "Warmup fraction", "Seed", "Selected epoch", "Mean R@1"],
+        settings_rows, num_cols=(3,4,6,7,8,10,11,12,13,14,15,16,17))
+    notes = ("<p>Heatmaps show Δ vs the codec reference by default on both Gold-58 and LM-test; AUROC shows raw levels. "
+        "Gold also offers Δ vs each arm's unadapted tower when that floor has been evaluated. "
+        "Per-label deltas are point differences, not confidence intervals; paired macro intervals are in the comparison card. "
+        "Missing heads and floors stay blank. Gold row counts are positives; LM row counts are observed non-UNK labels.</p>"
+        "<p>One contrastive seed per arm; three head seeds. The K8 difference from codec reference changes both windows and "
+        "pooling; only K8 versus uniform-224 isolates windows. OmniRad changes pretraining and size. "
+        "Training loss is augmented in-batch InfoNCE; validation uses the full pool. "
+        "Head selection is validation masked BCE, never gold AUROC.</p>"
+        f'<p>Sources: <a href="{ctx.doc("factor-isolation-v1.md")}">results</a>, '
+        f'<a href="{ctx.raw("factor-isolation-v1.json")}">verified predictions, comparisons and histories</a>.</p>')
+    comparisons, paired_blob = factor_comparisons(ctx, snapshot)
+    return comparisons + section("factor-isolation", "Factor isolation: curves, per-label reference deltas and head training",
+        plots, notes=notes, table_html=settings, table_summary="Run settings and retrieval selection") + head_selection, {
+            **paired_blob, "data-factor-isolation": blob}
+
+
+COMBINED_GROUPS = {"reference": {"label": "Codec reference (224, 1 stack)", "color": "var(--g-anchor)"},
+                   "windows": {"label": "K8 at 224 (factor isolation)", "color": "var(--g-teal)"},
+                   "combined-omnirad": {"label": "OmniRad-base · LoRA + K8 + 336", "color": "var(--g-rose)"},
+                   "combined-dinov2": {"label": "DINOv2-small · LoRA + K8 + 336", "color": "var(--g-violet)"}}
+
+
+def combined_lora_section(ctx) -> tuple[str, dict]:
+    snapshot = data.read_json("combined-lora-k8-336-v1.json")
+    if not snapshot:
+        return "", {}
+    sid = "combined-lora-k8-336"
+    factor = data.read_json("factor-isolation-v1.json") or {}
+    rows = [[a["title"], a["status"], f"{a['epochs_completed']}/{a['max_epochs']}",
+             a["selected_epoch"] or "pending", num(a["best_mean_recall_at_1"]),
+             a["heads_status"], num(a["lm_test_mlp"]), num(a["gold_mlp"])] for a in snapshot["arms"]]
+    arms, lm = [], {}
+    for name, group, short in (("reference", "reference", "codec reference"),
+                               ("dinov2-small-k8-224", "windows", "DINOv2-S K8 224")):
+        if name in factor:
+            arms.append({"id": name, "label": short, "short": short, "group": group,
+                         "curve_root": "codec-declip-v1" if name == "reference" else "factor-isolation-v1",
+                         "curve_run": "dinov2-small-e5-base-512-codec-seed2026" if name == "reference" else name,
+                         "per_label": factor[name]["gold_per_label"], "baseline": None})
+            lm[name] = factor[name]["lm_test_per_label"]
+    for a in snapshot["arms"]:
+        if a.get("gold_per_label"):
+            group = "combined-omnirad" if a["name"].startswith("omnirad") else "combined-dinov2"
+            arms.append({"id": a["name"], "label": a["title"] + " combined", "short": a["title"] + " combined",
+                         "group": group, "curve_root": "combined-lora-k8-336-v1", "curve_run": a["name"],
+                         "per_label": a["gold_per_label"], "baseline": None})
+            lm[a["name"]] = a["lm_test_per_label"]
+    ref = factor.get("reference", {})
+    views, blob, missing = experiment_views(sid, arms, COMBINED_GROUPS,
+        labels=list(ref.get("gold_per_label") or arms[-1]["per_label"]), baselines={}, default_mode="reference",
+        reference_id="reference" if ref else None, positives=ref.get("gold_positives"),
+        lm_test_observed=ref.get("lm_test_observed"), lm_test_per_label=lm)
+    body = (f"<p>Updated {esc(snapshot['updated_at'])}. Every Phase-1 factor at once: LoRA r64/a128 on the last six "
+            "blocks of both towers, K8 windows at 336 px; batch size 32, seed 2026, 20 epochs, checkpoint by mean R@1. "
+            "Read by frozen-tower MLP heads (three head seeds).</p>"
+            + table(["Image tower", "Contrastive", "Epochs", "Selected epoch", "Mean R@1",
+                     "Frozen heads", "LM-test MLP", "Gold-58 MLP"], rows, num_cols=(3, 4, 6, 7))
+            + views)
+    notes = (f"<p>{esc(snapshot['note'])}</p>"
+             "<p>The codec reference and the K8-224 factor-isolation arm are drawn for context: they share the LoRA "
+             "recipe and head protocol but not the inputs (224 px; the reference uses one stack per plane and attention "
+             "pooling). Heatmap Δ are point differences vs the codec reference, not intervals. No unadapted floor at "
+             "K8 336 was scored for these heads, so there is no Δ-vs-unadapted mode here; the OmniRad unadapted floor "
+             f'at K8 336 under the run-5 head recipe is on the <a href="{ctx.page("picking")}#frozen-probe">picking page</a>.</p>'
+             + (f"<p>No curve snapshot for: {esc(', '.join(missing))}.</p>" if missing else "")
+             + f'<p>The supervised fine-tune from the OmniRad checkpoint is on '
+             f'<a href="{ctx.page("phase2")}#run5-followups">Phase 2 run-5 follow-ups</a>.</p>'
+             f'<p>Sources: <a href="{ctx.doc("combined-lora-k8-336-v1.md")}">results</a>, '
+             f'<a href="{ctx.raw("combined-lora-k8-336-v1.json")}">verified snapshot</a>.</p>')
+    best = max((a for a in snapshot["arms"] if a["lm_test_mlp"] is not None), key=lambda a: a["lm_test_mlp"], default=None)
+    claim = ("Combined CLIP + LoRA + K8 + 336" if not best else
+             f"Combining every Phase-1 factor: {esc(best['title'])} leads the frozen heads at "
+             f"{num(best['lm_test_mlp'])} LM-test / {num(best['gold_mlp'])} gold-58")
+    return section(sid, claim, body, notes=notes), {f"data-{sid}": blob}
+
+
 # --------------------------------------------------------------------------- page
 
 
 def build(ctx) -> Page:
-    sections, blobs = [], {}
+    latest_section, blobs = factor_isolation_section(ctx)
+    combined, combined_blob = combined_lora_section(ctx)
+    blobs.update(combined_blob)
+    sections = [combined, latest_section]
     s1, b1, k1 = factorial_section(ctx)
     s2, b2 = tower_curves_section(ctx)
     s3, b3, k3 = size_matched_section(ctx)
@@ -708,28 +920,33 @@ def build(ctx) -> Page:
     for s, b in ((s1, b1), (s2, b2), (s3, b3), (s4, b4), (s5, b5), (s6, b6), (s7, b7)):
         sections.append(s)
         blobs.update(b)
+    latest = data.read_json("factor-isolation-v1.json") or {}
+    scored = [(name, arm) for name, arm in latest.items() if arm["lm_test_mlp"] is not None]
     kpis = []
-    if k1:
-        kpis.append({"label": "Highest gold AUROC (56-case OOF)", "value": num(k1["top"]),
-                     "sub": f"{esc(k1['top_label'])} · single seed"})
-        if k1["clear"]:
-            c = k1["clear"][0]
-            kpis.append({"label": "Only contrast excluding 0", "value": num(c["point"], ".4f", True),
-                         "sub": f"{esc(c['long'])} {_ci(c['lo'], c['hi'])}", "tone": "bad"})
-    if k3:
-        kpis.append({"label": "Size-matched swap", "value": num(k3["diff"], ".4f", True),
-                     "sub": f"95% CI {_ci(k3['lo'], k3['hi'])}", "tone": "bad"})
-    if k4:
-        kpis.append({"label": "Label similarity", "value": "null",
-                     "sub": f"max |Δ| {num(k4['max_abs'])}; {k4['spans']}/{k4['n']} CIs span 0"})
-    if k5 and k5.get("declip_lora") is not None:
-        if k5.get("exposed_lora") is not None:
-            kpis.append({"label": "DeCLIP + LoRA − exposed LoRA", "value": num(k5["declip_lora"] - k5["exposed_lora"], ".4f", True),
-                         "sub": "same file, unpaired · exposed cohort · single seed"})
+    if scored:
+        lm_name, lm = max(scored, key=lambda item: item[1]["lm_test_mlp"])
+        gold_name, gold = max(scored, key=lambda item: item[1]["gold_mlp"])
+        kpis = [{"label": "Factor isolation: best LM-test", "value": num(lm["lm_test_mlp"]),
+                 "sub": esc(lm_name) + " · 432 LM-labelled studies"},
+                {"label": "Factor isolation: best gold-58", "value": num(gold["gold_mlp"]),
+                 "sub": esc(gold_name) + " · exploratory"},
+                {"label": "Completed factor-isolation heads", "value": f"{len(scored)-1}/{len(latest)-1}",
+                 "sub": "Three head seeds per completed arm; codec reference excluded"}]
     return Page(title=BY_SLUG[SLUG].title, subtitle=SUBTITLE, sections=sections, data=blobs, kpis=kpis or None)
 
 
 def summary() -> dict:
+    latest = data.read_json("factor-isolation-v1.json")
+    if latest:
+        k8 = latest["dinov2-small-k8-224"]
+        completed = sum(arm["lm_test_mlp"] is not None for name, arm in latest.items() if name != "reference")
+        matched = k8.get("paired", {}).get("lm_test", {}).get("comparator")
+        caveat = (f"K8 vs uniform-224 Δ {num(matched['difference'], '.4f', True)} {_ci(*matched['ci95'])}; gold exploratory"
+                  if matched else f"Gold-58 {num(k8['gold_mlp'])}, exploratory; matched head pending")
+        return {"stage": BY_SLUG[SLUG].number, "headline": f"Factor isolation: {completed}/4 heads evaluated",
+                "value": num(k8["lm_test_mlp"]), "value_label": "K8 LM-test MLP AUROC",
+                "caveat": caveat,
+                "href": "#factor-isolation"}
     j = data.read_json(FACTORIAL)
     info = BY_SLUG[SLUG]
     if not j:

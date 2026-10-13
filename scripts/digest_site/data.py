@@ -327,7 +327,10 @@ def export_curves() -> dict:
         return {}
     cache: dict = {}
     roots: dict[str, dict] = {}
-    for mfile in sorted(CHECKPOINTS.rglob("metrics.jsonl")):
+    # Archived experiment roots are symlinks; rglob on the parent skips them.
+    histories = [path for root in CHECKPOINTS.iterdir() if root.is_dir()
+                 for path in root.rglob("metrics.jsonl")]
+    for mfile in sorted(histories):
         rel = mfile.parent.relative_to(CHECKPOINTS)
         parts = rel.parts
         root = parts[0]
@@ -471,4 +474,10 @@ def export() -> None:
     export_text_block()
     export_text_hubs()
     export_lm_head_histories()
+    from build_joint_loss_digest import JOINT, build_snapshot
+
+    if (JOINT / "comparison.json").exists():
+        build_snapshot()
+    else:
+        warn("joint-loss comparison.json is missing; existing result snapshot retained")
     print(f"snapshots written under {DATA.relative_to(ROOT)}")
