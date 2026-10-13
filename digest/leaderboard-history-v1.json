@@ -111,7 +111,21 @@
    "local_gold58": 0.8775,
    "outcome": "+0.009 over run 5 (0.879): new best public single model. Close to the LM-test prediction (about 0.885); well short of what gold-58's +0.051 implied. Single seed, LM-test CI included zero, so not attributable beyond noise on local evidence alone.",
    "source": "checkpoints/kaggle/r4a-k8-omb-soft-336-u9/leaderboard-submission.json"
+  },
+  {
+   "bundle": "r4a-k8-omb-soft-336-u9-a30",
+   "title": "A30: u9-b1 + lateral oversample + noise, 30 epochs",
+   "family": "finetune",
+   "run": "r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30",
+   "submission": 57094902,
+   "recorded": "2026-10-12",
+   "public": 0.89,
+   "private": null,
+   "local_lm_test": 0.8917,
+   "local_gold58": 0.8814,
+   "outcome": "+0.002 over u9-b1 (0.888): new best public single model by a hair, but below both predictions (about 0.896 from LM-test, 0.892 from gold-58). Public moved about a quarter of the LM-test gain; within what single-seed noise can produce, and the extra-training-draws confound is unresolved.",
+   "source": "checkpoints/kaggle/r4a-k8-omb-soft-336-u9-a30/leaderboard-submission.json"
   }
  ],
- "best": "r4a-k8-omb-soft-336-u9"
+ "best": "r4a-k8-omb-soft-336-u9-a30"
 }

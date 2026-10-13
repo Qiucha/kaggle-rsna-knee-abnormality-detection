@@ -17,6 +17,7 @@ TITLES = {
     "r4a-k8-soft": ("R4a K8 soft labels (DINOv2-S)", "finetune"),
     "r4a-k8-omnirad-base-soft-336": ("Run 5: OmniRad-base, soft, 336 px", "finetune"),
     "r4a-k8-omb-soft-336-u9": ("u9-b1: run 5 with 9 image blocks unfrozen", "finetune"),
+    "r4a-k8-omb-soft-336-u9-a30": ("A30: u9-b1 + lateral oversample + noise, 30 epochs", "finetune"),
 }
 
 
