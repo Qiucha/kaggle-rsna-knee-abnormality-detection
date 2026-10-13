@@ -45,6 +45,7 @@ from .preprocessing import (
     PREPROCESSING_VERSION,
     apply_left_knee,
     apply_left_knee_windows,
+    augment_study_images,
     read_slot,
     read_windows,
 )
@@ -56,6 +57,25 @@ ROOT = Path(__file__).resolve().parents[2]
 TARGETS = ("verdict", "soft")
 SLICE_SAMPLING = ("fixed", "random")
 POOLING = ("mean", "attention", "grouped")
+IMAGE_AUGMENTATION_DEFAULTS = {
+    "rotation_degrees": 8.0, "zoom": 0.08, "shift": 0.05, "intensity": 0.10,
+}
+
+
+def image_augmentation_settings(config: dict) -> dict | None:
+    """An optional augmentation object; omission disables it, an empty object uses defaults."""
+    if "image_augmentation" not in config:
+        return None
+    spec = config["image_augmentation"]
+    if not isinstance(spec, dict) or set(spec) - set(IMAGE_AUGMENTATION_DEFAULTS):
+        raise ValueError("image_augmentation must be an object with rotation_degrees, zoom, shift, intensity")
+    settings = {**IMAGE_AUGMENTATION_DEFAULTS, **spec}
+    limits = {"rotation_degrees": 180.0, "zoom": 1.0, "shift": 1.0, "intensity": 1.0}
+    for name, value in settings.items():
+        if (isinstance(value, bool) or not isinstance(value, (int, float))
+                or not math.isfinite(value) or not 0 <= value <= limits[name]):
+            raise ValueError(f"image_augmentation {name} must be finite and in [0, {limits[name]}]")
+    return settings
 
 
 def image_kwargs(config: dict) -> dict:
@@ -454,6 +474,25 @@ def _to(inputs, device):
     return tuple(x.to(device, non_blocking=True) for x in inputs)
 
 
+def augment_training_inputs(inputs: tuple, settings: dict | None,
+                            generator: torch.Generator | None) -> tuple:
+    """Fresh transforms per study/plane, shared across its channels and depth windows.
+
+    Window channels are folded together before resampling so one coherent transform
+    serves all K windows. Validity masks pass through, and invalid windows stay zero.
+    Call only after device transfer in the training loop; cached pixels remain raw.
+    """
+    if settings is None:
+        return inputs
+    images = inputs[0]
+    windowed = len(inputs) == 2
+    grouped = images.flatten(-4, -3) if windowed else images
+    augmented = augment_study_images(grouped, **settings, generator=generator).reshape_as(images)
+    if windowed:
+        augmented = augmented.masked_fill(~inputs[1][..., None, None, None], 0.0)
+    return (augmented, *inputs[1:])
+
+
 @torch.inference_mode()
 def predict(model, loader, device, amp, *, extras: dict | None = None) -> tuple[np.ndarray, list[str]]:
     """Probabilities in loader order. For a windowed model, ``extras`` (a dict) collects
@@ -501,6 +540,7 @@ def _scheduler(optimizer, total_steps: int, warmup_fraction: float):
 
 
 def validate_config(config: dict) -> None:
+    image_augmentation_settings(config)
     if config["targets"] not in TARGETS:
         raise ValueError(f"targets must be one of {TARGETS}")
     if config.get("train_slice_sampling", "fixed") not in SLICE_SAMPLING:
@@ -552,6 +592,9 @@ def validate_config(config: dict) -> None:
 def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     """Train one rung, select its epoch on validation, then score LM-test and gold once."""
     validate_config(config)
+    augmentation = image_augmentation_settings(config)
+    if augmentation is not None:
+        config = {**config, "image_augmentation": augmentation}
     started = time.perf_counter()
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
@@ -597,6 +640,8 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         weight_decay=config["weight_decay"],
     )
     generator = torch.Generator().manual_seed(config["seed"])
+    augmentation_generator = (torch.Generator(device=device).manual_seed(config["seed"] + 2)
+                              if augmentation is not None else None)
     train_loader = _loader(groups["train"], config, training=True, generator=generator, rows=epoch_rows)
     validation_loader = _loader(groups["validation"], config, training=False)
     accumulation = config.get("grad_accumulation", 1)
@@ -612,6 +657,8 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         model.load_state_dict(last["trainable_state_dict"], strict=False)
         optimizer.load_state_dict(last["optimizer"])
         scaler.load_state_dict(last["scaler"])
+        if augmentation_generator is not None and "augmentation_rng_state" in last:
+            augmentation_generator.set_state(last["augmentation_rng_state"].cpu())
         for group, base in zip(optimizer.param_groups, (config["lr_backbone"], config["lr_head"])):
             group["lr"] = base * resume["lr_scale"]
             group.pop("initial_lr", None)
@@ -653,8 +700,9 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         optimizer.zero_grad(set_to_none=True)
         for batch, (inputs, batch_rows) in enumerate(train_loader, start=1):
             index = torch.as_tensor(batch_rows, device=device)
+            training_inputs = augment_training_inputs(_to(inputs, device), augmentation, augmentation_generator)
             with torch.autocast(device_type=device.split(":")[0], enabled=config["amp"]):
-                logits = model(*_to(inputs, device))
+                logits = model(*training_inputs)
             targets_batch = y_all[index]
             if noise:
                 targets_batch = noisy_targets(targets_batch, noise_columns, noise["sigma"], noise_generator)
@@ -726,6 +774,8 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         last = {"config": config, "epoch": epoch,
                 "trainable_state_dict": {k: v.detach().cpu() for k, v in model.state_dict().items() if k in trainable},
                 "optimizer": optimizer.state_dict(), "scheduler": scheduler.state_dict(), "scaler": scaler.state_dict()}
+        if augmentation_generator is not None:
+            last["augmentation_rng_state"] = augmentation_generator.get_state()
         write_atomic(output / "last.pt", lambda t: torch.save(last, t))
     model.load_state_dict(best["state"], strict=False)
     write_atomic(output / "best.pt", lambda t: torch.save(
@@ -785,6 +835,8 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         )
     report = {
         "rung": config["name"],
+        **({"image_augmentation": {**augmentation, "shared_across_windows": True,
+                                   "seed": config["seed"] + 2}} if augmentation is not None else {}),
         "best_epoch": best["epoch"],
         "stopped": stopped,
         "validation_masked_bce": best["validation_masked_bce"],

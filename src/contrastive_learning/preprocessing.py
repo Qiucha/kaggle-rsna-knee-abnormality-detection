@@ -716,6 +716,7 @@ def augment_study_images(
     zoom: float = 0.08,
     shift: float = 0.05,
     intensity: float = 0.10,
+    generator: torch.Generator | None = None,
 ) -> torch.Tensor:
     """Randomly rotate, zoom, shift, and rescale intensity -- never flip.
 
@@ -724,22 +725,23 @@ def augment_study_images(
     Magnitudes are small: knee anatomy is consistently positioned, and larger
     warping would move findings out of frame. Flipping is excluded because
     :func:`apply_left_knee` has already established a laterality convention.
+    ``generator`` keeps augmentation draws separate from sampling and dropout.
     """
     leading = images.shape[:-3]
     flat = images.reshape(-1, *images.shape[-3:]).float()
     count, device = flat.shape[0], flat.device
     # Zoom is folded into the rotation matrix by scaling its basis vectors, so one
     # grid sample performs rotation, zoom, and translation together.
-    scale = 1.0 + torch.rand(count, device=device) * zoom
-    radians = (torch.rand(count, device=device) - 0.5) * 2 * rotation_degrees * np.pi / 180
+    scale = 1.0 + torch.rand(count, device=device, generator=generator) * zoom
+    radians = (torch.rand(count, device=device, generator=generator) - 0.5) * 2 * rotation_degrees * np.pi / 180
     cosine, sine = torch.cos(radians) / scale, torch.sin(radians) / scale
     theta = torch.zeros(count, 2, 3, device=device)
     theta[:, 0, 0], theta[:, 0, 1] = cosine, -sine
     theta[:, 1, 0], theta[:, 1, 1] = sine, cosine
-    theta[:, 0, 2] = (torch.rand(count, device=device) - 0.5) * 2 * shift
-    theta[:, 1, 2] = (torch.rand(count, device=device) - 0.5) * 2 * shift
+    theta[:, 0, 2] = (torch.rand(count, device=device, generator=generator) - 0.5) * 2 * shift
+    theta[:, 1, 2] = (torch.rand(count, device=device, generator=generator) - 0.5) * 2 * shift
     grid = F.affine_grid(theta, flat.shape, align_corners=False)
     # Border padding avoids the black wedges that zero padding would rotate in.
     flat = F.grid_sample(flat, grid, mode="bilinear", padding_mode="border", align_corners=False)
-    gain = 1.0 + (torch.rand(count, 1, 1, 1, device=device) - 0.5) * 2 * intensity
+    gain = 1.0 + (torch.rand(count, 1, 1, 1, device=device, generator=generator) - 0.5) * 2 * intensity
     return (flat * gain).clamp(0, 1).reshape(*leading, *flat.shape[-3:]).to(images.dtype)
