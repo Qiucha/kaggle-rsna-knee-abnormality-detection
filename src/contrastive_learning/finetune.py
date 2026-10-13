@@ -726,7 +726,7 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
             if not torch.isfinite(loss):
                 raise ValueError(f"Nonfinite training loss at epoch {epoch}")
             scaler.scale(loss / accumulation).backward()
-            objectives.append(float(loss))
+            objectives.append(loss.item())
             losses.append(float(masked_bce(logits.detach().float(), y_all[index], m_clean[index], observed_rates)))
             if windowed:
                 train_valid.append(inputs[1].numpy())
