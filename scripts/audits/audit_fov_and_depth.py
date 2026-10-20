@@ -12,7 +12,7 @@ Read-only: DICOM headers only, no pixels, no training, no test split.
 
 Usage: audit_fov_and_depth.py [--sample N] [--split SPLIT] [--out PATH]
 """
-import argparse, json, os, sys
+import argparse, json, sys
 from pathlib import Path
 
 import numpy as np
@@ -22,6 +22,7 @@ from experiment_tools.cohort_audit import (  # noqa: E402
     DEFAULT_MANIFEST, DEFAULT_SEED, describe, load_studies, slice_step_mm,
 )
 from contrastive_learning.preprocessing import series_fov_mm, _slice_indices  # noqa: E402
+from experiment_tools.dicom_series import middle_slice_header  # noqa: E402
 
 CROP_MM = 130.0        # the constant currently hardcoded in read_slot
 SLICES_PER_PLANE = 3   # config.slices_per_plane, hard-constrained to 3 by DINOv2's 3 channels
@@ -36,26 +37,19 @@ def _require_pydicom():
     return pydicom
 
 
-def audit_series(pydicom, series_dir: Path) -> dict | None:
-    try:
-        files = sorted(os.listdir(series_dir))
-    except OSError:
+def audit_series(series_dir: Path) -> dict | None:
+    header = middle_slice_header(series_dir)
+    if header is None:
         return None
-    if not files:
-        return None
+    ds, n_slices = header
     fov = series_fov_mm(series_dir)
     if fov is None:
         return None
-    try:
-        ds = pydicom.dcmread(series_dir / files[len(files) // 2],
-                             stop_before_pixels=True, force=True)
-    except Exception:
-        return None
     step = slice_step_mm(ds)
-    indices = _slice_indices(len(files), BAND, SLICES_PER_PLANE)
+    indices = _slice_indices(n_slices, BAND, SLICES_PER_PLANE)
     gaps = np.diff(np.unique(indices))
     return {
-        "n_slices": len(files),
+        "n_slices": n_slices,
         "fov_rows_mm": fov[0],
         "fov_cols_mm": fov[1],
         # What the fixed crop keeps, and what it throws away.
@@ -63,7 +57,7 @@ def audit_series(pydicom, series_dir: Path) -> dict | None:
         "discarded_rows_mm": max(0.0, fov[0] - CROP_MM),
         "slice_step_mm": step,
         "sampled_indices": [int(i) for i in indices],
-        "unseen_slices": len(files) - len(set(int(i) for i in indices)),
+        "unseen_slices": n_slices - len(set(int(i) for i in indices)),
         "gap_mm": float(np.mean(gaps) * step) if step and len(gaps) else None,
     }
 
@@ -77,13 +71,13 @@ def main():
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     args = parser.parse_args()
 
-    pydicom = _require_pydicom()
+    _require_pydicom()
     rows = load_studies(args.manifest, args.split, args.sample, args.seed)
 
     records = []
     for row in rows:
         for plane, directory in row["slots"].items():
-            entry = audit_series(pydicom, Path(directory))
+            entry = audit_series(Path(directory))
             if entry:
                 records.append({"plane": plane, **entry})
 

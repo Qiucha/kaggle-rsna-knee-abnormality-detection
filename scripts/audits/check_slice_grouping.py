@@ -6,7 +6,7 @@ the channels of one input are. Header-only -- no pixels, no training, no test sp
 
 Usage: check_slice_grouping.py [--groups K] [--sample N]
 """
-import argparse, os, sys
+import argparse, sys
 from pathlib import Path
 
 import numpy as np
@@ -14,6 +14,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from experiment_tools.cohort_audit import DEFAULT_MANIFEST, DEFAULT_SEED, load_studies, slice_step_mm  # noqa: E402
 from contrastive_learning.preprocessing import _slice_indices, slice_group_indices  # noqa: E402
+from experiment_tools.dicom_series import middle_slice_header  # noqa: E402
 
 BAND = (0.20, 0.80)
 GROUP_SIZE = 3  # fixed by DINOv2's 3-channel patch embedding
@@ -28,20 +29,16 @@ def main():
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     args = parser.parse_args()
 
-    import pydicom
-
     rows = load_studies(args.manifest, args.split, args.sample, args.seed)
 
     now_seen, new_seen, now_spread, new_spread, inputs = [], [], [], [], []
     for row in rows:
         for directory in row["slots"].values():
-            try:
-                files = sorted(os.listdir(directory))
-                ds = pydicom.dcmread(Path(directory) / files[len(files) // 2],
-                                     stop_before_pixels=True, force=True)
-            except Exception:
+            header = middle_slice_header(directory)
+            if header is None:
                 continue
-            n, step = len(files), slice_step_mm(ds)
+            ds, n = header
+            step = slice_step_mm(ds)
             if not step:
                 continue
             current = _slice_indices(n, BAND, GROUP_SIZE)
