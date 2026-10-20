@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import argparse
 import markdown
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -18,6 +19,7 @@ OUTPUT = ROOT / "digest/tower-size-factorial-v1.html"
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     body = markdown.markdown(SOURCE.read_text(), extensions=["tables", "toc"])
     page = f"""<!doctype html>
 <html lang="en">

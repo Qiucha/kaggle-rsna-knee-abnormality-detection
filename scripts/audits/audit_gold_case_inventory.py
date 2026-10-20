@@ -16,6 +16,7 @@ Output: digest/gold-case-inventory.json
 
 from __future__ import annotations
 
+import argparse
 import collections
 import hashlib
 import json
@@ -137,6 +138,7 @@ def provenance() -> dict:
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     rows = {json.loads(line)["study_uid"]: json.loads(line) for line in COHORT.open(encoding="utf-8")}
     gold = pd.read_csv(GOLD).set_index("StudyInstanceUID")
     translated = pd.read_csv(GOLD_TRANSLATED).set_index("StudyInstanceUID")

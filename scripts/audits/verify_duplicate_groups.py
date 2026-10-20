@@ -14,6 +14,7 @@ Output: digest/duplicate-group-pixel-verification.json
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 import time
@@ -30,6 +31,7 @@ OUT = ROOT / "digest/duplicate-group-pixel-verification.json"
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     rows = {row["study_uid"]: row for row in read_manifest_rows(COHORT)}
     screen = json.loads(SCREEN.read_text(encoding="utf-8"))
 

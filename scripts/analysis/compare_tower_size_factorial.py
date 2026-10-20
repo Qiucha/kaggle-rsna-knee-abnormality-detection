@@ -10,6 +10,7 @@ Run: ``.venv/bin/python scripts/analysis/compare_tower_size_factorial.py``
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 import warnings
@@ -136,6 +137,7 @@ def _interaction_bootstrap(gold: np.ndarray, scores: dict, settings: dict) -> di
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     config = json.loads(PROBE.read_text())
     reference_config = json.loads(
         (ARMS["small_image_base_text"]["run"] / "config.json").read_text()

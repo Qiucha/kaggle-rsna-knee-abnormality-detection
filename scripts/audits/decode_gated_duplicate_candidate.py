@@ -16,6 +16,7 @@ Output: digest/gated-duplicate-resolution.json
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 import time
@@ -32,6 +33,7 @@ OUT = ROOT / "digest/gated-duplicate-resolution.json"
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     rows = {row["study_uid"]: row for row in read_manifest_rows(COHORT)}
     screen = json.loads(SCREEN.read_text(encoding="utf-8"))
     gated = [g for g in screen["stage2"]["detail"] if g["involves_test"]]

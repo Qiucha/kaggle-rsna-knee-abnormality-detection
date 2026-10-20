@@ -14,6 +14,7 @@ Output: digest/integrity-coverage-audit.json
 
 from __future__ import annotations
 
+import argparse
 import collections
 import hashlib
 import json
@@ -272,6 +273,7 @@ def identity_probe(rows: list[dict]) -> dict:
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     rows = load_rows()
     audit = {
         "generated": time.strftime("%Y-%m-%dT%H:%M:%S%z"),

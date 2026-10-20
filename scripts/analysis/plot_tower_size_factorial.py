@@ -8,6 +8,7 @@ Run: ``.venv/bin/python scripts/analysis/plot_tower_size_factorial.py``
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -31,6 +32,7 @@ RUNS = [  # label, arm, colour, line style
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     fig, axes = plt.subplots(1, 3, figsize=(15.5, 4.2), constrained_layout=True)
     fields = [
         ("train_loss", "Training loss", 1.0),

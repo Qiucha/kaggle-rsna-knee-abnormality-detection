@@ -33,6 +33,7 @@ Output: digest/acquisition-duplicate-screen.json
 
 from __future__ import annotations
 
+import argparse
 import collections
 import hashlib
 import json
@@ -124,6 +125,7 @@ def slice_geometry(directory: str) -> str | None:
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     rows = read_manifest_rows(COHORT)
     split_of = {r["study_uid"]: r["split"] for r in rows}
     slots_of = {r["study_uid"]: dict(sorted(r.get("slots", {}).items())) for r in rows}
