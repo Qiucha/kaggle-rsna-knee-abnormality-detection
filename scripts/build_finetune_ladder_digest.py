@@ -96,6 +96,7 @@ STEPS = [
      "change": "R3's change on R4a: input resolution rises from 224 to 336 px (576 tokens per window instead of 256), "
                "on a new K8 336 window cache. Starts from pretrained DINOv2-small because R0 is fixed at 224."},
     {"id": "OmniRad-B-soft-336", "run": "r4a-k8-omnirad-base-soft-336", "parent": "OmniRad-B", "group": "combined",
+     "kaggle": "r4a-k8-omnirad-base-soft-336",
      "short": "OmniRad-B soft 336", "label": "R4a K8 · OmniRad-base, soft labels, 336 px",
      "change": "Stacks the two single-change wins on OmniRad-base: soft LM targets (from R4a soft) and 336 px input "
                "(from DINOv2-S 336), batch 2 × accumulation 8. Two changes at once, so the delta is not attributable.",
@@ -108,6 +109,17 @@ STEPS = [
                "Pooled feature is [spatial max, mean] since CoAtNet has no CLS. Changes backbone and resolution "
                "against run 5.",
      "also": "OmniRad-B"},
+    {"id": "R4a-soft-unk", "run": "r4a-soft-224-k8-mean-unk02", "parent": "R4a-soft", "group": "lateral",
+     "short": "R4a soft UNK 0.2", "label": "R4a K8 soft · UNK cells trained at weight 0.2 (ticket 18)",
+     "change": "UNK verdicts stop being masked: they train toward the CSV's UNK value (0.28) at loss weight 0.2, "
+               "added on top of the observed cells (normalisation stays on the hard mask). Aimed at Lateral OA, "
+               "33% UNK in training, whose gold-58 UNK cases are all negative."},
+    {"id": "R4a-soft-grouped", "run": "r4a-soft-224-k8-grouped2", "parent": "R4a-soft", "group": "lateral",
+     "short": "R4a soft grouped", "label": "R4a K8 soft · slice-position and plane-aware pooling (ticket 18)",
+     "change": "Grouped pooling: each plane's 8 windows pool into 2 contiguous halves along the slice axis (on sagittal, "
+               "medial vs lateral half; slice order is the same direction in every study and right knees are mirrored), and "
+               "the 3 planes × 2 halves are concatenated instead of averaged, so the head (6× wider input) sees slice "
+               "position and plane. Exports through the same dense_v1 head."},
 ]
 KAGGLE = ROOT / "checkpoints" / "kaggle"
 

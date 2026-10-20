@@ -14,7 +14,8 @@ from ..sitemap import BY_SLUG
 from ._encoders_util import md_interval, md_number, md_table, section_script
 
 SLUG = "submission"
-SUBTITLE = "The submitted encoder and gold-only heads, the offline Kaggle bundle, and what LM-supervised heads change."
+SUBTITLE = ("All completed public submissions, including the A30 ensembles, followed by the original frozen-encoder "
+            "pipeline, offline Kaggle bundle and LM-supervised head comparisons.")
 
 FACTORIAL = "tower-size-factorial-v1.json"
 LM58 = "lm-head-tower-size-58-v1.json"
@@ -105,7 +106,7 @@ def protocol_section(ctx, kpis_html: str = "") -> str:
         f"(incl. the 2 former locked-test cases, now consumed). Highest: {num(top58)}.</div>"
         f"<div><strong>{num(oof)} → {num(top58)} is not an improvement.</strong> Different supervision and different "
         "populations; there is no paired before/after. No LM-head bundle has been submitted.</div>"
-        f"<div><strong>Public LB {num(lb, '.3f')} vs OOF {num(oof, '.3f')} is not a generalisation gap.</strong> "
+        f"<div><strong>First submission's public LB {num(lb, '.3f')} vs OOF {num(oof, '.3f')} is not a generalisation gap.</strong> "
         "Hidden test cohort vs gold OOF; different cohorts, not a paired estimate.</div>"
         "</div>" + kpis_html)
     caption = (f"Sources: <a href=\"{ctx.doc(PIPELINE_MD)}\">kaggle-submission-pipeline.md</a>, "
@@ -359,7 +360,8 @@ def lm_loss_section(ctx) -> tuple[str, dict]:
   draw();"""))
     caption = (f"{len(pairs)} frozen-encoder pairings × 3 head seeds; loss is on LM pseudo-labels "
                f"({lm.get('head_train_studies'):,} train / {lm.get('head_validation_studies')} val studies), not gold. "
-               "Click a line or legend entry to isolate one run (its validation and train curves).")
+               "Click lines or legend entries to highlight runs (each with its validation and train curves); click several "
+               "to compare them, click empty plot area to clear.")
     notes = ("<ul>"
              "<li>Each head is saved at its minimum validation masked BCE (patience 12); the curves continue past that "
              "epoch only because early stopping waits. The gold AUROCs above score the saved, early-stopped heads.</li>"
@@ -533,8 +535,52 @@ def lm_mlp_v1_section(ctx) -> tuple[str, dict, dict]:
 # --------------------------------------------------------------------------- page
 
 
+# --------------------------------------------------------------------------- 0. public leaderboard history
+
+LB_HISTORY = "leaderboard-history-v1.json"
+LB_GROUPS = {"frozen": {"label": "Frozen encoder + heads", "color": "var(--g-anchor)"},
+             "finetune": {"label": "Label fine-tuned image encoder", "color": "var(--g-sky)"},
+             "ensemble": {"label": "Rank ensemble of fine-tuned encoders", "color": "var(--g-amber)"}}
+
+
+def _best_public() -> dict | None:
+    j = data.read_json(LB_HISTORY)
+    return next((r for r in j["submissions"] if r["bundle"] == j["best"]), None) if j else None
+
+
+def leaderboard_section(ctx) -> tuple[str, dict]:
+    sid = "leaderboard"
+    j = data.read_json(LB_HISTORY)
+    if not j:
+        return "", {}
+    subs = j["submissions"]
+    best = _best_public()
+    blob = {"groups": LB_GROUPS,
+            "rows": [{"id": r["bundle"], "label": f"{r['recorded'] or 'undated'} · {r['title']}", "group": r["family"],
+                      "value": r["public"]} for r in subs]}
+    body = (chart("public", "Kaggle public macro ROC-AUC by submission, oldest first")
+            + section_script(sid, """
+  Charts.barChart(sec.querySelector('[data-chart=public]'), d.rows,
+    {groups: d.groups, fmt: '.3f', axisFmt: '.2f', sort: false, labelWidth: 330});"""))
+    rows = [[r["recorded"] or "—", esc(r["title"]), str(r["submission"] or "—"), num(r["public"], ".3f"),
+             num(r["local_lm_test"]) if r["local_lm_test"] is not None else "—",
+             num(r["local_gold58"]) if r["local_gold58"] is not None else "—", esc(r["outcome"] or "")] for r in subs]
+    tbl = table(["Recorded", "Submission", "Kaggle ref", "Public", "Local LM-test", "Local gold-58", "Outcome"],
+                rows, raw_html=True, num_cols=(3, 4, 5))
+    claim = (f"Public leaderboard: {num(subs[0]['public'], '.3f')} → {num(best['public'], '.3f')} over "
+             f"{len(subs)} submissions; best is {esc(best['title'])}")
+    caption = ("Every recorded public-leaderboard submission, read from each bundle's leaderboard-submission.json. "
+               "Public scores rest on the hidden test's public split; one submission per bundle, single seeds.")
+    notes = (f'<p>Source: <a href="{ctx.raw(LB_HISTORY)}">{LB_HISTORY}</a>, built by '
+             '<code>scripts/build_leaderboard_digest.py</code>. The sections below describe the first (frozen-encoder) '
+             'pipeline in detail; the fine-tuned bundles reuse its Kaggle packaging.</p>')
+    return section(sid, claim, body, caption=caption, notes=notes, table_html=tbl,
+                   table_summary="All submissions"), {f"data-{sid}": blob}
+
+
 def build(ctx) -> Page:
     sections, blobs = [""], {}
+    s, b = leaderboard_section(ctx); sections.append(s); blobs.update(b)
     s, b = model_card_section(ctx); sections.append(s); blobs.update(b)
     sections.append(pipeline_section(ctx))
     s, b, k_lm = lm_heads_section(ctx); sections.append(s); blobs.update(b)
@@ -546,9 +592,13 @@ def build(ctx) -> Page:
     oof = _oof()
     kpis = [
         {"label": "Submitted model, 56-case OOF", "value": num(oof), "sub": "gold-only logistic heads"},
-        {"label": "Kaggle public LB", "value": num(lb, ".3f"),
+        {"label": "First submission, public LB", "value": num(lb, ".3f"),
          "sub": f"submission {SUBMISSION_ID} · rank {LB_RANK:,}/{LB_TEAMS:,} · different cohort from OOF"},
     ]
+    best = _best_public()
+    if best:
+        kpis.insert(0, {"label": "Best public LB", "value": num(best["public"], ".3f"),
+                        "sub": f"{esc(best['title'])} · submission {best['submission']}", "tone": "good"})
     if k_lm:
         kpis.append({"label": f"Best LM-MLP, {k_lm['n']}-case", "value": num(k_lm["top"]),
                      "sub": f"{esc(k_lm['top_label'])} · not submitted · not comparable to OOF"})
@@ -562,6 +612,11 @@ def build(ctx) -> Page:
 def summary() -> dict:
     info = BY_SLUG[SLUG]
     lb = data.MD_ONLY["public_lb"]["value"]
+    best = _best_public()
+    if best:
+        return {"stage": info.number, "headline": f"Best public submission: {best['title']}",
+                "value": num(best["public"], ".3f"), "value_label": "public leaderboard macro ROC-AUC",
+                "caveat": f"Single seed; first submission scored {num(lb, '.3f')}", "href": "#leaderboard"}
     return {"stage": info.number, "headline": f"Kaggle submission {SUBMISSION_ID}",
             "value": num(lb, ".3f"), "value_label": "public leaderboard macro ROC-AUC",
             "caveat": f"Different cohort from the {num(_oof(), '.4f')} 56-case OOF: not a paired generalisation gap",

@@ -154,14 +154,20 @@ def make_loader(
     is scored on the unmodified diagonal, which is what keeps retrieval metrics
     comparable between runs trained with and without it.
     """
-    return DataLoader(
-        KneeReportDataset(
+    if config.windows_per_plane:
+        from .window_reports import WindowReportDataset
+
+        dataset = WindowReportDataset(records, config, training=training, label_table=label_table)
+    else:
+        dataset = KneeReportDataset(
             records,
             config.image_kwargs,
             image_cache_dir=config.image_cache_dir,
             memory_cache_size=config.memory_cache_size,
             label_table=label_table,
-        ),
+        )
+    return DataLoader(
+        dataset,
         batch_size=config.batch_size,
         shuffle=training,
         drop_last=training,
@@ -173,4 +179,5 @@ def make_loader(
         pin_memory=torch.cuda.is_available(),
         persistent_workers=config.num_workers > 0,
         worker_init_fn=_seed_worker,
+        **({"prefetch_factor": config.loader_prefetch_factor} if config.num_workers else {}),
     )

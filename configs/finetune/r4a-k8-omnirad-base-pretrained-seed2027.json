@@ -40,9 +40,6 @@
   ],
   "slices_per_plane": 3,
   "targets": "verdict",
-  "train_series_mirror": {
-    "to": "/home/q/novo-mirror/train_series"
-  },
   "train_slice_sampling": "random",
   "warmup_fraction": 0.1,
   "weight_decay": 0.02,

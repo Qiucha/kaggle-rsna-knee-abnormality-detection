@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable
 
 from . import catalog
-from .sitemap import BY_SLUG, PAGES, PageInfo
+from .sitemap import BY_SLUG, PAGES, PageInfo, home_of
 
 esc = html.escape
 
@@ -49,6 +49,7 @@ class Links:
         self.up = "" if where == "home" else "../"
 
     def page(self, slug: str) -> str:
+        slug = home_of(slug)
         if slug == "index":
             return f"{self.up}index.html"
         return f"pages/{slug}.html" if self.where == "home" else (f"{slug}.html" if self.where == "pages" else f"../pages/{slug}.html")
@@ -126,6 +127,12 @@ def chart(name: str, title: str = "", aria: str = "") -> str:
 
 def notice(text: str) -> str:
     return f'<div class="notice">{text}</div>'
+
+
+def group_major(rows: list[dict], groups: dict) -> list[dict]:
+    """Rows reordered so each group is contiguous, groups in legend order; order within a group is kept."""
+    order = list(groups)
+    return sorted(rows, key=lambda r: order.index(r["group"]) if r.get("group") in order else len(order))
 
 
 def table(headers: list[str], rows: Iterable[list[Any]], *, search: str | None = None,
@@ -234,11 +241,14 @@ THEME_INIT = ("<script>try{var t=localStorage.getItem('novo-digest-theme');"
 
 
 def _sidebar(current: str, links: Links) -> str:
-    items = []
+    items, group = [], ""
     for p in PAGES:
         cur = ' aria-current="page"' if p.slug == current else ""
+        if p.group and p.group != group:
+            group = p.group
+            items.append(f'<div class="site-nav-group">{esc(group)}</div>')
         items.append(f'<a href="{links.page(p.slug)}"{cur}><span class="no">{p.number}</span><span>{esc(p.short)}</span></a>')
-    return (f'<aside class="site-sidebar" aria-label="Digest navigation"><div class="site-sidebar-label">Research process</div>'
+    return (f'<aside class="site-sidebar" aria-label="Digest navigation"><div class="site-sidebar-label">Which model to transfer?</div>'
             f'<nav class="site-nav">{"".join(items)}</nav><div class="site-toc" aria-label="On this page"></div></aside>')
 
 
@@ -293,7 +303,7 @@ def document(*, title: str, current: str, links: Links, body: str, heading: str 
 
 
 def page_heading(info: PageInfo, subtitle: str, kicker: str = "") -> str:
-    kick = kicker or (f"Stage {info.number} of 8" if 1 <= info.number <= 8 else info.short)
+    kick = kicker or (f"{info.group} · page {info.number} of 7" if 1 <= info.number <= 7 else info.short)
     sub = f"<p>{subtitle}</p>" if subtitle else ""
     return f'<div class="page-heading"><div class="site-kicker">{esc(kick)}</div><h1>{esc(info.title)}</h1>{sub}</div>'
 

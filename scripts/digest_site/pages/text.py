@@ -16,7 +16,7 @@ snapshots (curves, text-block-v1.json, text-hubs.json). Sections:
 from __future__ import annotations
 
 from .. import data
-from ..shell import Page, chart, esc, notice, num, section, table
+from ..shell import Page, chart, esc, group_major, notice, num, section, table
 from ..sitemap import BY_SLUG
 
 SLUG = "text"
@@ -229,7 +229,7 @@ def forest_section(ctx, d):
 
 
 def timeline_section(ctx, d):
-    sid = "timeline"
+    sid = "text-timeline"
     pool = _pool(d)
     c9 = data.load_curves("claude-translated-9bec1bd-v1")
     cd = data.load_curves("claude-translated-dfd07db-v1")
@@ -355,7 +355,7 @@ def timeline_section(ctx, d):
       g.appendChild(S('text', {{class: 'row-label', x: x(i), y: H - pad.b + 18, 'text-anchor': 'middle'}}, n.label));
       g.appendChild(S('text', {{class: 'tp-small', x: x(i), y: H - pad.b + 32, 'text-anchor': 'middle'}}, n.value === null ? 'no run' : n.hits + '/' + (2 * d.pool) + ' hits'));
       TP.hookMark(g, store, n.id, tip, function () {{ return '<div class="tt-title">' + Charts.esc(n.label + ' · ' + n.commit) + '</div><div>' + Charts.esc(n.status) + '</div>'; }},
-        function () {{ store.toggleSolo(n.id); }});
+        function () {{ store.set({{solo: store.get().solo === n.id ? null : n.id}}); }});  // one detail panel: single-select
       s.appendChild(g);
     }});
     el.appendChild(s);
@@ -771,7 +771,7 @@ def hubs_section(ctx, d):
              f"{max(r['distinct'] for r in t2i)} distinct rank-1 targets vs ≥ {p05} expected at random")
     groups = {"text_to_image": {"label": "text → image", "color": "var(--g-violet)"},
               "image_to_text": {"label": "image → text", "color": "var(--g-sky)"}}
-    blob = {"rows": rows, "groups": groups, "p05": p05, "p99": p99}
+    blob = {"rows": group_major(rows, groups), "groups": groups, "p05": p05, "p99": p99}
     body = f"""<div data-role="filter"></div>
 <div class="grid-2">
 <div>{chart('distinct', 'Distinct studies ever ranked first (of 441 queries)')}</div>
@@ -806,7 +806,7 @@ def hubs_section(ctx, d):
 
 
 def gold_section(ctx, d):
-    sid = "gold"
+    sid = "text-gold"
     j1, j3 = data.read_json(F_GOLD_1), data.read_json(F_GOLD_3)
     if not (j1 and j3):
         return section(sid, "Gold-label probe", notice("Original-vs-translated probe JSONs missing.")), {}

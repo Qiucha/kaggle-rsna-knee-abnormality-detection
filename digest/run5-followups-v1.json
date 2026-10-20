@@ -1,0 +1,2977 @@
+{
+  "absolute_lm_test_seed_difference": 0.0028711864428762057,
+  "baseline": "r4a-k8-omnirad-base-soft-336",
+  "bootstrap": {
+    "resamples": 2000,
+    "seed": 2030
+  },
+  "completed": [
+    {
+      "actual_run": "r4a-k8-omnirad-base-soft-336",
+      "best_epoch": 17,
+      "epochs_completed": 20,
+      "gold": 0.8266710098089459,
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.6199913863060154,
+          "validation_macro_auroc": 0.7727186758665462,
+          "validation_masked_bce": 0.6153551340103149
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.5857205011032917,
+          "validation_macro_auroc": 0.8094640798598213,
+          "validation_masked_bce": 0.49224480986595154
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.5612808658485152,
+          "validation_macro_auroc": 0.8371126442850061,
+          "validation_masked_bce": 0.47994813323020935
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.5463175955355826,
+          "validation_macro_auroc": 0.8426281693216152,
+          "validation_masked_bce": 0.49719735980033875
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.5358313816952248,
+          "validation_macro_auroc": 0.8505829904500702,
+          "validation_masked_bce": 0.457013875246048
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.5240717598385004,
+          "validation_macro_auroc": 0.8607583096377528,
+          "validation_masked_bce": 0.4507713317871094
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.5147797466234595,
+          "validation_macro_auroc": 0.8617881214578106,
+          "validation_masked_bce": 0.4426272511482239
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.5032752834741566,
+          "validation_macro_auroc": 0.8611796144919039,
+          "validation_masked_bce": 0.44286417961120605
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.4914720445403254,
+          "validation_macro_auroc": 0.8635830150396339,
+          "validation_masked_bce": 0.43238961696624756
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.4806138125528354,
+          "validation_macro_auroc": 0.8708952385198064,
+          "validation_masked_bce": 0.43427830934524536
+        },
+        {
+          "epoch": 11,
+          "train_masked_bce": 0.4695060363450045,
+          "validation_macro_auroc": 0.870750063086681,
+          "validation_masked_bce": 0.42204549908638
+        },
+        {
+          "epoch": 12,
+          "train_masked_bce": 0.4583039324472747,
+          "validation_macro_auroc": 0.8719779214518971,
+          "validation_masked_bce": 0.42223525047302246
+        },
+        {
+          "epoch": 13,
+          "train_masked_bce": 0.447965721189629,
+          "validation_macro_auroc": 0.8695375100170034,
+          "validation_masked_bce": 0.4253254532814026
+        },
+        {
+          "epoch": 14,
+          "train_masked_bce": 0.4393548966234267,
+          "validation_macro_auroc": 0.8701844582146454,
+          "validation_masked_bce": 0.4242887496948242
+        },
+        {
+          "epoch": 15,
+          "train_masked_bce": 0.43233462522990695,
+          "validation_macro_auroc": 0.8709749507239394,
+          "validation_masked_bce": 0.42527133226394653
+        },
+        {
+          "epoch": 16,
+          "train_masked_bce": 0.42614044538369145,
+          "validation_macro_auroc": 0.8688178555968191,
+          "validation_masked_bce": 0.42076194286346436
+        },
+        {
+          "epoch": 17,
+          "train_masked_bce": 0.42192388442521045,
+          "validation_macro_auroc": 0.8692623006485629,
+          "validation_masked_bce": 0.4200536012649536
+        },
+        {
+          "epoch": 18,
+          "train_masked_bce": 0.4186953083699252,
+          "validation_macro_auroc": 0.8680515052179695,
+          "validation_masked_bce": 0.42125648260116577
+        },
+        {
+          "epoch": 19,
+          "train_masked_bce": 0.41689100277292096,
+          "validation_macro_auroc": 0.8682188160663529,
+          "validation_masked_bce": 0.4232707917690277
+        },
+        {
+          "epoch": 20,
+          "train_masked_bce": 0.4158288163239697,
+          "validation_macro_auroc": 0.8683503615906888,
+          "validation_masked_bce": 0.42125824093818665
+        }
+      ],
+      "hours": 3.6898761169627767,
+      "lm_test": 0.8775061374989838,
+      "name": "r4a-k8-omnirad-base-soft-336",
+      "per_label": {
+        "gold": {
+          "ACL": 0.8737745098039216,
+          "Baker's": 0.9257246376811593,
+          "Contusion": 0.8650472334682862,
+          "Effusion": 0.8347826086956522,
+          "Fracture": 0.9125,
+          "Lateral Meniscus": 0.6236024844720497,
+          "Lateral OA": 0.6402321083172147,
+          "MCL": 0.9047619047619048,
+          "Medial Meniscus": 0.8774038461538461,
+          "Medial OA": 0.9054263565891472,
+          "PF OA": 0.833976833976834,
+          "Synovitis": 0.7228195937873357
+        },
+        "lm_test": {
+          "ACL": 0.8507492225049477,
+          "Baker's": 0.9181611518060117,
+          "Contusion": 0.880461592670895,
+          "Effusion": 0.8800248419150858,
+          "Fracture": 0.9160382101558572,
+          "Lateral Meniscus": 0.834197218710493,
+          "Lateral OA": 0.8428342834283429,
+          "MCL": 0.8555900621118012,
+          "Medial Meniscus": 0.8861440626146508,
+          "Medial OA": 0.9017338788233003,
+          "PF OA": 0.8828181758140149,
+          "Synovitis": 0.8813209494324046
+        }
+      },
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336/report.json",
+      "title": "Run 5: soft 336, seed 2026"
+    },
+    {
+      "actual_run": "r4a-k8-omnirad-base-hard-336",
+      "best_epoch": 5,
+      "epochs_completed": 10,
+      "gold": 0.8054573498253306,
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.5914020983457843,
+          "validation_macro_auroc": 0.7646896741831631,
+          "validation_masked_bce": 0.5427058339118958
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.533287530304423,
+          "validation_macro_auroc": 0.8000568953652515,
+          "validation_masked_bce": 0.5103164315223694
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.4842424449392222,
+          "validation_macro_auroc": 0.8364008983499907,
+          "validation_masked_bce": 0.46103885769844055
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.44769580606121945,
+          "validation_macro_auroc": 0.8366152759822961,
+          "validation_masked_bce": 0.4729915261268616
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.42118828061268104,
+          "validation_macro_auroc": 0.8519825932678885,
+          "validation_masked_bce": 0.4260249137878418
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.39293748064268946,
+          "validation_macro_auroc": 0.8567336716845263,
+          "validation_masked_bce": 0.4390552043914795
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.37096024928273175,
+          "validation_macro_auroc": 0.8610928682881519,
+          "validation_masked_bce": 0.42829400300979614
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.34316838002607114,
+          "validation_macro_auroc": 0.8570243327297918,
+          "validation_masked_bce": 0.44598445296287537
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.31296844623220077,
+          "validation_macro_auroc": 0.8597660893603725,
+          "validation_masked_bce": 0.4463326036930084
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.2834874358016796,
+          "validation_macro_auroc": 0.8611506630917222,
+          "validation_masked_bce": 0.46474602818489075
+        }
+      ],
+      "hours": 1.861059952171943,
+      "lm_test": 0.8584049083176623,
+      "name": "r4a-k8-omnirad-base-hard-336",
+      "per_label": {
+        "gold": {
+          "ACL": 0.7377450980392157,
+          "Baker's": 0.9311594202898551,
+          "Contusion": 0.904183535762483,
+          "Effusion": 0.8906832298136647,
+          "Fracture": 0.9222222222222222,
+          "Lateral Meniscus": 0.7130434782608696,
+          "Lateral OA": 0.7253384912959382,
+          "MCL": 0.6825396825396826,
+          "Medial Meniscus": 0.7391826923076923,
+          "Medial OA": 0.8682170542635659,
+          "PF OA": 0.7722007722007722,
+          "Synovitis": 0.7789725209080047
+        },
+        "lm_test": {
+          "ACL": 0.7946847610969748,
+          "Baker's": 0.9243074850551486,
+          "Contusion": 0.8808491895701198,
+          "Effusion": 0.8752258355916892,
+          "Fracture": 0.9401709401709402,
+          "Lateral Meniscus": 0.7855246523388116,
+          "Lateral OA": 0.8485598559855986,
+          "MCL": 0.7511978704525288,
+          "Medial Meniscus": 0.8353919530390118,
+          "Medial OA": 0.9145528930450029,
+          "PF OA": 0.8639125553133875,
+          "Synovitis": 0.8864809081527347
+        }
+      },
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-hard-336/report.json",
+      "title": "Hard labels at 336"
+    },
+    {
+      "actual_run": "r4a-k8-omnirad-base-soft-336-from-clip",
+      "best_epoch": 11,
+      "epochs_completed": 16,
+      "gold": 0.8248059570031966,
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.5783287464636159,
+          "validation_macro_auroc": 0.845751299503131,
+          "validation_masked_bce": 0.4737964868545532
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.5386193184406346,
+          "validation_macro_auroc": 0.8510975796696446,
+          "validation_masked_bce": 0.45681032538414
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.5273997506875504,
+          "validation_macro_auroc": 0.855252386084009,
+          "validation_masked_bce": 0.4519920349121094
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.5135115690273625,
+          "validation_macro_auroc": 0.8649851965639069,
+          "validation_masked_bce": 0.433411180973053
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.5000261061842737,
+          "validation_macro_auroc": 0.8700933781378514,
+          "validation_masked_bce": 0.4437432587146759
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.48722962670596,
+          "validation_macro_auroc": 0.8726123886784217,
+          "validation_masked_bce": 0.42741310596466064
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.4733257715553999,
+          "validation_macro_auroc": 0.8755956238438657,
+          "validation_masked_bce": 0.4231526255607605
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.45909390711659537,
+          "validation_macro_auroc": 0.8733729551976265,
+          "validation_masked_bce": 0.4362223148345947
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.44483948386273736,
+          "validation_macro_auroc": 0.869344377492202,
+          "validation_masked_bce": 0.42404794692993164
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.4329137799436787,
+          "validation_macro_auroc": 0.872057845423568,
+          "validation_masked_bce": 0.431884229183197
+        },
+        {
+          "epoch": 11,
+          "train_masked_bce": 0.42249294219364114,
+          "validation_macro_auroc": 0.8688450413871829,
+          "validation_masked_bce": 0.42061617970466614
+        },
+        {
+          "epoch": 12,
+          "train_masked_bce": 0.41413220467393724,
+          "validation_macro_auroc": 0.8692717917122553,
+          "validation_masked_bce": 0.42084723711013794
+        },
+        {
+          "epoch": 13,
+          "train_masked_bce": 0.4065029726381597,
+          "validation_macro_auroc": 0.8664338314883199,
+          "validation_masked_bce": 0.43158072233200073
+        },
+        {
+          "epoch": 14,
+          "train_masked_bce": 0.4017571119711869,
+          "validation_macro_auroc": 0.8655263045508819,
+          "validation_masked_bce": 0.4350242614746094
+        },
+        {
+          "epoch": 15,
+          "train_masked_bce": 0.3971883287439865,
+          "validation_macro_auroc": 0.8648099361721181,
+          "validation_masked_bce": 0.42775559425354004
+        },
+        {
+          "epoch": 16,
+          "train_masked_bce": 0.39395312186050996,
+          "validation_macro_auroc": 0.8643922483508836,
+          "validation_masked_bce": 0.42493942379951477
+        }
+      ],
+      "hours": 2.943690771468611,
+      "lm_test": 0.8800973667601081,
+      "name": "r4a-k8-omnirad-base-soft-336-from-clip",
+      "per_label": {
+        "gold": {
+          "ACL": 0.9325980392156862,
+          "Baker's": 0.9365942028985507,
+          "Contusion": 0.9048582995951416,
+          "Effusion": 0.8173913043478261,
+          "Fracture": 0.8277777777777778,
+          "Lateral Meniscus": 0.7130434782608696,
+          "Lateral OA": 0.6112185686653772,
+          "MCL": 0.81859410430839,
+          "Medial Meniscus": 0.8725961538461539,
+          "Medial OA": 0.9116279069767442,
+          "PF OA": 0.824967824967825,
+          "Synovitis": 0.7264038231780168
+        },
+        "lm_test": {
+          "ACL": 0.8651258128357365,
+          "Baker's": 0.9242653868822093,
+          "Contusion": 0.864816772374912,
+          "Effusion": 0.872656955736224,
+          "Fracture": 0.8999497234791353,
+          "Lateral Meniscus": 0.7995259165613148,
+          "Lateral OA": 0.8656365636563657,
+          "MCL": 0.8251774622892636,
+          "Medial Meniscus": 0.9008071419836126,
+          "Medial OA": 0.9142996298460939,
+          "PF OA": 0.8784426391915989,
+          "Synovitis": 0.9504643962848297
+        }
+      },
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-from-clip/report.json",
+      "title": "K8 plain CLIP \u2192 run-5 fine-tuning"
+    },
+    {
+      "actual_run": "r4a-k8-omnirad-base-soft-336-seed2027",
+      "best_epoch": 16,
+      "epochs_completed": 20,
+      "gold": 0.8332736153804569,
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.6217405508863434,
+          "validation_macro_auroc": 0.7663458604563865,
+          "validation_masked_bce": 0.5406026840209961
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.584254832063878,
+          "validation_macro_auroc": 0.8156263369041471,
+          "validation_masked_bce": 0.5125703811645508
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.5601085927933368,
+          "validation_macro_auroc": 0.8309487137910488,
+          "validation_masked_bce": 0.4863092005252838
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.5472285481491638,
+          "validation_macro_auroc": 0.8440859187456962,
+          "validation_masked_bce": 0.46211349964141846
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.5378104195198117,
+          "validation_macro_auroc": 0.8561962236000694,
+          "validation_masked_bce": 0.4698823094367981
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.522972663781059,
+          "validation_macro_auroc": 0.8592122089327546,
+          "validation_masked_bce": 0.4516017436981201
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.5138308624582557,
+          "validation_macro_auroc": 0.8603459628880951,
+          "validation_masked_bce": 0.4386330544948578
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.5001252704733954,
+          "validation_macro_auroc": 0.8665737281071874,
+          "validation_masked_bce": 0.4376228451728821
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.48963348087250597,
+          "validation_macro_auroc": 0.8683835790043059,
+          "validation_masked_bce": 0.45269685983657837
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.4791627229820371,
+          "validation_macro_auroc": 0.8707153549514653,
+          "validation_masked_bce": 0.4220726191997528
+        },
+        {
+          "epoch": 11,
+          "train_masked_bce": 0.46756753836904175,
+          "validation_macro_auroc": 0.8737584641873647,
+          "validation_masked_bce": 0.419891357421875
+        },
+        {
+          "epoch": 12,
+          "train_masked_bce": 0.45729361668688534,
+          "validation_macro_auroc": 0.870093295942862,
+          "validation_masked_bce": 0.4244038164615631
+        },
+        {
+          "epoch": 13,
+          "train_masked_bce": 0.44706867148080076,
+          "validation_macro_auroc": 0.8690395807883439,
+          "validation_masked_bce": 0.42439940571784973
+        },
+        {
+          "epoch": 14,
+          "train_masked_bce": 0.43794352461764324,
+          "validation_macro_auroc": 0.8709861446999776,
+          "validation_masked_bce": 0.4222501814365387
+        },
+        {
+          "epoch": 15,
+          "train_masked_bce": 0.4306705752176348,
+          "validation_macro_auroc": 0.8702625566564367,
+          "validation_masked_bce": 0.42042967677116394
+        },
+        {
+          "epoch": 16,
+          "train_masked_bce": 0.4250077578461815,
+          "validation_macro_auroc": 0.870926110142277,
+          "validation_masked_bce": 0.41821199655532837
+        },
+        {
+          "epoch": 17,
+          "train_masked_bce": 0.42057242337885187,
+          "validation_macro_auroc": 0.871374914220933,
+          "validation_masked_bce": 0.41940736770629883
+        },
+        {
+          "epoch": 18,
+          "train_masked_bce": 0.4177899780775864,
+          "validation_macro_auroc": 0.871169852487253,
+          "validation_masked_bce": 0.4202195405960083
+        },
+        {
+          "epoch": 19,
+          "train_masked_bce": 0.41570032566759807,
+          "validation_macro_auroc": 0.8712924185598884,
+          "validation_masked_bce": 0.4196554720401764
+        },
+        {
+          "epoch": 20,
+          "train_masked_bce": 0.4151970621907066,
+          "validation_macro_auroc": 0.8710426350055651,
+          "validation_masked_bce": 0.41960886120796204
+        }
+      ],
+      "hours": 3.931802220221111,
+      "lm_test": 0.8746349510561076,
+      "name": "r4a-k8-omnirad-base-soft-336-seed2027",
+      "per_label": {
+        "gold": {
+          "ACL": 0.926470588235294,
+          "Baker's": 0.9257246376811594,
+          "Contusion": 0.8556005398110661,
+          "Effusion": 0.8186335403726708,
+          "Fracture": 0.8902777777777778,
+          "Lateral Meniscus": 0.6211180124223602,
+          "Lateral OA": 0.6344294003868473,
+          "MCL": 0.9183673469387754,
+          "Medial Meniscus": 0.8912259615384615,
+          "Medial OA": 0.9085271317829458,
+          "PF OA": 0.8442728442728442,
+          "Synovitis": 0.7646356033452808
+        },
+        "lm_test": {
+          "ACL": 0.8543115634718688,
+          "Baker's": 0.9172770901742865,
+          "Contusion": 0.8832980972515856,
+          "Effusion": 0.8803777100271003,
+          "Fracture": 0.8946706887883359,
+          "Lateral Meniscus": 0.8118994943109987,
+          "Lateral OA": 0.8520602060206021,
+          "MCL": 0.848114463176575,
+          "Medial Meniscus": 0.8807141983612572,
+          "Medial OA": 0.8953243717124488,
+          "PF OA": 0.8828346872729674,
+          "Synovitis": 0.8947368421052632
+        }
+      },
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-seed2027/report.json",
+      "title": "Run 5: seed 2027"
+    },
+    {
+      "actual_run": "r4a-k8-omnirad-base-soft-336-ep30",
+      "best_epoch": 16,
+      "epochs_completed": 21,
+      "gold": 0.8443561792345192,
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.6242931033026833,
+          "validation_macro_auroc": 0.758945642100255,
+          "validation_masked_bce": 0.5617308020591736
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.5898404583213563,
+          "validation_macro_auroc": 0.8012491030549005,
+          "validation_masked_bce": 0.5131732821464539
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.5655211770973142,
+          "validation_macro_auroc": 0.836947438880358,
+          "validation_masked_bce": 0.4849078059196472
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.550941362019158,
+          "validation_macro_auroc": 0.8418375223445339,
+          "validation_masked_bce": 0.4793672561645508
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.5393559011593331,
+          "validation_macro_auroc": 0.8473163701895503,
+          "validation_masked_bce": 0.4687711000442505
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.5277184432869806,
+          "validation_macro_auroc": 0.8617031656657481,
+          "validation_masked_bce": 0.4532940983772278
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.5173742588156528,
+          "validation_macro_auroc": 0.8616236766198692,
+          "validation_masked_bce": 0.43852055072784424
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.5068579245685941,
+          "validation_macro_auroc": 0.8649433581496812,
+          "validation_masked_bce": 0.4380321204662323
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.4958942960546834,
+          "validation_macro_auroc": 0.8652991481850916,
+          "validation_masked_bce": 0.4373648464679718
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.4856515151988704,
+          "validation_macro_auroc": 0.8704225226033936,
+          "validation_masked_bce": 0.446183979511261
+        },
+        {
+          "epoch": 11,
+          "train_masked_bce": 0.474218358219086,
+          "validation_macro_auroc": 0.8710957125914575,
+          "validation_masked_bce": 0.4280998110771179
+        },
+        {
+          "epoch": 12,
+          "train_masked_bce": 0.4640716342380083,
+          "validation_macro_auroc": 0.8676033674541116,
+          "validation_masked_bce": 0.43344974517822266
+        },
+        {
+          "epoch": 13,
+          "train_masked_bce": 0.45412347098208916,
+          "validation_macro_auroc": 0.8685097133837312,
+          "validation_masked_bce": 0.4281842112541199
+        },
+        {
+          "epoch": 14,
+          "train_masked_bce": 0.44415488931035635,
+          "validation_macro_auroc": 0.8679293594901972,
+          "validation_masked_bce": 0.4340876638889313
+        },
+        {
+          "epoch": 15,
+          "train_masked_bce": 0.43542121762952674,
+          "validation_macro_auroc": 0.8641995711083741,
+          "validation_masked_bce": 0.42695924639701843
+        },
+        {
+          "epoch": 16,
+          "train_masked_bce": 0.4271747934967366,
+          "validation_macro_auroc": 0.8704501775119801,
+          "validation_masked_bce": 0.4249221682548523
+        },
+        {
+          "epoch": 17,
+          "train_masked_bce": 0.4200508504620536,
+          "validation_macro_auroc": 0.8627609181353718,
+          "validation_masked_bce": 0.4302854835987091
+        },
+        {
+          "epoch": 18,
+          "train_masked_bce": 0.4141998065114368,
+          "validation_macro_auroc": 0.8595686389094697,
+          "validation_masked_bce": 0.4326566755771637
+        },
+        {
+          "epoch": 19,
+          "train_masked_bce": 0.40804999073346454,
+          "validation_macro_auroc": 0.8610729039851942,
+          "validation_masked_bce": 0.43443557620048523
+        },
+        {
+          "epoch": 20,
+          "train_masked_bce": 0.4039748884897859,
+          "validation_macro_auroc": 0.863541876059767,
+          "validation_masked_bce": 0.42526793479919434
+        },
+        {
+          "epoch": 21,
+          "train_masked_bce": 0.4001589129403138,
+          "validation_macro_auroc": 0.8632129264115312,
+          "validation_masked_bce": 0.42903780937194824
+        }
+      ],
+      "hours": 3.8591784629805552,
+      "lm_test": 0.8751434619051416,
+      "name": "r4a-k8-omnirad-base-soft-336-ep30",
+      "per_label": {
+        "gold": {
+          "ACL": 0.892156862745098,
+          "Baker's": 0.9239130434782608,
+          "Contusion": 0.8960863697705803,
+          "Effusion": 0.8248447204968944,
+          "Fracture": 0.9180555555555555,
+          "Lateral Meniscus": 0.7142857142857143,
+          "Lateral OA": 0.7176015473887815,
+          "MCL": 0.9342403628117913,
+          "Medial Meniscus": 0.8954326923076923,
+          "Medial OA": 0.9116279069767442,
+          "PF OA": 0.7812097812097812,
+          "Synovitis": 0.7228195937873357
+        },
+        "lm_test": {
+          "ACL": 0.8582273112807464,
+          "Baker's": 0.9112149532710281,
+          "Contusion": 0.8634073291050035,
+          "Effusion": 0.873461495031617,
+          "Fracture": 0.9110105580693816,
+          "Lateral Meniscus": 0.8299462705436157,
+          "Lateral OA": 0.8544854485448545,
+          "MCL": 0.8381100266193434,
+          "Medial Meniscus": 0.8856548856548857,
+          "Medial OA": 0.9076758231053964,
+          "PF OA": 0.8712106201703983,
+          "Synovitis": 0.8973168214654282
+        }
+      },
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-ep30/report.json",
+      "title": "30-epoch limit"
+    },
+    {
+      "actual_run": "r4a-k8-omnirad-base-soft-336-u6",
+      "best_epoch": 17,
+      "epochs_completed": 20,
+      "gold": 0.8618202791573438,
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.6172173963063259,
+          "validation_macro_auroc": 0.7799578330526286,
+          "validation_masked_bce": 0.5663677453994751
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.5823350379621657,
+          "validation_macro_auroc": 0.8241854168566003,
+          "validation_masked_bce": 0.48057448863983154
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.5559426015324201,
+          "validation_macro_auroc": 0.8402898360260851,
+          "validation_masked_bce": 0.4815947413444519
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.540509352699971,
+          "validation_macro_auroc": 0.8431812981214303,
+          "validation_masked_bce": 0.5241392850875854
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.5260536580922438,
+          "validation_macro_auroc": 0.855245194817321,
+          "validation_masked_bce": 0.45950934290885925
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.5113483120304266,
+          "validation_macro_auroc": 0.8684810545709705,
+          "validation_masked_bce": 0.43238526582717896
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.4987458130209303,
+          "validation_macro_auroc": 0.8648232141472606,
+          "validation_masked_bce": 0.4399104118347168
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.4840935493920729,
+          "validation_macro_auroc": 0.8718131206174301,
+          "validation_masked_bce": 0.4356262981891632
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.4705080198922637,
+          "validation_macro_auroc": 0.8680692094720545,
+          "validation_masked_bce": 0.4299003481864929
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.4570907013682587,
+          "validation_macro_auroc": 0.8703421432633146,
+          "validation_masked_bce": 0.43055102229118347
+        },
+        {
+          "epoch": 11,
+          "train_masked_bce": 0.4450578331609255,
+          "validation_macro_auroc": 0.8632875438780307,
+          "validation_masked_bce": 0.42506784200668335
+        },
+        {
+          "epoch": 12,
+          "train_masked_bce": 0.43416030924721744,
+          "validation_macro_auroc": 0.8677724441877568,
+          "validation_masked_bce": 0.42545124888420105
+        },
+        {
+          "epoch": 13,
+          "train_masked_bce": 0.4236631934954164,
+          "validation_macro_auroc": 0.8662061602277372,
+          "validation_masked_bce": 0.42990049719810486
+        },
+        {
+          "epoch": 14,
+          "train_masked_bce": 0.41517156710140646,
+          "validation_macro_auroc": 0.8677586012569187,
+          "validation_masked_bce": 0.4287571609020233
+        },
+        {
+          "epoch": 15,
+          "train_masked_bce": 0.40794776267804955,
+          "validation_macro_auroc": 0.866244088571151,
+          "validation_masked_bce": 0.42473486065864563
+        },
+        {
+          "epoch": 16,
+          "train_masked_bce": 0.40280544297762083,
+          "validation_macro_auroc": 0.864752958902819,
+          "validation_masked_bce": 0.42675289511680603
+        },
+        {
+          "epoch": 17,
+          "train_masked_bce": 0.3988116019518657,
+          "validation_macro_auroc": 0.8646919668266588,
+          "validation_masked_bce": 0.42450857162475586
+        },
+        {
+          "epoch": 18,
+          "train_masked_bce": 0.39624688025388416,
+          "validation_macro_auroc": 0.8614161334078188,
+          "validation_masked_bce": 0.4267237186431885
+        },
+        {
+          "epoch": 19,
+          "train_masked_bce": 0.3946712072711132,
+          "validation_macro_auroc": 0.8612948718135153,
+          "validation_masked_bce": 0.42798927426338196
+        },
+        {
+          "epoch": 20,
+          "train_masked_bce": 0.3942796136791655,
+          "validation_macro_auroc": 0.8611077284477965,
+          "validation_masked_bce": 0.4275129735469818
+        }
+      ],
+      "hours": 4.74569665549639,
+      "lm_test": 0.8781782953731136,
+      "name": "r4a-k8-omnirad-base-soft-336-u6",
+      "per_label": {
+        "gold": {
+          "ACL": 0.8866421568627452,
+          "Baker's": 0.9184782608695653,
+          "Contusion": 0.8839406207827261,
+          "Effusion": 0.8633540372670807,
+          "Fracture": 0.8888888888888888,
+          "Lateral Meniscus": 0.7776397515527951,
+          "Lateral OA": 0.7756286266924566,
+          "MCL": 0.873015873015873,
+          "Medial Meniscus": 0.920673076923077,
+          "Medial OA": 0.9472868217054264,
+          "PF OA": 0.8661518661518661,
+          "Synovitis": 0.7401433691756272
+        },
+        "lm_test": {
+          "ACL": 0.8595137121854679,
+          "Baker's": 0.9125620948050854,
+          "Contusion": 0.8740838618745596,
+          "Effusion": 0.8686201445347786,
+          "Fracture": 0.9428104575163399,
+          "Lateral Meniscus": 0.8187737041719343,
+          "Lateral OA": 0.874062406240624,
+          "MCL": 0.8341614906832299,
+          "Medial Meniscus": 0.8910358322123028,
+          "Medial OA": 0.8977985583479446,
+          "PF OA": 0.8730764150320323,
+          "Synovitis": 0.891640866873065
+        }
+      },
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u6/report.json",
+      "title": "Unfreeze 6 image blocks"
+    },
+    {
+      "actual_run": "r4a-k8-omnirad-base-soft-384",
+      "best_epoch": 16,
+      "epochs_completed": 20,
+      "gold": 0.8393336699989359,
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.6199855741943434,
+          "validation_macro_auroc": 0.772037763096796,
+          "validation_masked_bce": 0.6120290756225586
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.5880062758463146,
+          "validation_macro_auroc": 0.8127155497345643,
+          "validation_masked_bce": 0.4970756471157074
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.5611102159388056,
+          "validation_macro_auroc": 0.8362068769371582,
+          "validation_masked_bce": 0.4975348711013794
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.5472856723660643,
+          "validation_macro_auroc": 0.8384878923158018,
+          "validation_masked_bce": 0.5084478855133057
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.5364095296249132,
+          "validation_macro_auroc": 0.8509903430780398,
+          "validation_masked_bce": 0.46124202013015747
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.5242132881462331,
+          "validation_macro_auroc": 0.8617900518001852,
+          "validation_masked_bce": 0.44234755635261536
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.5135152764952134,
+          "validation_macro_auroc": 0.8616801348918343,
+          "validation_masked_bce": 0.4476805627346039
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.504264883491156,
+          "validation_macro_auroc": 0.8641178832174544,
+          "validation_masked_bce": 0.4400955140590668
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.4921455987625652,
+          "validation_macro_auroc": 0.863874686386746,
+          "validation_masked_bce": 0.4326315224170685
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.4815590669503387,
+          "validation_macro_auroc": 0.8714978868938839,
+          "validation_masked_bce": 0.4394678473472595
+        },
+        {
+          "epoch": 11,
+          "train_masked_bce": 0.46985273967091257,
+          "validation_macro_auroc": 0.8725413703281402,
+          "validation_masked_bce": 0.4253377318382263
+        },
+        {
+          "epoch": 12,
+          "train_masked_bce": 0.4588442888238737,
+          "validation_macro_auroc": 0.8686945759257626,
+          "validation_masked_bce": 0.4313037395477295
+        },
+        {
+          "epoch": 13,
+          "train_masked_bce": 0.4485599477149637,
+          "validation_macro_auroc": 0.8701983269389161,
+          "validation_masked_bce": 0.43135589361190796
+        },
+        {
+          "epoch": 14,
+          "train_masked_bce": 0.4403763851925618,
+          "validation_macro_auroc": 0.8711821494459916,
+          "validation_masked_bce": 0.42535725235939026
+        },
+        {
+          "epoch": 15,
+          "train_masked_bce": 0.43303027020256973,
+          "validation_macro_auroc": 0.8709673830889691,
+          "validation_masked_bce": 0.42451760172843933
+        },
+        {
+          "epoch": 16,
+          "train_masked_bce": 0.4264390649335755,
+          "validation_macro_auroc": 0.8707857449409794,
+          "validation_masked_bce": 0.41958239674568176
+        },
+        {
+          "epoch": 17,
+          "train_masked_bce": 0.4227954149332901,
+          "validation_macro_auroc": 0.8701039710694443,
+          "validation_masked_bce": 0.41997236013412476
+        },
+        {
+          "epoch": 18,
+          "train_masked_bce": 0.4193231700472599,
+          "validation_macro_auroc": 0.8703657408175404,
+          "validation_masked_bce": 0.42088839411735535
+        },
+        {
+          "epoch": 19,
+          "train_masked_bce": 0.4179734450316901,
+          "validation_macro_auroc": 0.8686010182846521,
+          "validation_masked_bce": 0.42418143153190613
+        },
+        {
+          "epoch": 20,
+          "train_masked_bce": 0.41709731240096376,
+          "validation_macro_auroc": 0.8692432164308733,
+          "validation_masked_bce": 0.42165058851242065
+        }
+      ],
+      "hours": 4.664022520003892,
+      "lm_test": 0.8794292279102627,
+      "name": "r4a-k8-omnirad-base-soft-384",
+      "per_label": {
+        "gold": {
+          "ACL": 0.8884803921568627,
+          "Baker's": 0.9257246376811594,
+          "Contusion": 0.9109311740890689,
+          "Effusion": 0.8236024844720498,
+          "Fracture": 0.9152777777777779,
+          "Lateral Meniscus": 0.698136645962733,
+          "Lateral OA": 0.6537717601547389,
+          "MCL": 0.9024943310657596,
+          "Medial Meniscus": 0.8743990384615384,
+          "Medial OA": 0.9100775193798449,
+          "PF OA": 0.8223938223938223,
+          "Synovitis": 0.7467144563918757
+        },
+        "lm_test": {
+          "ACL": 0.8550183771557818,
+          "Baker's": 0.9134882546097499,
+          "Contusion": 0.8780655391120508,
+          "Effusion": 0.8775406504065041,
+          "Fracture": 0.9177978883861236,
+          "Lateral Meniscus": 0.8301675094816687,
+          "Lateral OA": 0.85003500350035,
+          "MCL": 0.8805678793256433,
+          "Medial Meniscus": 0.8848599730952672,
+          "Medial OA": 0.8988700564971751,
+          "PF OA": 0.8885146291526319,
+          "Synovitis": 0.8782249742002064
+        }
+      },
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-soft-384/report.json",
+      "title": "384 px"
+    },
+    {
+      "actual_run": "r4a-k8-dinov2-small-soft-336",
+      "best_epoch": 20,
+      "epochs_completed": 20,
+      "gold": 0.8150154680014747,
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.6211019756750287,
+          "validation_macro_auroc": 0.7683524491966464,
+          "validation_masked_bce": 0.6017654538154602
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.593145435861268,
+          "validation_macro_auroc": 0.7881492311077539,
+          "validation_masked_bce": 0.5156692862510681
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.576605053346576,
+          "validation_macro_auroc": 0.8218381931253034,
+          "validation_masked_bce": 0.5073289275169373
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.5594723954658095,
+          "validation_macro_auroc": 0.824052931590527,
+          "validation_masked_bce": 0.5125221610069275
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.5476449758698595,
+          "validation_macro_auroc": 0.8400713184722771,
+          "validation_masked_bce": 0.48296841979026794
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.5353515978779052,
+          "validation_macro_auroc": 0.8527823351750046,
+          "validation_masked_bce": 0.4539267122745514
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.5266898223147481,
+          "validation_macro_auroc": 0.8558525367381709,
+          "validation_masked_bce": 0.4491408169269562
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.5167544666610533,
+          "validation_macro_auroc": 0.8567288344644424,
+          "validation_masked_bce": 0.4568846821784973
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.5080647848810894,
+          "validation_macro_auroc": 0.8607694728893144,
+          "validation_masked_bce": 0.44794559478759766
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.5005365006534633,
+          "validation_macro_auroc": 0.8599657559717927,
+          "validation_masked_bce": 0.4497959613800049
+        },
+        {
+          "epoch": 11,
+          "train_masked_bce": 0.4907600328828999,
+          "validation_macro_auroc": 0.8625256012699981,
+          "validation_masked_bce": 0.43749579787254333
+        },
+        {
+          "epoch": 12,
+          "train_masked_bce": 0.4821350967220056,
+          "validation_macro_auroc": 0.8577105711780041,
+          "validation_masked_bce": 0.43676766753196716
+        },
+        {
+          "epoch": 13,
+          "train_masked_bce": 0.473007121479324,
+          "validation_macro_auroc": 0.8600880267517154,
+          "validation_masked_bce": 0.4383147060871124
+        },
+        {
+          "epoch": 14,
+          "train_masked_bce": 0.46567954041102794,
+          "validation_macro_auroc": 0.8607943718314548,
+          "validation_masked_bce": 0.43690985441207886
+        },
+        {
+          "epoch": 15,
+          "train_masked_bce": 0.4588931983725805,
+          "validation_macro_auroc": 0.8606372097268657,
+          "validation_masked_bce": 0.4381239712238312
+        },
+        {
+          "epoch": 16,
+          "train_masked_bce": 0.454675038536407,
+          "validation_macro_auroc": 0.8611480647212243,
+          "validation_masked_bce": 0.43339425325393677
+        },
+        {
+          "epoch": 17,
+          "train_masked_bce": 0.4508347527544952,
+          "validation_macro_auroc": 0.8613192245993232,
+          "validation_masked_bce": 0.43277356028556824
+        },
+        {
+          "epoch": 18,
+          "train_masked_bce": 0.44771455824721895,
+          "validation_macro_auroc": 0.8607408783239628,
+          "validation_masked_bce": 0.4330861270427704
+        },
+        {
+          "epoch": 19,
+          "train_masked_bce": 0.4459035013839733,
+          "validation_macro_auroc": 0.8598766206360482,
+          "validation_masked_bce": 0.43215781450271606
+        },
+        {
+          "epoch": 20,
+          "train_masked_bce": 0.4446564514608214,
+          "validation_macro_auroc": 0.8603348112672274,
+          "validation_masked_bce": 0.4310624599456787
+        }
+      ],
+      "hours": 1.8322537118674962,
+      "lm_test": 0.8713969385808363,
+      "name": "r4a-k8-dinov2-small-soft-336",
+      "per_label": {
+        "gold": {
+          "ACL": 0.8786764705882353,
+          "Baker's": 0.9329710144927537,
+          "Contusion": 0.844804318488529,
+          "Effusion": 0.8683229813664596,
+          "Fracture": 0.8625,
+          "Lateral Meniscus": 0.6012422360248447,
+          "Lateral OA": 0.7166344294003868,
+          "MCL": 0.7018140589569161,
+          "Medial Meniscus": 0.8305288461538461,
+          "Medial OA": 0.9403100775193799,
+          "PF OA": 0.8365508365508365,
+          "Synovitis": 0.7658303464755077
+        },
+        "lm_test": {
+          "ACL": 0.8676420695504665,
+          "Baker's": 0.9182032499789509,
+          "Contusion": 0.885799859055673,
+          "Effusion": 0.8902015582655827,
+          "Fracture": 0.9255907491201609,
+          "Lateral Meniscus": 0.8038874841972187,
+          "Lateral OA": 0.8640614061406141,
+          "MCL": 0.7993345164152618,
+          "Medial Meniscus": 0.8752843341078635,
+          "Medial OA": 0.9032534580167544,
+          "PF OA": 0.8359916782246879,
+          "Synovitis": 0.8875128998968008
+        }
+      },
+      "report": "checkpoints/finetune/r4a-k8-dinov2-small-soft-336/report.json",
+      "title": "DINOv2-small soft 336"
+    },
+    {
+      "actual_run": "r4a-k8-coatnet-384-soft-s123",
+      "best_epoch": 16,
+      "epochs_completed": 20,
+      "gold": 0.8393578231037986,
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.6295703117187943,
+          "validation_macro_auroc": 0.7648965007281993,
+          "validation_masked_bce": 0.5737429261207581
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.597784094794189,
+          "validation_macro_auroc": 0.7802213820787577,
+          "validation_masked_bce": 0.5355362892150879
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.5848107867077245,
+          "validation_macro_auroc": 0.8064937584812002,
+          "validation_masked_bce": 0.520416259765625
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.5664432974854064,
+          "validation_macro_auroc": 0.8166525989913498,
+          "validation_masked_bce": 0.5135297179222107
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.5556897797110887,
+          "validation_macro_auroc": 0.8215403239276512,
+          "validation_masked_bce": 0.48562026023864746
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.548562236052221,
+          "validation_macro_auroc": 0.8303218133594322,
+          "validation_masked_bce": 0.47729000449180603
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.5398218232516357,
+          "validation_macro_auroc": 0.8311036673804651,
+          "validation_masked_bce": 0.4760691523551941
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.5289617917192163,
+          "validation_macro_auroc": 0.828429359747477,
+          "validation_masked_bce": 0.47538983821868896
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.5189282703947508,
+          "validation_macro_auroc": 0.8435473484737219,
+          "validation_masked_bce": 0.46014097332954407
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.5084203163670065,
+          "validation_macro_auroc": 0.8437248603919413,
+          "validation_masked_bce": 0.474952757358551
+        },
+        {
+          "epoch": 11,
+          "train_masked_bce": 0.4980374393749542,
+          "validation_macro_auroc": 0.8500522925003936,
+          "validation_masked_bce": 0.4493766725063324
+        },
+        {
+          "epoch": 12,
+          "train_masked_bce": 0.4883052344981704,
+          "validation_macro_auroc": 0.8527255409472746,
+          "validation_masked_bce": 0.45654550194740295
+        },
+        {
+          "epoch": 13,
+          "train_masked_bce": 0.4795769542702726,
+          "validation_macro_auroc": 0.8597673152032351,
+          "validation_masked_bce": 0.44274377822875977
+        },
+        {
+          "epoch": 14,
+          "train_masked_bce": 0.4723816153058623,
+          "validation_macro_auroc": 0.8549817702777806,
+          "validation_masked_bce": 0.4380090534687042
+        },
+        {
+          "epoch": 15,
+          "train_masked_bce": 0.4669319020238569,
+          "validation_macro_auroc": 0.8573977907279047,
+          "validation_masked_bce": 0.44188258051872253
+        },
+        {
+          "epoch": 16,
+          "train_masked_bce": 0.46040189128375597,
+          "validation_macro_auroc": 0.8604440037888025,
+          "validation_masked_bce": 0.42979195713996887
+        },
+        {
+          "epoch": 17,
+          "train_masked_bce": 0.45635440836402136,
+          "validation_macro_auroc": 0.8592630502538539,
+          "validation_masked_bce": 0.4352043867111206
+        },
+        {
+          "epoch": 18,
+          "train_masked_bce": 0.45342034968770195,
+          "validation_macro_auroc": 0.8598392907474414,
+          "validation_masked_bce": 0.431993305683136
+        },
+        {
+          "epoch": 19,
+          "train_masked_bce": 0.45186706928188475,
+          "validation_macro_auroc": 0.8599167834127049,
+          "validation_masked_bce": 0.43322518467903137
+        },
+        {
+          "epoch": 20,
+          "train_masked_bce": 0.45138820350915626,
+          "validation_macro_auroc": 0.85969800642542,
+          "validation_masked_bce": 0.4331156313419342
+        }
+      ],
+      "hours": 12.978700371373051,
+      "lm_test": 0.8675251578680846,
+      "name": "r4a-k8-coatnet-384-soft-s123",
+      "per_label": {
+        "gold": {
+          "ACL": 0.9301470588235293,
+          "Baker's": 0.9347826086956523,
+          "Contusion": 0.8636977058029689,
+          "Effusion": 0.8720496894409937,
+          "Fracture": 0.8666666666666667,
+          "Lateral Meniscus": 0.6745341614906832,
+          "Lateral OA": 0.7562862669245649,
+          "MCL": 0.6734693877551021,
+          "Medial Meniscus": 0.9170673076923077,
+          "Medial OA": 0.9689922480620154,
+          "PF OA": 0.8236808236808236,
+          "Synovitis": 0.7909199522102748
+        },
+        "lm_test": {
+          "ACL": 0.8454198473282443,
+          "Baker's": 0.9114675423086638,
+          "Contusion": 0.8807434813248767,
+          "Effusion": 0.8748165085817525,
+          "Fracture": 0.9186777275012569,
+          "Lateral Meniscus": 0.8144121365360304,
+          "Lateral OA": 0.8570857085708571,
+          "MCL": 0.7531943212067436,
+          "Medial Meniscus": 0.8829277241041947,
+          "Medial OA": 0.9078511591661796,
+          "PF OA": 0.8808368007397134,
+          "Synovitis": 0.8828689370485037
+        }
+      },
+      "report": "checkpoints/finetune/r4a-k8-coatnet-384-soft-s123/report.json",
+      "title": "CoAtNet stages 1\u20133"
+    },
+    {
+      "actual_run": "r4a-k8-omnirad-base-soft-336-u1",
+      "best_epoch": 18,
+      "epochs_completed": 20,
+      "gold": 0.8244517256764764,
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.6256859942343154,
+          "validation_macro_auroc": 0.7448928285663924,
+          "validation_masked_bce": 0.5715847611427307
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.5971891850692509,
+          "validation_macro_auroc": 0.7799970600863367,
+          "validation_masked_bce": 0.5487889647483826
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.5776064950298819,
+          "validation_macro_auroc": 0.8061223497245655,
+          "validation_masked_bce": 0.4990253448486328
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.5614464911889586,
+          "validation_macro_auroc": 0.8188268414931653,
+          "validation_masked_bce": 0.5150073766708374
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.5530641481904459,
+          "validation_macro_auroc": 0.828987161755195,
+          "validation_masked_bce": 0.5168081521987915
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.5434227106164125,
+          "validation_macro_auroc": 0.8459902364491633,
+          "validation_masked_bce": 0.4681343138217926
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.5364449052069685,
+          "validation_macro_auroc": 0.8433299969350162,
+          "validation_masked_bce": 0.470820814371109
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.5300490566664238,
+          "validation_macro_auroc": 0.8412708494509467,
+          "validation_masked_bce": 0.4675694704055786
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.5248774296369505,
+          "validation_macro_auroc": 0.8450009540271844,
+          "validation_masked_bce": 0.4573308825492859
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.5178497770650571,
+          "validation_macro_auroc": 0.8488185444837023,
+          "validation_masked_bce": 0.46301624178886414
+        },
+        {
+          "epoch": 11,
+          "train_masked_bce": 0.5108597164690807,
+          "validation_macro_auroc": 0.8515397707469607,
+          "validation_masked_bce": 0.45236673951148987
+        },
+        {
+          "epoch": 12,
+          "train_masked_bce": 0.5038283688252995,
+          "validation_macro_auroc": 0.8479749565012907,
+          "validation_masked_bce": 0.44280409812927246
+        },
+        {
+          "epoch": 13,
+          "train_masked_bce": 0.49815738127675774,
+          "validation_macro_auroc": 0.8533068607899278,
+          "validation_masked_bce": 0.4441370666027069
+        },
+        {
+          "epoch": 14,
+          "train_masked_bce": 0.4910010295405923,
+          "validation_macro_auroc": 0.8550347702593633,
+          "validation_masked_bce": 0.4390884041786194
+        },
+        {
+          "epoch": 15,
+          "train_masked_bce": 0.48555186360103575,
+          "validation_macro_auroc": 0.8539461798239185,
+          "validation_masked_bce": 0.4438827633857727
+        },
+        {
+          "epoch": 16,
+          "train_masked_bce": 0.48095327058353005,
+          "validation_macro_auroc": 0.8535624923300245,
+          "validation_masked_bce": 0.440879762172699
+        },
+        {
+          "epoch": 17,
+          "train_masked_bce": 0.4779922923397158,
+          "validation_macro_auroc": 0.8559931455021826,
+          "validation_masked_bce": 0.4386363625526428
+        },
+        {
+          "epoch": 18,
+          "train_masked_bce": 0.47505448976181636,
+          "validation_macro_auroc": 0.8548843099629018,
+          "validation_masked_bce": 0.43848443031311035
+        },
+        {
+          "epoch": 19,
+          "train_masked_bce": 0.4730824643595403,
+          "validation_macro_auroc": 0.8547721831100313,
+          "validation_masked_bce": 0.44023534655570984
+        },
+        {
+          "epoch": 20,
+          "train_masked_bce": 0.4732394643678368,
+          "validation_macro_auroc": 0.8548663745131754,
+          "validation_masked_bce": 0.439572811126709
+        }
+      ],
+      "hours": 2.9939619005633316,
+      "lm_test": 0.868476595832966,
+      "name": "r4a-k8-omnirad-base-soft-336-u1",
+      "per_label": {
+        "gold": {
+          "ACL": 0.8431372549019608,
+          "Baker's": 0.9438405797101449,
+          "Contusion": 0.8798920377867746,
+          "Effusion": 0.8968944099378882,
+          "Fracture": 0.8736111111111111,
+          "Lateral Meniscus": 0.6857142857142857,
+          "Lateral OA": 0.7620889748549323,
+          "MCL": 0.7755102040816326,
+          "Medial Meniscus": 0.8004807692307693,
+          "Medial OA": 0.875968992248062,
+          "PF OA": 0.8018018018018018,
+          "Synovitis": 0.7544802867383512
+        },
+        "lm_test": {
+          "ACL": 0.8519649420412779,
+          "Baker's": 0.9075524122253095,
+          "Contusion": 0.8789464411557435,
+          "Effusion": 0.8830030487804879,
+          "Fracture": 0.9176721970839617,
+          "Lateral Meniscus": 0.8195480404551201,
+          "Lateral OA": 0.8413091309130913,
+          "MCL": 0.8095164152617569,
+          "Medial Meniscus": 0.8394398923810689,
+          "Medial OA": 0.9078511591661796,
+          "PF OA": 0.8712106201703983,
+          "Synovitis": 0.8937048503611971
+        }
+      },
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u1/report.json",
+      "title": "Unfreeze 1 image block"
+    },
+    {
+      "actual_run": "r4a-k8-omnirad-base-soft-336-u9-b1",
+      "best_epoch": 12,
+      "epochs_completed": 17,
+      "gold": 0.8774666258272017,
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.6167313487460233,
+          "validation_macro_auroc": 0.7860135343177442,
+          "validation_masked_bce": 0.5804242491722107
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.5780519327888869,
+          "validation_macro_auroc": 0.8236523042229615,
+          "validation_masked_bce": 0.4852921962738037
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.5555382150552035,
+          "validation_macro_auroc": 0.8364089691114663,
+          "validation_masked_bce": 0.5054088830947876
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.5408938990503879,
+          "validation_macro_auroc": 0.8402194553614432,
+          "validation_masked_bce": 0.46559712290763855
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.5257883390098584,
+          "validation_macro_auroc": 0.8513679835310058,
+          "validation_masked_bce": 0.4542163610458374
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.5098898580819021,
+          "validation_macro_auroc": 0.8646833709124153,
+          "validation_masked_bce": 0.4411465525627136
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.49498377647142533,
+          "validation_macro_auroc": 0.8611460282921777,
+          "validation_masked_bce": 0.44051069021224976
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.47997592629159413,
+          "validation_macro_auroc": 0.8610077268278601,
+          "validation_masked_bce": 0.45047527551651
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.46449500977897656,
+          "validation_macro_auroc": 0.8574755036951935,
+          "validation_masked_bce": 0.45078760385513306
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.4506463258217862,
+          "validation_macro_auroc": 0.8587960143989268,
+          "validation_masked_bce": 0.43497204780578613
+        },
+        {
+          "epoch": 11,
+          "train_masked_bce": 0.43878629331711577,
+          "validation_macro_auroc": 0.8628360149937199,
+          "validation_masked_bce": 0.44847357273101807
+        },
+        {
+          "epoch": 12,
+          "train_masked_bce": 0.42839070007155167,
+          "validation_macro_auroc": 0.8643458764094533,
+          "validation_masked_bce": 0.43078508973121643
+        },
+        {
+          "epoch": 13,
+          "train_masked_bce": 0.4186141292812165,
+          "validation_macro_auroc": 0.8612066271306601,
+          "validation_masked_bce": 0.44112178683280945
+        },
+        {
+          "epoch": 14,
+          "train_masked_bce": 0.4099320405346535,
+          "validation_macro_auroc": 0.8583825302526326,
+          "validation_masked_bce": 0.4315102994441986
+        },
+        {
+          "epoch": 15,
+          "train_masked_bce": 0.40339494485206523,
+          "validation_macro_auroc": 0.8608315138437094,
+          "validation_masked_bce": 0.4321906566619873
+        },
+        {
+          "epoch": 16,
+          "train_masked_bce": 0.398369605010435,
+          "validation_macro_auroc": 0.8590783985391184,
+          "validation_masked_bce": 0.438486248254776
+        },
+        {
+          "epoch": 17,
+          "train_masked_bce": 0.39487672369892496,
+          "validation_macro_auroc": 0.8614942622717697,
+          "validation_masked_bce": 0.43155375123023987
+        }
+      ],
+      "hours": 5.2108466482402775,
+      "lm_test": 0.8834063897533665,
+      "name": "r4a-k8-omnirad-base-soft-336-u9",
+      "per_label": {
+        "gold": {
+          "ACL": 0.9534313725490196,
+          "Baker's": 0.9384057971014492,
+          "Contusion": 0.8515519568151146,
+          "Effusion": 0.8782608695652174,
+          "Fracture": 0.8916666666666666,
+          "Lateral Meniscus": 0.8,
+          "Lateral OA": 0.7988394584139265,
+          "MCL": 0.8979591836734694,
+          "Medial Meniscus": 0.9591346153846154,
+          "Medial OA": 0.9565891472868218,
+          "PF OA": 0.8391248391248392,
+          "Synovitis": 0.7646356033452808
+        },
+        "lm_test": {
+          "ACL": 0.8566440486287814,
+          "Baker's": 0.9119306222109961,
+          "Contusion": 0.8960359408033827,
+          "Effusion": 0.8711325654923215,
+          "Fracture": 0.9358974358974359,
+          "Lateral Meniscus": 0.8253634639696587,
+          "Lateral OA": 0.891964196419642,
+          "MCL": 0.8400621118012422,
+          "Medial Meniscus": 0.8923443805796747,
+          "Medial OA": 0.9254432105980908,
+          "PF OA": 0.8799616934152301,
+          "Synovitis": 0.8740970072239422
+        }
+      },
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1/report.json",
+      "title": "Unfreeze 9 image blocks"
+    },
+    {
+      "actual_run": "r4a-k8-omnirad-base-soft-336-u12-b1",
+      "best_epoch": 17,
+      "epochs_completed": 20,
+      "gold": 0.8788431837203055,
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.6154299763482608,
+          "validation_macro_auroc": 0.788762783392383,
+          "validation_masked_bce": 0.5497583746910095
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.5819572731549134,
+          "validation_macro_auroc": 0.8200210673027301,
+          "validation_masked_bce": 0.48486700654029846
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.5548546100799222,
+          "validation_macro_auroc": 0.8427314873752793,
+          "validation_masked_bce": 0.48347151279449463
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.5385233420627262,
+          "validation_macro_auroc": 0.8421434867057186,
+          "validation_masked_bce": 0.48438364267349243
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.5228297276343281,
+          "validation_macro_auroc": 0.8508450978669783,
+          "validation_masked_bce": 0.4502085745334625
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.5026329263281933,
+          "validation_macro_auroc": 0.8622143810342573,
+          "validation_masked_bce": 0.4504743218421936
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.487469383243985,
+          "validation_macro_auroc": 0.8620474308291284,
+          "validation_masked_bce": 0.4410451054573059
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.471723275810129,
+          "validation_macro_auroc": 0.8654177366814926,
+          "validation_masked_bce": 0.44089245796203613
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.45678688240860044,
+          "validation_macro_auroc": 0.8668224230601456,
+          "validation_masked_bce": 0.4445529878139496
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.4448592699105229,
+          "validation_macro_auroc": 0.8657571411487095,
+          "validation_masked_bce": 0.4353138506412506
+        },
+        {
+          "epoch": 11,
+          "train_masked_bce": 0.4345796963881534,
+          "validation_macro_auroc": 0.8631451029603658,
+          "validation_masked_bce": 0.4395112097263336
+        },
+        {
+          "epoch": 12,
+          "train_masked_bce": 0.42447913583225033,
+          "validation_macro_auroc": 0.8689764753696877,
+          "validation_masked_bce": 0.4267185628414154
+        },
+        {
+          "epoch": 13,
+          "train_masked_bce": 0.41629677198972465,
+          "validation_macro_auroc": 0.8699923382929017,
+          "validation_masked_bce": 0.42709270119667053
+        },
+        {
+          "epoch": 14,
+          "train_masked_bce": 0.4077634347262486,
+          "validation_macro_auroc": 0.8679736821907912,
+          "validation_masked_bce": 0.4361828863620758
+        },
+        {
+          "epoch": 15,
+          "train_masked_bce": 0.4020920117061158,
+          "validation_macro_auroc": 0.8759794642537507,
+          "validation_masked_bce": 0.4253196716308594
+        },
+        {
+          "epoch": 16,
+          "train_masked_bce": 0.397962811334712,
+          "validation_macro_auroc": 0.8704360460250292,
+          "validation_masked_bce": 0.4270920157432556
+        },
+        {
+          "epoch": 17,
+          "train_masked_bce": 0.3939429243832584,
+          "validation_macro_auroc": 0.8737144248356801,
+          "validation_masked_bce": 0.421417236328125
+        },
+        {
+          "epoch": 18,
+          "train_masked_bce": 0.39197347693713064,
+          "validation_macro_auroc": 0.8725904074116512,
+          "validation_masked_bce": 0.4237741231918335
+        },
+        {
+          "epoch": 19,
+          "train_masked_bce": 0.39104497698669327,
+          "validation_macro_auroc": 0.8714501148701667,
+          "validation_masked_bce": 0.4248815178871155
+        },
+        {
+          "epoch": 20,
+          "train_masked_bce": 0.3906626968735037,
+          "validation_macro_auroc": 0.8712516111659298,
+          "validation_masked_bce": 0.4237153232097626
+        }
+      ],
+      "hours": 7.289140868064722,
+      "lm_test": 0.8699914606504126,
+      "name": "r4a-k8-omnirad-base-soft-336-u12",
+      "per_label": {
+        "gold": {
+          "ACL": 0.9509803921568627,
+          "Baker's": 0.9601449275362319,
+          "Contusion": 0.846153846153846,
+          "Effusion": 0.8633540372670807,
+          "Fracture": 0.9138888888888889,
+          "Lateral Meniscus": 0.7863354037267081,
+          "Lateral OA": 0.7736943907156673,
+          "MCL": 0.9546485260770975,
+          "Medial Meniscus": 0.9495192307692308,
+          "Medial OA": 0.9317829457364342,
+          "PF OA": 0.8378378378378378,
+          "Synovitis": 0.7777777777777778
+        },
+        "lm_test": {
+          "ACL": 0.8310149844500989,
+          "Baker's": 0.9080154921276417,
+          "Contusion": 0.8579457364341085,
+          "Effusion": 0.8556910569105691,
+          "Fracture": 0.9429361488185017,
+          "Lateral Meniscus": 0.7777338811630847,
+          "Lateral OA": 0.8845384538453845,
+          "MCL": 0.8293256433007986,
+          "Medial Meniscus": 0.8750275162039868,
+          "Medial OA": 0.9145528930450029,
+          "PF OA": 0.8694108711445744,
+          "Synovitis": 0.8937048503611971
+        }
+      },
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u12-b1/report.json",
+      "title": "Unfreeze all 12 image blocks"
+    },
+    {
+      "actual_run": "r4a-k8-omnirad-base-soft-336-from-clip-lora",
+      "best_epoch": 7,
+      "epochs_completed": 12,
+      "gold": 0.8177879050997577,
+      "history": [
+        {
+          "epoch": 1,
+          "train_masked_bce": 0.5801718961610012,
+          "validation_macro_auroc": 0.8414171074613458,
+          "validation_masked_bce": 0.4829617440700531
+        },
+        {
+          "epoch": 2,
+          "train_masked_bce": 0.5360576780279963,
+          "validation_macro_auroc": 0.8530447564918734,
+          "validation_masked_bce": 0.4630604684352875
+        },
+        {
+          "epoch": 3,
+          "train_masked_bce": 0.5203851054814266,
+          "validation_macro_auroc": 0.857435580495926,
+          "validation_masked_bce": 0.4489714503288269
+        },
+        {
+          "epoch": 4,
+          "train_masked_bce": 0.5052713539457863,
+          "validation_macro_auroc": 0.8607188967989691,
+          "validation_masked_bce": 0.44444698095321655
+        },
+        {
+          "epoch": 5,
+          "train_masked_bce": 0.49313263798380674,
+          "validation_macro_auroc": 0.8677147207063726,
+          "validation_masked_bce": 0.44053858518600464
+        },
+        {
+          "epoch": 6,
+          "train_masked_bce": 0.4790717787334155,
+          "validation_macro_auroc": 0.8677687317830883,
+          "validation_masked_bce": 0.43954554200172424
+        },
+        {
+          "epoch": 7,
+          "train_masked_bce": 0.46714306985520565,
+          "validation_macro_auroc": 0.8658062133507674,
+          "validation_masked_bce": 0.431839257478714
+        },
+        {
+          "epoch": 8,
+          "train_masked_bce": 0.45796599872345284,
+          "validation_macro_auroc": 0.8619744425600121,
+          "validation_masked_bce": 0.43956345319747925
+        },
+        {
+          "epoch": 9,
+          "train_masked_bce": 0.44769673488076306,
+          "validation_macro_auroc": 0.8616448292590676,
+          "validation_masked_bce": 0.4334026277065277
+        },
+        {
+          "epoch": 10,
+          "train_masked_bce": 0.43903483613380656,
+          "validation_macro_auroc": 0.860634795274866,
+          "validation_masked_bce": 0.4347342252731323
+        },
+        {
+          "epoch": 11,
+          "train_masked_bce": 0.4304538729398524,
+          "validation_macro_auroc": 0.8532207515826343,
+          "validation_masked_bce": 0.4363992512226105
+        },
+        {
+          "epoch": 12,
+          "train_masked_bce": 0.4239599662613494,
+          "validation_macro_auroc": 0.8590019552626728,
+          "validation_masked_bce": 0.43710091710090637
+        }
+      ],
+      "hours": 3.0477832669125,
+      "lm_test": 0.8741309861938557,
+      "name": "r4a-k8-omnirad-base-soft-336-from-clip-lora",
+      "per_label": {
+        "gold": {
+          "ACL": 0.7965686274509804,
+          "Baker's": 0.9021739130434783,
+          "Contusion": 0.8515519568151146,
+          "Effusion": 0.8347826086956522,
+          "Fracture": 0.8638888888888889,
+          "Lateral Meniscus": 0.6881987577639752,
+          "Lateral OA": 0.7137330754352031,
+          "MCL": 0.8231292517006803,
+          "Medial Meniscus": 0.8978365384615384,
+          "Medial OA": 0.8170542635658915,
+          "PF OA": 0.8622908622908623,
+          "Synovitis": 0.7622461170848267
+        },
+        "lm_test": {
+          "ACL": 0.8084110828385638,
+          "Baker's": 0.9136987454744464,
+          "Contusion": 0.8802677942212825,
+          "Effusion": 0.8834547199638663,
+          "Fracture": 0.9267219708396179,
+          "Lateral Meniscus": 0.8078065739570164,
+          "Lateral OA": 0.8625362536253626,
+          "MCL": 0.8493123336291039,
+          "Medial Meniscus": 0.8777424483306836,
+          "Medial OA": 0.9003311903370349,
+          "PF OA": 0.8845518790040288,
+          "Synovitis": 0.8947368421052632
+        }
+      },
+      "report": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-from-clip-lora/report.json",
+      "title": "K8 336 CLIP + LoRA \u2192 run-5 fine-tuning"
+    }
+  ],
+  "contrastive_confirmation": {
+    "absolute_lm_test_seed_difference": 0.0028711864428762057,
+    "bootstrap": {
+      "resamples": 2000,
+      "seed": 2030
+    },
+    "gold": {
+      "macro_auroc": {
+        "candidate": 0.8248059570031966,
+        "run5": 0.8266710098089458,
+        "seed2027": 0.833273615380457
+      },
+      "paired": {
+        "candidate - run5": {
+          "ci95": [
+            -0.030166232640801795,
+            0.025990181093720317
+          ],
+          "difference": -0.0018650528057492233
+        },
+        "candidate - seed2027": {
+          "ci95": [
+            -0.03745132588080757,
+            0.018889840157906738
+          ],
+          "difference": -0.008467658377260379
+        },
+        "run5 - seed2027": {
+          "ci95": [
+            -0.02912867233986715,
+            0.015291865868551992
+          ],
+          "difference": -0.006602605571511155
+        }
+      }
+    },
+    "lm_test": {
+      "macro_auroc": {
+        "candidate": 0.8800973667601081,
+        "run5": 0.8775061374989838,
+        "seed2027": 0.8746349510561076
+      },
+      "paired": {
+        "candidate - run5": {
+          "ci95": [
+            -0.008917106311494487,
+            0.01421364367176579
+          ],
+          "difference": 0.002591229261124317
+        },
+        "candidate - seed2027": {
+          "ci95": [
+            -0.006068327654628843,
+            0.01829827308768847
+          ],
+          "difference": 0.005462415704000523
+        },
+        "run5 - seed2027": {
+          "ci95": [
+            -0.006146474951111916,
+            0.011024353832945328
+          ],
+          "difference": 0.0028711864428762057
+        }
+      }
+    },
+    "pass_checks": {
+      "gold_drop_less_than_0_024": true,
+      "lm_test_ci_excludes_zero_in_positive_direction": false,
+      "lm_test_gain_exceeds_absolute_seed_difference": false
+    },
+    "pass_rule": {
+      "gain_gt_absolute_seed_difference": true,
+      "gold_delta_gt": -0.024,
+      "lm_test_ci_lower_gt": 0.0
+    },
+    "passed": false,
+    "predictions_sha256": {
+      "candidate": "450691ebdd6e80e01bb20c130bfbae89ff842536fd245ba5cab2e468298a9c80",
+      "run5": "d5765dec078b8823ea2099d12ab8fe26c773065be38fa6878912a3a0d8dd49b1",
+      "seed2027": "ff73daa85ce3c4a1e796e2addfaa90c7d177458432fa11c0c9cb2fe0e3827917"
+    },
+    "seed_comparison_pending": false
+  },
+  "contrastive_pretraining": {
+    "best_mean_recall_at_1": 0.19207081198692322,
+    "checkpoint": "checkpoints/contrastive/omnirad-clip-run5-v1/omnirad-base-e5-base-clip-k8-336-u6-bs32-seed2026/best.pt",
+    "checkpoint_sha256": "574b5048ebd7d9e74ca748fa84f9e17b859af91fc1caa7183716a67e1ab6f30a",
+    "completed": true,
+    "epochs_completed": 20,
+    "max_epochs": 20,
+    "selected_epoch": 18
+  },
+  "note": "LM-test uses LM labels; gold-58 is exploratory. No interrupted run has a final AUROC.",
+  "paired": {
+    "gold": {
+      "r4a-k8-coatnet-384-soft-s123": {
+        "ci95": [
+          -0.014812644539180542,
+          0.04228356474101088
+        ],
+        "difference": 0.012686813294852772
+      },
+      "r4a-k8-dinov2-small-soft-336": {
+        "ci95": [
+          -0.03962794358413714,
+          0.015468331292788079
+        ],
+        "difference": -0.011655541807471081
+      },
+      "r4a-k8-omnirad-base-hard-336": {
+        "ci95": [
+          -0.04692294305405063,
+          0.005078071229867987
+        ],
+        "difference": -0.02121365998361524
+      },
+      "r4a-k8-omnirad-base-soft-336-ep30": {
+        "ci95": [
+          0.003243790267040527,
+          0.03188126811236544
+        ],
+        "difference": 0.01768516942557341
+      },
+      "r4a-k8-omnirad-base-soft-336-from-clip": {
+        "ci95": [
+          -0.03016623264080179,
+          0.025990181093720335
+        ],
+        "difference": -0.0018650528057492233
+      },
+      "r4a-k8-omnirad-base-soft-336-from-clip-lora": {
+        "ci95": [
+          -0.03857635940499143,
+          0.018285044883246455
+        ],
+        "difference": -0.008883104709188072
+      },
+      "r4a-k8-omnirad-base-soft-336-seed2027": {
+        "ci95": [
+          -0.015291865868551992,
+          0.02912867233986715
+        ],
+        "difference": 0.006602605571511155
+      },
+      "r4a-k8-omnirad-base-soft-336-u1": {
+        "ci95": [
+          -0.02663107951357394,
+          0.02301363930393693
+        ],
+        "difference": -0.0022192841324694124
+      },
+      "r4a-k8-omnirad-base-soft-336-u12": {
+        "ci95": [
+          0.02727408069450227,
+          0.07894208059435184
+        ],
+        "difference": 0.05217217391135953
+      },
+      "r4a-k8-omnirad-base-soft-336-u6": {
+        "ci95": [
+          0.009634262360410241,
+          0.06196965502436637
+        ],
+        "difference": 0.03514926934839824
+      },
+      "r4a-k8-omnirad-base-soft-336-u9": {
+        "ci95": [
+          0.02170015309424259,
+          0.08185668754585476
+        ],
+        "difference": 0.050795616018255996
+      },
+      "r4a-k8-omnirad-base-soft-384": {
+        "ci95": [
+          -0.00345535932274951,
+          0.02856606654652166
+        ],
+        "difference": 0.012662660189990071
+      }
+    },
+    "lm_test": {
+      "r4a-k8-coatnet-384-soft-s123": {
+        "ci95": [
+          -0.022836816768494247,
+          0.0033349595485012537
+        ],
+        "difference": -0.009980979630899167
+      },
+      "r4a-k8-dinov2-small-soft-336": {
+        "ci95": [
+          -0.019727315103371154,
+          0.008016629270793215
+        ],
+        "difference": -0.006109198918147429
+      },
+      "r4a-k8-omnirad-base-hard-336": {
+        "ci95": [
+          -0.0346246617357355,
+          -0.004300532496325025
+        ],
+        "difference": -0.01910122918132151
+      },
+      "r4a-k8-omnirad-base-soft-336-ep30": {
+        "ci95": [
+          -0.008736160962938942,
+          0.003994259608708203
+        ],
+        "difference": -0.0023626755938421784
+      },
+      "r4a-k8-omnirad-base-soft-336-from-clip": {
+        "ci95": [
+          -0.008917106311494486,
+          0.01421364367176579
+        ],
+        "difference": 0.002591229261124317
+      },
+      "r4a-k8-omnirad-base-soft-336-from-clip-lora": {
+        "ci95": [
+          -0.016050096609605626,
+          0.009312547416765899
+        ],
+        "difference": -0.00337515130512811
+      },
+      "r4a-k8-omnirad-base-soft-336-seed2027": {
+        "ci95": [
+          -0.011024353832945328,
+          0.006146474951111916
+        ],
+        "difference": -0.0028711864428762057
+      },
+      "r4a-k8-omnirad-base-soft-336-u1": {
+        "ci95": [
+          -0.019430042199888906,
+          0.0005497700469563215
+        ],
+        "difference": -0.00902954166601777
+      },
+      "r4a-k8-omnirad-base-soft-336-u12": {
+        "ci95": [
+          -0.017136802212864153,
+          0.002548521138149304
+        ],
+        "difference": -0.007514676848571211
+      },
+      "r4a-k8-omnirad-base-soft-336-u6": {
+        "ci95": [
+          -0.008808515464380905,
+          0.009757857621673704
+        ],
+        "difference": 0.0006721578741298861
+      },
+      "r4a-k8-omnirad-base-soft-336-u9": {
+        "ci95": [
+          -0.0044572767249454245,
+          0.015317001862983876
+        ],
+        "difference": 0.005900252254382732
+      },
+      "r4a-k8-omnirad-base-soft-384": {
+        "ci95": [
+          -0.005096664576774936,
+          0.008736644471301833
+        ],
+        "difference": 0.001923090411278916
+      }
+    }
+  },
+  "paired_vs_r0": {
+    "gold": {
+      "r4a-k8-coatnet-384-soft-s123": {
+        "ci95": [
+          0.04095962941646576,
+          0.10785222947597503
+        ],
+        "difference": 0.07342815399169922,
+        "resamples": 2000,
+        "seed": 2030,
+        "unit": "study",
+        "valid_resamples": 2000
+      },
+      "r4a-k8-dinov2-small-soft-336": {
+        "ci95": [
+          0.012954071164131165,
+          0.08490906804800029
+        ],
+        "difference": 0.04908585548400879,
+        "resamples": 2000,
+        "seed": 2030,
+        "unit": "study",
+        "valid_resamples": 2000
+      },
+      "r4a-k8-omnirad-base-hard-336": {
+        "ci95": [
+          0.010242417454719543,
+          0.06914551407098768
+        ],
+        "difference": 0.03952765464782715,
+        "resamples": 2000,
+        "seed": 2030,
+        "unit": "study",
+        "valid_resamples": 2000
+      },
+      "r4a-k8-omnirad-base-soft-336": {
+        "ci95": [
+          0.021643024682998658,
+          0.10236688405275345
+        ],
+        "difference": 0.060741424560546875,
+        "resamples": 2000,
+        "seed": 2030,
+        "unit": "study",
+        "valid_resamples": 2000
+      },
+      "r4a-k8-omnirad-base-soft-336-ep30": {
+        "ci95": [
+          0.03979351073503494,
+          0.11824575811624526
+        ],
+        "difference": 0.0784265398979187,
+        "resamples": 2000,
+        "seed": 2030,
+        "unit": "study",
+        "valid_resamples": 2000
+      },
+      "r4a-k8-omnirad-base-soft-336-from-clip": {
+        "ci95": [
+          0.016165316104888916,
+          0.10382845401763913
+        ],
+        "difference": 0.05887627601623535,
+        "resamples": 2000,
+        "seed": 2030,
+        "unit": "study",
+        "valid_resamples": 2000
+      },
+      "r4a-k8-omnirad-base-soft-336-from-clip-lora": {
+        "ci95": [
+          0.010147754848003388,
+          0.0939908966422081
+        ],
+        "difference": 0.05185818672180176,
+        "resamples": 2000,
+        "seed": 2030,
+        "unit": "study",
+        "valid_resamples": 2000
+      },
+      "r4a-k8-omnirad-base-soft-336-seed2027": {
+        "ci95": [
+          0.027710655331611635,
+          0.10847216397523876
+        ],
+        "difference": 0.06734389066696167,
+        "resamples": 2000,
+        "seed": 2030,
+        "unit": "study",
+        "valid_resamples": 2000
+      },
+      "r4a-k8-omnirad-base-soft-336-u1": {
+        "ci95": [
+          0.021228982508182528,
+          0.09710587412118904
+        ],
+        "difference": 0.058522164821624756,
+        "resamples": 2000,
+        "seed": 2030,
+        "unit": "study",
+        "valid_resamples": 2000
+      },
+      "r4a-k8-omnirad-base-soft-336-u12": {
+        "ci95": [
+          0.07541452199220658,
+          0.15124759227037426
+        ],
+        "difference": 0.11291354894638062,
+        "resamples": 2000,
+        "seed": 2030,
+        "unit": "study",
+        "valid_resamples": 2000
+      },
+      "r4a-k8-omnirad-base-soft-336-u6": {
+        "ci95": [
+          0.056633709371089934,
+          0.1400025799870491
+        ],
+        "difference": 0.0958905816078186,
+        "resamples": 2000,
+        "seed": 2030,
+        "unit": "study",
+        "valid_resamples": 2000
+      },
+      "r4a-k8-omnirad-base-soft-336-u9": {
+        "ci95": [
+          0.07502634823322296,
+          0.14860426634550092
+        ],
+        "difference": 0.1115369200706482,
+        "resamples": 2000,
+        "seed": 2030,
+        "unit": "study",
+        "valid_resamples": 2000
+      },
+      "r4a-k8-omnirad-base-soft-384": {
+        "ci95": [
+          0.03215567171573639,
+          0.11683442592620849
+        ],
+        "difference": 0.07340401411056519,
+        "resamples": 2000,
+        "seed": 2030,
+        "unit": "study",
+        "valid_resamples": 2000
+      }
+    },
+    "lm_test": {
+      "r4a-k8-coatnet-384-soft-s123": {
+        "ci95": [
+          0.016862424383723217,
+          0.0500514094759277
+        ],
+        "difference": 0.03393010859833234
+      },
+      "r4a-k8-dinov2-small-soft-336": {
+        "ci95": [
+          0.02237119082739943,
+          0.052624056950477435
+        ],
+        "difference": 0.03780188931108408
+      },
+      "r4a-k8-omnirad-base-hard-336": {
+        "ci95": [
+          0.01158196018116111,
+          0.03771764130392531
+        ],
+        "difference": 0.02480985904791
+      },
+      "r4a-k8-omnirad-base-soft-336": {
+        "ci95": [
+          0.027348447018029486,
+          0.060512106356675074
+        ],
+        "difference": 0.04391108822923151
+      },
+      "r4a-k8-omnirad-base-soft-336-ep30": {
+        "ci95": [
+          0.025007400698160542,
+          0.05797995621221016
+        ],
+        "difference": 0.04154841263538933
+      },
+      "r4a-k8-omnirad-base-soft-336-from-clip": {
+        "ci95": [
+          0.030604388114977794,
+          0.06276787501209614
+        ],
+        "difference": 0.04650231749035583
+      },
+      "r4a-k8-omnirad-base-soft-336-from-clip-lora": {
+        "ci95": [
+          0.027653324267002725,
+          0.054295058639448994
+        ],
+        "difference": 0.0405359369241034
+      },
+      "r4a-k8-omnirad-base-soft-336-seed2027": {
+        "ci95": [
+          0.025103228074154976,
+          0.05722119631036517
+        ],
+        "difference": 0.041039901786355304
+      },
+      "r4a-k8-omnirad-base-soft-336-u1": {
+        "ci95": [
+          0.02036620163725342,
+          0.04990646318144025
+        ],
+        "difference": 0.03488154656321374
+      },
+      "r4a-k8-omnirad-base-soft-336-u12": {
+        "ci95": [
+          0.02068968772485388,
+          0.052704360696012933
+        ],
+        "difference": 0.0363964113806603
+      },
+      "r4a-k8-omnirad-base-soft-336-u6": {
+        "ci95": [
+          0.027691824564554053,
+          0.060896084723050116
+        ],
+        "difference": 0.044583246103361396
+      },
+      "r4a-k8-omnirad-base-soft-336-u9": {
+        "ci95": [
+          0.03367575843605487,
+          0.06626174431394594
+        ],
+        "difference": 0.04981134048361424
+      },
+      "r4a-k8-omnirad-base-soft-384": {
+        "ci95": [
+          0.02903059770516784,
+          0.06308658276265644
+        ],
+        "difference": 0.045834178640510426
+      }
+    }
+  },
+  "predictions_sha256": {
+    "r4a-k8-coatnet-384-soft-s123": "ad907e83215e78e35aff7f4f177b8471a2a0f06eb5237766c531438ce7a5f36c",
+    "r4a-k8-dinov2-small-soft-336": "36ee633094d580f8fd9b80d2c369e5c4dfcf45a7dad30845a1259e23589ac784",
+    "r4a-k8-omnirad-base-hard-336": "d2703e400f50a66c84eb7dca88f0d40b832b98828ed4050615bcbeea5886a105",
+    "r4a-k8-omnirad-base-soft-336": "d5765dec078b8823ea2099d12ab8fe26c773065be38fa6878912a3a0d8dd49b1",
+    "r4a-k8-omnirad-base-soft-336-ep30": "2a89fc6371c6686a0227ad9bc4562d9257298b7f91622f918841e13f77f4df78",
+    "r4a-k8-omnirad-base-soft-336-from-clip": "450691ebdd6e80e01bb20c130bfbae89ff842536fd245ba5cab2e468298a9c80",
+    "r4a-k8-omnirad-base-soft-336-from-clip-lora": "5a4f801df131821aeba752c678839153345ea254b5f6f3b1f5079fd08dcaf8fe",
+    "r4a-k8-omnirad-base-soft-336-seed2027": "ff73daa85ce3c4a1e796e2addfaa90c7d177458432fa11c0c9cb2fe0e3827917",
+    "r4a-k8-omnirad-base-soft-336-u1": "59197ebe84cf56932a0f5ad9c30f7fb99ed310334130e7866d841e4127ee1852",
+    "r4a-k8-omnirad-base-soft-336-u12": "7b9e650b22711a58c23d9bd6c452ee65a6c39b25bce9f8a121f4b7b8b67664de",
+    "r4a-k8-omnirad-base-soft-336-u6": "d8cd8511458e7f945ea98f6218b02003b7307ffb673041125b84e1e5dfc3a439",
+    "r4a-k8-omnirad-base-soft-336-u9": "bdd794895abffa66001deff4c7ea268285d21de77de7df5b6eb35969a10d7bf2",
+    "r4a-k8-omnirad-base-soft-384": "941a2de4426b70f80bbbb3986aed0a2e09666bad76f81da73c4503fc57f99df4"
+  },
+  "r0": {
+    "gold": 0.7659297454363796,
+    "lm_test": 0.8335950492697523
+  },
+  "r0_comparison_identity": {
+    "followups": {
+      "r4a-k8-coatnet-384-soft-s123": "ad907e83215e78e35aff7f4f177b8471a2a0f06eb5237766c531438ce7a5f36c",
+      "r4a-k8-dinov2-small-soft-336": "36ee633094d580f8fd9b80d2c369e5c4dfcf45a7dad30845a1259e23589ac784",
+      "r4a-k8-omnirad-base-hard-336": "d2703e400f50a66c84eb7dca88f0d40b832b98828ed4050615bcbeea5886a105",
+      "r4a-k8-omnirad-base-soft-336": "d5765dec078b8823ea2099d12ab8fe26c773065be38fa6878912a3a0d8dd49b1",
+      "r4a-k8-omnirad-base-soft-336-ep30": "2a89fc6371c6686a0227ad9bc4562d9257298b7f91622f918841e13f77f4df78",
+      "r4a-k8-omnirad-base-soft-336-from-clip": "450691ebdd6e80e01bb20c130bfbae89ff842536fd245ba5cab2e468298a9c80",
+      "r4a-k8-omnirad-base-soft-336-from-clip-lora": "5a4f801df131821aeba752c678839153345ea254b5f6f3b1f5079fd08dcaf8fe",
+      "r4a-k8-omnirad-base-soft-336-seed2027": "ff73daa85ce3c4a1e796e2addfaa90c7d177458432fa11c0c9cb2fe0e3827917",
+      "r4a-k8-omnirad-base-soft-336-u1": "59197ebe84cf56932a0f5ad9c30f7fb99ed310334130e7866d841e4127ee1852",
+      "r4a-k8-omnirad-base-soft-336-u12": "7b9e650b22711a58c23d9bd6c452ee65a6c39b25bce9f8a121f4b7b8b67664de",
+      "r4a-k8-omnirad-base-soft-336-u6": "d8cd8511458e7f945ea98f6218b02003b7307ffb673041125b84e1e5dfc3a439",
+      "r4a-k8-omnirad-base-soft-336-u9": "bdd794895abffa66001deff4c7ea268285d21de77de7df5b6eb35969a10d7bf2",
+      "r4a-k8-omnirad-base-soft-384": "941a2de4426b70f80bbbb3986aed0a2e09666bad76f81da73c4503fc57f99df4"
+    },
+    "r0": {
+      "gold": "4cd085a0476c33037e7ae92645e3792c05d637b014fe414bde33190a24fc64a1",
+      "lm_features": "8700a04cb307971df535487486414c62c7b568f339db0ec1fdd331c4d9749157",
+      "members": [
+        "57fa89908acb1c72745d54e3fc0a6f84d77709fa6f107547e1c4e6176931e2b6"
+      ],
+      "population": {
+        "gold_labels_sha256": "f4c2798f3207f27a867d086a19ffc56b2ea80d789d102cab7fc53aac6d8f9262",
+        "lm_labels_sha256": "6f704a7bdb2f894cc49445b19ba7c4378c3f548d3449e00361e10044bee40920",
+        "manifest_sha256": "d104337696a19d52d12480c1cfaae30c937916102e36a67e3124755fa20123f5",
+        "study_uids": [
+          "study-8d47e30141a4e2f0",
+          "study-70f03179436a312e",
+          "study-0401aea51016866b",
+          "study-4a4ada160acacec5",
+          "study-cd3897a5c0af2685",
+          "study-6bdcc54e286e69eb",
+          "study-08c127a7315736c4",
+          "study-7812e9cdfc801ccf",
+          "study-3534d92666c5a191",
+          "study-53adc0b05d388855",
+          "study-2e648fd1b043e8f8",
+          "study-56739334f2c73ae0",
+          "study-5e34ac52c58a91cc",
+          "study-7278fccbc3fb1107",
+          "study-8b1b17dd8ed35a01",
+          "study-a92ce86827fbd268",
+          "study-8419d7176f42e685",
+          "study-c9ee40b4c4601b8d",
+          "study-b98c5e9dd8d7efd1",
+          "study-60bd59d03ee4a4bc",
+          "study-fdd7832086fc599b",
+          "study-39d3fb8df34f8e7a",
+          "study-695078470b43a7f9",
+          "study-ee973063312f0c06",
+          "study-53a896991ab26521",
+          "study-35ae50c08130f660",
+          "study-d2d1bdeee844a7e6",
+          "study-a4ae53b92a5e499e",
+          "study-7de3f4a2d4e08be4",
+          "study-d91721a637ee0101",
+          "study-3d79e21db0a6cf53",
+          "study-252783d3963e2da4",
+          "study-d0f2040f01966ef1",
+          "study-f4da52b975d491d1",
+          "study-715cabed1f30a0e7",
+          "study-638a7ee64b078426",
+          "study-9e69b233e09f0a20",
+          "study-767f2c91f0efd871",
+          "study-1aa36603e74f2cc0",
+          "study-4c29413f1d4d7ade",
+          "study-8a4b88a24ea82f46",
+          "study-af3a28d5907e80d4",
+          "study-9687419a16853b7b",
+          "study-6a69739cfffe2792",
+          "study-24ab6a2623c71012",
+          "study-8947548de05a4f47",
+          "study-ed5b0712bb495be6",
+          "study-b6febe70187a649c",
+          "study-ef4f51141898ddaf",
+          "study-9f8c77a16c16b366",
+          "study-911ea9a42bc57ac8",
+          "study-2504eac54edd6bca",
+          "study-4e585343f45d697d",
+          "study-8267ee8246fa930a",
+          "study-260633dd67b8b4c5",
+          "study-dce4f4fe79e52922",
+          "study-1b5c272e0f6f288c",
+          "study-ad56bff8b8697996",
+          "study-55ce327806301a44",
+          "study-8c58d48c74912dd4",
+          "study-78311868bd79ad13",
+          "study-d36207733dc1b529",
+          "study-4b61fc2bc6248939",
+          "study-72312c768b8ccbfb",
+          "study-226fd8de7a7e422e",
+          "study-5903158b8769edd1",
+          "study-e65fe5fb740d886d",
+          "study-16b873b0520222ca",
+          "study-74f536bafc53faab",
+          "study-bdafe5710644e560",
+          "study-96419afec6f1adb5",
+          "study-3805f155260b2519",
+          "study-c9c60bd8bc4cebe0",
+          "study-c7343c760778a6fc",
+          "study-1b909a797bc9a0a1",
+          "study-b6cc8501bd3afcf7",
+          "study-bc0429ba23ec02e2",
+          "study-4b3e51c673ee1d7b",
+          "study-c46a0c8a54de2fc0",
+          "study-14351db4af24f2e9",
+          "study-04810439421d7def",
+          "study-b1d471ebd8cd0f69",
+          "study-5dd7c78e56f08292",
+          "study-a734a34bbf8ae7ff",
+          "study-4d2a550467fe90c4",
+          "study-41a5bc67b110c009",
+          "study-a4a0175a553a4c94",
+          "study-99cd692a691ec400",
+          "study-cc0103d8684be584",
+          "study-e5373fa1636b6930",
+          "study-b0ba6847946ffcb0",
+          "study-fb995e08baf962d6",
+          "study-75b04bf1ed7e5255",
+          "study-94b096a5b5a1b5b6",
+          "study-ec17026efe329af4",
+          "study-803ae4f39d807897",
+          "study-4ebd5042f560a71b",
+          "study-fecf6de5c8d3c437",
+          "study-1a1ef8a378c4e23e",
+          "study-06ed768057389f71",
+          "study-c0346bd01acea88e",
+          "study-b7bc39b3e73e394c",
+          "study-9fea6327b84b9c2c",
+          "study-9de870d69c3b9a4a",
+          "study-43abaf4820672d8a",
+          "study-08ab9caf72d6890c",
+          "study-d034add4d78050e0",
+          "study-510f71821c836e1a",
+          "study-90f8fc7dba15e6e7",
+          "study-4dbaa4c200e2fef7",
+          "study-6e844bb683fb231e",
+          "study-102eb3b549346bd4",
+          "study-97c1a60bc39a84e7",
+          "study-0844a2dcf3efb893",
+          "study-45c67fddd6b2c16c",
+          "study-9698fac637ab3bfb",
+          "study-268c0c5edd072c26",
+          "study-b6c4ccf6dd1bd848",
+          "study-79dbb63febe69b8d",
+          "study-164f6e203ff16675",
+          "study-8c338cc5dd4786aa",
+          "study-b1fa4367f93c9f13",
+          "study-0c42173450b9cdd0",
+          "study-cbd33139de594935",
+          "study-031233531463a11e",
+          "study-6ba79c53f3234f5b",
+          "study-af7357037b41d2cd",
+          "study-7f2b500abac8c539",
+          "study-61cae52d57773ef1",
+          "study-0044d9076aa9ba38",
+          "study-7461739ef1d5cb75",
+          "study-f3994d7133ca3bd9",
+          "study-dde0f2476d8e5c18",
+          "study-7721d58988002023",
+          "study-091ea000ba162042",
+          "study-82b628d2730935ab",
+          "study-3e6fc5dead4eb5b0",
+          "study-fa78850fbe2fb6f2",
+          "study-3c25b5f96671d4f3",
+          "study-0a2d7f8b035b227b",
+          "study-af3ddfbb13af4a70",
+          "study-fe04d269ad667dca",
+          "study-895e56578d67d32a",
+          "study-4061cddf94ab1ef0",
+          "study-8087b984c94ab38f",
+          "study-bc3b1abdd8455719",
+          "study-2953385d518e48ae",
+          "study-33492411b7e3f57a",
+          "study-9d31cd93f853c18f",
+          "study-b39a1b69c999ef19",
+          "study-9bc0b04cdbdb1237",
+          "study-a6db50c6ded75a52",
+          "study-944082f6476aac7b",
+          "study-d09759c3efaa55d0",
+          "study-6ffa03a60228f53e",
+          "study-6ce2b92f04deb0b1",
+          "study-c7c797047c0271fa",
+          "study-cf4acd636df48425",
+          "study-4e3758fb0c863ab6",
+          "study-1359836763d09f01",
+          "study-292967dfe16a6374",
+          "study-2af23b600a971640",
+          "study-7621c9aaaba437a4",
+          "study-7dd5ce38e71d952c",
+          "study-46febf24e4bbf30d",
+          "study-9e35bd313285d629",
+          "study-8797586c9cf910b8",
+          "study-c726efc6ab990472",
+          "study-314afc4ba477c199",
+          "study-a0b57681a9017c3f",
+          "study-20126b15ce227329",
+          "study-8a6f4ad1cf0ad040",
+          "study-9d84aa2373c573ac",
+          "study-fc4350ac16449619",
+          "study-f7f160afd6e2dc2a",
+          "study-c9a2bf22a2611318",
+          "study-154f710205dd1b1c",
+          "study-8d1635a69d63646c",
+          "study-e036b86b7c1feff3",
+          "study-cbac56440a3d973d",
+          "study-3baf4053bbced167",
+          "study-4dca2a6fe4c37154",
+          "study-575d613e8ed7e685",
+          "study-0a3e23e1cf6c8803",
+          "study-099887719438e19f",
+          "study-df28ee85383b41b0",
+          "study-26478dede23309ee",
+          "study-9a14c2855666098c",
+          "study-04a1aef8fe47d160",
+          "study-c3ae263905527c6a",
+          "study-0f2eb818b9cab3d3",
+          "study-933669a41a51c743",
+          "study-5f303f4ac44d1af2",
+          "study-924ba4685af19de2",
+          "study-b265caff4ee050ad",
+          "study-2a8da62dc184504d",
+          "study-7ec877dce4825900",
+          "study-920179854f1dbd2b",
+          "study-f9f8abc7ad29a5e0",
+          "study-965b91ca50a114e2",
+          "study-b25f633b1bb50de5",
+          "study-a22d3cbaa76890ed",
+          "study-0a90b97b17916b1f",
+          "study-e3d88676d625784a",
+          "study-45292c897d5f0b82",
+          "study-92711e07174ae503",
+          "study-0b9356a158c75920",
+          "study-896b3dcfd60c286c",
+          "study-6f6bb7501ccd8f6e",
+          "study-8eb6aa69efab7317",
+          "study-712b5ecaa0a236af",
+          "study-9c59b54847c90bf4",
+          "study-5670a0dc53f1e073",
+          "study-d42ecf7d5a98002b",
+          "study-4d48cfc1c5f18c66",
+          "study-68c9cb390628ab58",
+          "study-bb136dcc0d327bfe",
+          "study-ce4e96365ff15228",
+          "study-13b0b4b8c339b2fe",
+          "study-1070ec9192cf056b",
+          "study-6f19b9fd3cea39e4",
+          "study-13da7904dd8aa2a6",
+          "study-844fceaffeb3c2e5",
+          "study-922429fe91dd8549",
+          "study-22bd5d1691635b3e",
+          "study-728e57bb6da488b3",
+          "study-ee38097eb9908d3a",
+          "study-41e20d12cbbea485",
+          "study-1d235f1d1a125b45",
+          "study-e8440f48e82a629c",
+          "study-7d4c524b9700f998",
+          "study-c83d3d1325c05f57",
+          "study-2e92468a732e81d3",
+          "study-ef328002edd541cd",
+          "study-4a26779b2fce0b86",
+          "study-6754b10ea4c763bc",
+          "study-5a3964e74462d998",
+          "study-7cc9b63e481639d5",
+          "study-372afe2b0baf0161",
+          "study-a4982694d0c667b7",
+          "study-f993d3f396ae6414",
+          "study-d8cf5fcff99d2802",
+          "study-5f9587976068f443",
+          "study-23d5b956c23dd1fa",
+          "study-e9aed9aa7d891585",
+          "study-97394ce1de8d7c6b",
+          "study-8a9e45191d19bc8f",
+          "study-110a73e74510ca28",
+          "study-38a721de252cf63b",
+          "study-7b93982823d16c35",
+          "study-581c409cef3ef516",
+          "study-d8efaa4a10ae6656",
+          "study-6678c6ae0aae0038",
+          "study-c8ecc1274d762129",
+          "study-ad8e23cf645c23ad",
+          "study-e3d1e6f8e2aed14b",
+          "study-713ae4abb580a07b",
+          "study-f6a725c9f418a101",
+          "study-72b535d1d6290eff",
+          "study-2d73d544f77eb413",
+          "study-875841160271cdb7",
+          "study-a7fac3e00aa5e965",
+          "study-49959e712868ef6c",
+          "study-7c4d0fff12016e7a",
+          "study-8532f263eb0b6901",
+          "study-f52a9e7c77862f28",
+          "study-b460a9c295ad8a4f",
+          "study-ea331664f22abc88",
+          "study-0b50a5fc7971ede1",
+          "study-23c6acf63798cc60",
+          "study-4273ac7ecf917423",
+          "study-3c8c445da3b1bd95",
+          "study-3d19a33604988a92",
+          "study-d599f072706a7c4a",
+          "study-4a864077fa006ead",
+          "study-0e21cd8cc0971ca7",
+          "study-ebac0e8eae5db161",
+          "study-ca386b143fc6e943",
+          "study-7ee9ad7c0795c66e",
+          "study-4f9f3962f3c951c0",
+          "study-61a23ccfa21bb4e9",
+          "study-657d24d977dbb7bb",
+          "study-e440db3d9282d0ef",
+          "study-911a7155ade43d3a",
+          "study-4435bc8dc2d45f4e",
+          "study-a4c3dcffbe7dbc98",
+          "study-93b2bdf993dea467",
+          "study-2632d84b4780b7fe",
+          "study-33f59f8378218908",
+          "study-fb83e270f85e20c3",
+          "study-f9ea6688ea6e2d77",
+          "study-61631dbfab05ff16",
+          "study-792b62c4c8c48902",
+          "study-48bf1f6a2ee99f38",
+          "study-950f2ef3b6bdb4a7",
+          "study-e7c4c5efb601317a",
+          "study-95941fd66a7e5463",
+          "study-f5a166cd2fc088e2",
+          "study-8bb4827609827355",
+          "study-24a94bc32e6644f7",
+          "study-db285f7942bd727c",
+          "study-0765fd9ef51e2935",
+          "study-cdce4e16eeb3cc97",
+          "study-6d84a0311f2eeaf6",
+          "study-7a9e6eacfcbbb514",
+          "study-5fb1d77d3ef1ea90",
+          "study-c81f9b33ed90c338",
+          "study-fc696dfc32d0ffa3",
+          "study-6dc7ca5d938bfb82",
+          "study-4d28fabb58d28908",
+          "study-d1938730612c9a3d",
+          "study-37b76a2ec308daa9",
+          "study-0cf482bbb7feb136",
+          "study-be3ea6b0f95a7a69",
+          "study-4b037340abf84115",
+          "study-2d0f027d38efd8e1",
+          "study-ed72f923a17f567a",
+          "study-ff740a65ba4a5e3e",
+          "study-731c59fab39e1468",
+          "study-f14bfb78554dcb5b",
+          "study-192dfe078c6c347b",
+          "study-71bc9d3562987265",
+          "study-68f32949d7b6c7b0",
+          "study-6066cfafd5ea67e0",
+          "study-27efa0bd7fe2c6d1",
+          "study-0455354ee6b80579",
+          "study-443c41f7001c2154",
+          "study-91b43e2836dfde5a",
+          "study-e41010a0fb03bfb3",
+          "study-f5203837c477aeca",
+          "study-8484868f2237eccc",
+          "study-20b07e9d0c216823",
+          "study-8e025475ce8a4c5a",
+          "study-86859b0d80d9035c",
+          "study-953375888f34e4fa",
+          "study-7b09c00685b85f0b",
+          "study-fd0616075bb2c582",
+          "study-b16f6b6324ce4b76",
+          "study-6ddd715c0eb8fc0e",
+          "study-2e16b925298eb4c1",
+          "study-1abadd5534ac9dbf",
+          "study-0b2868060d3cbc14",
+          "study-6e1b796279cb2cd0",
+          "study-4b200081fea467e4",
+          "study-a781ac8d598885a5",
+          "study-4fa9f4272b501cda",
+          "study-9ba4e804de0d3414",
+          "study-acba6e2df584fbed",
+          "study-1531be63b1ba3b9f",
+          "study-724fd2d7b93d4d52",
+          "study-11cc215bfb29b777",
+          "study-fa00b031a284f530",
+          "study-b863ad13a7a57f01",
+          "study-f3fdfc9754a48ee7",
+          "study-34b20f9d559da8e5",
+          "study-9d3f5ee8b7eb84eb",
+          "study-f0694307ea8bc7d3",
+          "study-ae5284cd0750a13a",
+          "study-eb61db9236415e5a",
+          "study-f7225472e00b42eb",
+          "study-9156b3215b18aa27",
+          "study-eff2175d2bdc823a",
+          "study-985f8fdd03ff451b",
+          "study-af6f07671d745106",
+          "study-7be147219d234ef1",
+          "study-9f80f4767f985954",
+          "study-9276dab35c66fc2d",
+          "study-357db7410fc28db7",
+          "study-46d16b8b53a30a7c",
+          "study-e486d43939f9a179",
+          "study-adc8badca80a2c2e",
+          "study-7999e51dd5fcf902",
+          "study-94b7ca93bfc01cd4",
+          "study-433130648dddb5d7",
+          "study-44f7e7d507d03cd6",
+          "study-54dbba14d0b4fb02",
+          "study-0fc0ecd7436d9fd6",
+          "study-07d8fc2f3efffa1a",
+          "study-131b5ce8187f0dd8",
+          "study-3eed72deebe7de72",
+          "study-ccf1f50aa389908e",
+          "study-654b8a46bafb3b18",
+          "study-71c4de188b9251b0",
+          "study-261c1bbb3eaa7c62",
+          "study-62c4b340e7d8902e",
+          "study-0617c60578b40eca",
+          "study-531eef16d2bd9d2a",
+          "study-b2e567c6026e9675",
+          "study-d7123650d2371369",
+          "study-73ba4ff2c835017c",
+          "study-2aad92b9864bdaa5",
+          "study-20db870cc4485d75",
+          "study-22d1f6601cac48aa",
+          "study-4d3d46af153e4741",
+          "study-e1f8b5a838157116",
+          "study-907b416e1515ec1c",
+          "study-e58963851cd64c26",
+          "study-6687c6d11307a99c",
+          "study-88e6a5709fcd1cad",
+          "study-0cb98a154e376b49",
+          "study-fceb737a938f4a65",
+          "study-57eee623463f27ed",
+          "study-02f2bfe06338bb12",
+          "study-a9e428a913b56417",
+          "study-4d3eba4be052dba5",
+          "study-fea9a025cc7e7754",
+          "study-2e8940b94aa5574e",
+          "study-6ad0c54b0fe7b63b",
+          "study-f925c684585c9975",
+          "study-cfcb09ff1945275c",
+          "study-aee5ed1a33c600d7",
+          "study-8941e0c0523aedd4",
+          "study-f9796f6be9f4de37",
+          "study-c71d31dfbb23cb08",
+          "study-a25f5c0ba8dda440",
+          "study-a53ba94cfbf5285b",
+          "study-890fc7cf3d0a0de6",
+          "study-cfe9fbf8ee49324e",
+          "study-d692c7cd4bc7547c",
+          "study-216ab3c86691156b",
+          "study-748d678c32f67409",
+          "study-9c64bee6c6592d51",
+          "study-1863277796356604",
+          "study-d73d63d0cd29c4ff",
+          "study-7f02fddd947c522c",
+          "study-1993176edd6c8a96",
+          "study-247b04dd3202d9bd",
+          "study-ec5e63764e58701e",
+          "study-54b369f660d028ed",
+          "study-2d69b0d04181f6b3",
+          "study-1620787502f7565a",
+          "study-af6b07b68154fe90"
+        ]
+      }
+    }
+  },
+  "unfinished": [],
+  "updated_at": "2026-10-09 22:33:49 +0800"
+}

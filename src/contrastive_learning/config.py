@@ -57,6 +57,8 @@ _PATH_FIELDS = (
     "image_cache_dir",
     "resume",
     "lm_label_csv",
+    "window_cache_dir",
+    "train_series_mirror",
 )
 
 DEFAULT_CACHE_STUDIES = 64
@@ -91,11 +93,22 @@ class TrainConfig:
     # --- Image tower and preprocessing ------------------------------------- #
     image_model: str = "facebook/dinov2-small"
     image_model_revision: str | None = None
+    # Radiology weights published in timm format use a pinned HF architecture.
+    image_model_format: str = "huggingface"
+    image_model_base: str | None = None
+    image_model_base_revision: str | None = None
     image_size: int = 224
     crop_mm: float = 130.0
     slices_per_plane: int = 3
     slice_band_low: float = 0.20
     slice_band_high: float = 0.80
+    windows_per_plane: int = 0
+    window_cache_dir: Path | None = None
+    # Byte-identical local copy of the <study>/<series> tree; a host setting from paths.json.
+    train_series_mirror: Path | None = None
+    # One loss across batch_size studies; replay each small chunk for its gradients.
+    contrastive_microbatch_size: int = 0
+    loader_prefetch_factor: int = 2
 
     # --- Optimization ------------------------------------------------------ #
     embedding_dim: int = 256
@@ -187,9 +200,28 @@ class TrainConfig:
             raise ValueError("DINOv2 requires exactly three sampled slices as input channels")
         if self.image_size % 14:
             raise ValueError("DINOv2 image_size must be divisible by its 14-pixel patch size")
+        if self.image_model_format not in {"huggingface", "timm_dinov2"}:
+            raise ValueError("Unsupported contrastive image_model_format")
+        if self.image_model_format == "timm_dinov2" and not all((
+            self.image_model_revision, self.image_model_base, self.image_model_base_revision
+        )):
+            raise ValueError("timm_dinov2 requires pinned image weights and base architecture")
         if self.batch_size < 2:
             # In-batch negatives are the training signal; a batch of one has none.
             raise ValueError("Contrastive training requires batch_size >= 2")
+        if self.windows_per_plane < 0 or self.contrastive_microbatch_size < 0:
+            raise ValueError("Window and microbatch counts cannot be negative")
+        if self.loader_prefetch_factor < 1:
+            raise ValueError("loader_prefetch_factor must be positive")
+        if self.contrastive_microbatch_size > self.batch_size:
+            raise ValueError("contrastive_microbatch_size must not exceed batch_size")
+        if self.contrastive_microbatch_size and (self.use_declip or self.label_similarity_weight):
+            raise ValueError("Gradient replay currently supports plain CLIP only")
+        if self.windows_per_plane and (
+            self.window_cache_dir is None or self.cohort_manifest is None
+            or self.image_plane_pooling != "uniform" or not self.contrastive_microbatch_size
+        ):
+            raise ValueError("Windowed CLIP requires a cohort, window cache, uniform pooling and microbatch replay")
         if self.epochs < 1:
             raise ValueError("epochs must be >= 1")
         if self.image_unfreeze_last < 0 or self.text_unfreeze_last < 0:
@@ -268,7 +300,10 @@ class TrainConfig:
     @property
     def image_kwargs(self) -> dict[str, Any]:
         """Image preprocessing settings shared by training, evaluation, and caching."""
-        return preprocessing.image_kwargs(self)
+        settings = preprocessing.image_kwargs(self)
+        if self.windows_per_plane:
+            settings["windows"] = self.windows_per_plane
+        return settings
 
     @property
     def memory_cache_size(self) -> int:
@@ -284,6 +319,12 @@ class TrainConfig:
         """
         names = {field.name for field in fields(cls)}
         values = {key: item for key, item in value.items() if key in names}
+        mirror = values.get("train_series_mirror")
+        if isinstance(mirror, dict):
+            # Runs recorded before the mirror became a plain path stored {"to": path}.
+            if set(mirror) != {"to"}:
+                raise ValueError(f"Unsupported recorded train_series_mirror: {mirror!r}")
+            values["train_series_mirror"] = mirror["to"]
         for name in _PATH_FIELDS:
             if values.get(name) is not None:
                 values[name] = Path(values[name])

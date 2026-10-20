@@ -280,10 +280,12 @@ def run_experiment(config, output, prepared, *, device):
     import time
 
     from .submission import (
+        assert_reload_matches,
         benchmark_head,
         export_member,
         load_member,
         predict_head,
+        reload_tolerance,
         score_predictions,
     )
     from .supervised_head import fit_dense_head
@@ -404,7 +406,7 @@ def run_experiment(config, output, prepared, *, device):
     )
     expected = predictions["mlp"][:1]
     reloaded_predictions = predict_head(reloaded_features, payload["head"])
-    np.testing.assert_allclose(reloaded_predictions, expected, atol=1e-5, rtol=1e-5)
+    assert_reload_matches(reloaded_predictions, expected, reload_tolerance(config))
     write_json(
         bundle / "bundle.json",
         {

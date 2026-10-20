@@ -1,0 +1,979 @@
+{
+  "experiment": "omnirad-base-k8-soft-336-u9-b1-bank-l0.1",
+  "primary_pair": "joint (u9) - u9-b1 (label, u9)",
+  "population": {
+    "lm_test": 432,
+    "gold": 58,
+    "train": 3438,
+    "validation": 426
+  },
+  "bootstrap": {
+    "resamples": 2000,
+    "seed": 2030,
+    "unit": "study",
+    "confidence": 0.95
+  },
+  "recipe": {
+    "image_model": "Snarcy/OmniRad-base",
+    "image_unfreeze_last": 9,
+    "windows_per_plane": 8,
+    "slices_per_plane": 3,
+    "image_size": 336,
+    "classification_targets": "soft",
+    "classification_weight": 1.0,
+    "contrastive_weight": 0.1,
+    "batch_size": 1,
+    "grad_accumulation": 16,
+    "epochs": 20,
+    "seed": 2026,
+    "text_model": "intfloat/multilingual-e5-base",
+    "text_unfreeze_last": 0
+  },
+  "text_bank": {
+    "reports": 3357,
+    "studies": 3438
+  },
+  "selection_policy": "validation_classification_bce ascending, mean_r@1 descending, earliest epoch",
+  "run_provenance": {
+    "git": {
+      "branch": "joint/text-bank",
+      "commit": "c5e0142909d80ee8a6fb933a990cebe5ce65763c",
+      "dirty": true
+    },
+    "source_tree_sha256": "ae4a4bf35adb6c6c35878263a775a0a253638729c96abcbb841d2cfb74df8890"
+  },
+  "point": {
+    "lm_test": {
+      "run5 (label, u3)": 0.8775061374989838,
+      "run5 seed2027": 0.8746349510561076,
+      "CLIP->label (u3)": 0.8800973667601081,
+      "u9-b1 (label, u9)": 0.8834063897533665,
+      "joint (u9)": 0.8808638487469015
+    },
+    "gold": {
+      "run5 (label, u3)": 0.8266710098089458,
+      "run5 seed2027": 0.833273615380457,
+      "CLIP->label (u3)": 0.8248059570031966,
+      "u9-b1 (label, u9)": 0.8774666258272018,
+      "joint (u9)": 0.8493660830859913
+    }
+  },
+  "paired": {
+    "lm_test": {
+      "joint (u9) - u9-b1 (label, u9)": {
+        "difference": -0.0025425410064650045,
+        "ci95": [
+          -0.013546744427073876,
+          0.008423419397604196
+        ]
+      },
+      "CLIP->label (u3) - run5 (label, u3)": {
+        "difference": 0.002591229261124317,
+        "ci95": [
+          -0.008917106311494486,
+          0.01421364367176579
+        ]
+      },
+      "run5 seed2027 - run5 (label, u3)": {
+        "difference": -0.0028711864428762057,
+        "ci95": [
+          -0.011024353832945328,
+          0.006146474951111916
+        ]
+      },
+      "joint (u9) - CLIP->label (u3)": {
+        "difference": 0.0007664819867934103,
+        "ci95": [
+          -0.009996113624529842,
+          0.011957430312891445
+        ]
+      }
+    },
+    "gold": {
+      "joint (u9) - u9-b1 (label, u9)": {
+        "difference": -0.028100542741210544,
+        "ci95": [
+          -0.05423225220820813,
+          -0.003503161021901455
+        ]
+      },
+      "CLIP->label (u3) - run5 (label, u3)": {
+        "difference": -0.0018650528057492233,
+        "ci95": [
+          -0.03016623264080179,
+          0.025990181093720335
+        ]
+      },
+      "run5 seed2027 - run5 (label, u3)": {
+        "difference": 0.006602605571511155,
+        "ci95": [
+          -0.015291865868551992,
+          0.02912867233986715
+        ]
+      },
+      "joint (u9) - CLIP->label (u3)": {
+        "difference": 0.024560126082794675,
+        "ci95": [
+          -0.006469404397028215,
+          0.054913769249974806
+        ]
+      }
+    }
+  },
+  "per_label": {
+    "lm_test": {
+      "run5 (label, u3)": {
+        "ACL": 0.8507492225049477,
+        "MCL": 0.8555900621118012,
+        "Medial Meniscus": 0.8861440626146508,
+        "Lateral Meniscus": 0.834197218710493,
+        "Medial OA": 0.9017338788233003,
+        "Lateral OA": 0.8428342834283429,
+        "PF OA": 0.8828181758140149,
+        "Effusion": 0.8800248419150858,
+        "Synovitis": 0.8813209494324046,
+        "Baker's": 0.9181611518060117,
+        "Contusion": 0.880461592670895,
+        "Fracture": 0.9160382101558572
+      },
+      "run5 seed2027": {
+        "ACL": 0.8543115634718688,
+        "MCL": 0.848114463176575,
+        "Medial Meniscus": 0.8807141983612572,
+        "Lateral Meniscus": 0.8118994943109987,
+        "Medial OA": 0.8953243717124488,
+        "Lateral OA": 0.8520602060206021,
+        "PF OA": 0.8828346872729674,
+        "Effusion": 0.8803777100271003,
+        "Synovitis": 0.8947368421052632,
+        "Baker's": 0.9172770901742865,
+        "Contusion": 0.8832980972515856,
+        "Fracture": 0.8946706887883359
+      },
+      "CLIP->label (u3)": {
+        "ACL": 0.8651258128357365,
+        "MCL": 0.8251774622892636,
+        "Medial Meniscus": 0.9008071419836126,
+        "Lateral Meniscus": 0.7995259165613148,
+        "Medial OA": 0.9142996298460939,
+        "Lateral OA": 0.8656365636563657,
+        "PF OA": 0.8784426391915989,
+        "Effusion": 0.872656955736224,
+        "Synovitis": 0.9504643962848297,
+        "Baker's": 0.9242653868822093,
+        "Contusion": 0.864816772374912,
+        "Fracture": 0.8999497234791353
+      },
+      "u9-b1 (label, u9)": {
+        "ACL": 0.8566440486287814,
+        "MCL": 0.8400621118012422,
+        "Medial Meniscus": 0.8923443805796747,
+        "Lateral Meniscus": 0.8253634639696587,
+        "Medial OA": 0.9254432105980908,
+        "Lateral OA": 0.891964196419642,
+        "PF OA": 0.8799616934152301,
+        "Effusion": 0.8711325654923215,
+        "Synovitis": 0.8740970072239422,
+        "Baker's": 0.9119306222109961,
+        "Contusion": 0.8960359408033827,
+        "Fracture": 0.9358974358974359
+      },
+      "joint (u9)": {
+        "ACL": 0.8488408255583828,
+        "MCL": 0.8484472049689441,
+        "Medial Meniscus": 0.8919774978598508,
+        "Lateral Meniscus": 0.811346396965866,
+        "Medial OA": 0.9065653613871031,
+        "Lateral OA": 0.8684368436843685,
+        "PF OA": 0.8719041014464038,
+        "Effusion": 0.8862635501355014,
+        "Synovitis": 0.9164086687306502,
+        "Baker's": 0.9352109118464259,
+        "Contusion": 0.8770965468639887,
+        "Fracture": 0.9078682755153343
+      }
+    },
+    "gold": {
+      "run5 (label, u3)": {
+        "ACL": 0.8737745098039216,
+        "MCL": 0.9047619047619048,
+        "Medial Meniscus": 0.8774038461538461,
+        "Lateral Meniscus": 0.6236024844720497,
+        "Medial OA": 0.9054263565891473,
+        "Lateral OA": 0.6402321083172147,
+        "PF OA": 0.833976833976834,
+        "Effusion": 0.8347826086956521,
+        "Synovitis": 0.7228195937873357,
+        "Baker's": 0.9257246376811594,
+        "Contusion": 0.865047233468286,
+        "Fracture": 0.9125
+      },
+      "run5 seed2027": {
+        "ACL": 0.9264705882352942,
+        "MCL": 0.9183673469387755,
+        "Medial Meniscus": 0.8912259615384616,
+        "Lateral Meniscus": 0.6211180124223602,
+        "Medial OA": 0.9085271317829458,
+        "Lateral OA": 0.6344294003868471,
+        "PF OA": 0.8442728442728443,
+        "Effusion": 0.8186335403726708,
+        "Synovitis": 0.7646356033452808,
+        "Baker's": 0.9257246376811594,
+        "Contusion": 0.8556005398110661,
+        "Fracture": 0.8902777777777777
+      },
+      "CLIP->label (u3)": {
+        "ACL": 0.9325980392156863,
+        "MCL": 0.81859410430839,
+        "Medial Meniscus": 0.8725961538461539,
+        "Lateral Meniscus": 0.7130434782608696,
+        "Medial OA": 0.9116279069767442,
+        "Lateral OA": 0.6112185686653772,
+        "PF OA": 0.824967824967825,
+        "Effusion": 0.8173913043478261,
+        "Synovitis": 0.7264038231780168,
+        "Baker's": 0.9365942028985508,
+        "Contusion": 0.9048582995951417,
+        "Fracture": 0.8277777777777777
+      },
+      "u9-b1 (label, u9)": {
+        "ACL": 0.9534313725490197,
+        "MCL": 0.8979591836734694,
+        "Medial Meniscus": 0.9591346153846154,
+        "Lateral Meniscus": 0.8,
+        "Medial OA": 0.9565891472868217,
+        "Lateral OA": 0.7988394584139265,
+        "PF OA": 0.8391248391248392,
+        "Effusion": 0.8782608695652174,
+        "Synovitis": 0.7646356033452808,
+        "Baker's": 0.9384057971014492,
+        "Contusion": 0.8515519568151148,
+        "Fracture": 0.8916666666666667
+      },
+      "joint (u9)": {
+        "ACL": 0.9313725490196079,
+        "MCL": 0.8888888888888888,
+        "Medial Meniscus": 0.8491586538461539,
+        "Lateral Meniscus": 0.6832298136645962,
+        "Medial OA": 0.9162790697674419,
+        "Lateral OA": 0.7001934235976789,
+        "PF OA": 0.8674388674388674,
+        "Effusion": 0.9304347826086956,
+        "Synovitis": 0.7813620071684588,
+        "Baker's": 0.9184782608695652,
+        "Contusion": 0.8380566801619433,
+        "Fracture": 0.8875
+      }
+    }
+  },
+  "runs": [
+    {
+      "key": "run5 (label, u3)",
+      "name": "r4a-k8-omnirad-base-soft-336",
+      "title": "Run 5 \u00b7 label only, u3",
+      "source": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336",
+      "best_epoch": 17,
+      "epochs_completed": 20,
+      "validation_masked_bce": 0.4200536012649536,
+      "history": [
+        {
+          "epoch": 1,
+          "train_bce": 0.6199913863060154,
+          "validation_bce": 0.6153551340103149,
+          "validation_macro_auroc": 0.7727186758665462
+        },
+        {
+          "epoch": 2,
+          "train_bce": 0.5857205011032917,
+          "validation_bce": 0.49224480986595154,
+          "validation_macro_auroc": 0.8094640798598213
+        },
+        {
+          "epoch": 3,
+          "train_bce": 0.5612808658485152,
+          "validation_bce": 0.47994813323020935,
+          "validation_macro_auroc": 0.8371126442850061
+        },
+        {
+          "epoch": 4,
+          "train_bce": 0.5463175955355826,
+          "validation_bce": 0.49719735980033875,
+          "validation_macro_auroc": 0.8426281693216152
+        },
+        {
+          "epoch": 5,
+          "train_bce": 0.5358313816952248,
+          "validation_bce": 0.457013875246048,
+          "validation_macro_auroc": 0.8505829904500702
+        },
+        {
+          "epoch": 6,
+          "train_bce": 0.5240717598385004,
+          "validation_bce": 0.4507713317871094,
+          "validation_macro_auroc": 0.8607583096377528
+        },
+        {
+          "epoch": 7,
+          "train_bce": 0.5147797466234595,
+          "validation_bce": 0.4426272511482239,
+          "validation_macro_auroc": 0.8617881214578106
+        },
+        {
+          "epoch": 8,
+          "train_bce": 0.5032752834741566,
+          "validation_bce": 0.44286417961120605,
+          "validation_macro_auroc": 0.8611796144919039
+        },
+        {
+          "epoch": 9,
+          "train_bce": 0.4914720445403254,
+          "validation_bce": 0.43238961696624756,
+          "validation_macro_auroc": 0.8635830150396339
+        },
+        {
+          "epoch": 10,
+          "train_bce": 0.4806138125528354,
+          "validation_bce": 0.43427830934524536,
+          "validation_macro_auroc": 0.8708952385198064
+        },
+        {
+          "epoch": 11,
+          "train_bce": 0.4695060363450045,
+          "validation_bce": 0.42204549908638,
+          "validation_macro_auroc": 0.870750063086681
+        },
+        {
+          "epoch": 12,
+          "train_bce": 0.4583039324472747,
+          "validation_bce": 0.42223525047302246,
+          "validation_macro_auroc": 0.8719779214518971
+        },
+        {
+          "epoch": 13,
+          "train_bce": 0.447965721189629,
+          "validation_bce": 0.4253254532814026,
+          "validation_macro_auroc": 0.8695375100170034
+        },
+        {
+          "epoch": 14,
+          "train_bce": 0.4393548966234267,
+          "validation_bce": 0.4242887496948242,
+          "validation_macro_auroc": 0.8701844582146454
+        },
+        {
+          "epoch": 15,
+          "train_bce": 0.43233462522990695,
+          "validation_bce": 0.42527133226394653,
+          "validation_macro_auroc": 0.8709749507239394
+        },
+        {
+          "epoch": 16,
+          "train_bce": 0.42614044538369145,
+          "validation_bce": 0.42076194286346436,
+          "validation_macro_auroc": 0.8688178555968191
+        },
+        {
+          "epoch": 17,
+          "train_bce": 0.42192388442521045,
+          "validation_bce": 0.4200536012649536,
+          "validation_macro_auroc": 0.8692623006485629
+        },
+        {
+          "epoch": 18,
+          "train_bce": 0.4186953083699252,
+          "validation_bce": 0.42125648260116577,
+          "validation_macro_auroc": 0.8680515052179695
+        },
+        {
+          "epoch": 19,
+          "train_bce": 0.41689100277292096,
+          "validation_bce": 0.4232707917690277,
+          "validation_macro_auroc": 0.8682188160663529
+        },
+        {
+          "epoch": 20,
+          "train_bce": 0.4158288163239697,
+          "validation_bce": 0.42125824093818665,
+          "validation_macro_auroc": 0.8683503615906888
+        }
+      ]
+    },
+    {
+      "key": "run5 seed2027",
+      "name": "r4a-k8-omnirad-base-soft-336-seed2027",
+      "title": "Run 5 \u00b7 seed 2027",
+      "source": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-seed2027",
+      "best_epoch": 16,
+      "epochs_completed": 20,
+      "validation_masked_bce": 0.41821199655532837,
+      "history": [
+        {
+          "epoch": 1,
+          "train_bce": 0.6217405508863434,
+          "validation_bce": 0.5406026840209961,
+          "validation_macro_auroc": 0.7663458604563865
+        },
+        {
+          "epoch": 2,
+          "train_bce": 0.584254832063878,
+          "validation_bce": 0.5125703811645508,
+          "validation_macro_auroc": 0.8156263369041471
+        },
+        {
+          "epoch": 3,
+          "train_bce": 0.5601085927933368,
+          "validation_bce": 0.4863092005252838,
+          "validation_macro_auroc": 0.8309487137910488
+        },
+        {
+          "epoch": 4,
+          "train_bce": 0.5472285481491638,
+          "validation_bce": 0.46211349964141846,
+          "validation_macro_auroc": 0.8440859187456962
+        },
+        {
+          "epoch": 5,
+          "train_bce": 0.5378104195198117,
+          "validation_bce": 0.4698823094367981,
+          "validation_macro_auroc": 0.8561962236000694
+        },
+        {
+          "epoch": 6,
+          "train_bce": 0.522972663781059,
+          "validation_bce": 0.4516017436981201,
+          "validation_macro_auroc": 0.8592122089327546
+        },
+        {
+          "epoch": 7,
+          "train_bce": 0.5138308624582557,
+          "validation_bce": 0.4386330544948578,
+          "validation_macro_auroc": 0.8603459628880951
+        },
+        {
+          "epoch": 8,
+          "train_bce": 0.5001252704733954,
+          "validation_bce": 0.4376228451728821,
+          "validation_macro_auroc": 0.8665737281071874
+        },
+        {
+          "epoch": 9,
+          "train_bce": 0.48963348087250597,
+          "validation_bce": 0.45269685983657837,
+          "validation_macro_auroc": 0.8683835790043059
+        },
+        {
+          "epoch": 10,
+          "train_bce": 0.4791627229820371,
+          "validation_bce": 0.4220726191997528,
+          "validation_macro_auroc": 0.8707153549514653
+        },
+        {
+          "epoch": 11,
+          "train_bce": 0.46756753836904175,
+          "validation_bce": 0.419891357421875,
+          "validation_macro_auroc": 0.8737584641873647
+        },
+        {
+          "epoch": 12,
+          "train_bce": 0.45729361668688534,
+          "validation_bce": 0.4244038164615631,
+          "validation_macro_auroc": 0.870093295942862
+        },
+        {
+          "epoch": 13,
+          "train_bce": 0.44706867148080076,
+          "validation_bce": 0.42439940571784973,
+          "validation_macro_auroc": 0.8690395807883439
+        },
+        {
+          "epoch": 14,
+          "train_bce": 0.43794352461764324,
+          "validation_bce": 0.4222501814365387,
+          "validation_macro_auroc": 0.8709861446999776
+        },
+        {
+          "epoch": 15,
+          "train_bce": 0.4306705752176348,
+          "validation_bce": 0.42042967677116394,
+          "validation_macro_auroc": 0.8702625566564367
+        },
+        {
+          "epoch": 16,
+          "train_bce": 0.4250077578461815,
+          "validation_bce": 0.41821199655532837,
+          "validation_macro_auroc": 0.870926110142277
+        },
+        {
+          "epoch": 17,
+          "train_bce": 0.42057242337885187,
+          "validation_bce": 0.41940736770629883,
+          "validation_macro_auroc": 0.871374914220933
+        },
+        {
+          "epoch": 18,
+          "train_bce": 0.4177899780775864,
+          "validation_bce": 0.4202195405960083,
+          "validation_macro_auroc": 0.871169852487253
+        },
+        {
+          "epoch": 19,
+          "train_bce": 0.41570032566759807,
+          "validation_bce": 0.4196554720401764,
+          "validation_macro_auroc": 0.8712924185598884
+        },
+        {
+          "epoch": 20,
+          "train_bce": 0.4151970621907066,
+          "validation_bce": 0.41960886120796204,
+          "validation_macro_auroc": 0.8710426350055651
+        }
+      ]
+    },
+    {
+      "key": "CLIP->label (u3)",
+      "name": "r4a-k8-omnirad-base-soft-336-from-clip",
+      "title": "Two stages \u00b7 CLIP \u2192 labels, u3",
+      "source": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-from-clip",
+      "best_epoch": 11,
+      "epochs_completed": 16,
+      "validation_masked_bce": 0.42061617970466614,
+      "history": [
+        {
+          "epoch": 1,
+          "train_bce": 0.5783287464636159,
+          "validation_bce": 0.4737964868545532,
+          "validation_macro_auroc": 0.845751299503131
+        },
+        {
+          "epoch": 2,
+          "train_bce": 0.5386193184406346,
+          "validation_bce": 0.45681032538414,
+          "validation_macro_auroc": 0.8510975796696446
+        },
+        {
+          "epoch": 3,
+          "train_bce": 0.5273997506875504,
+          "validation_bce": 0.4519920349121094,
+          "validation_macro_auroc": 0.855252386084009
+        },
+        {
+          "epoch": 4,
+          "train_bce": 0.5135115690273625,
+          "validation_bce": 0.433411180973053,
+          "validation_macro_auroc": 0.8649851965639069
+        },
+        {
+          "epoch": 5,
+          "train_bce": 0.5000261061842737,
+          "validation_bce": 0.4437432587146759,
+          "validation_macro_auroc": 0.8700933781378514
+        },
+        {
+          "epoch": 6,
+          "train_bce": 0.48722962670596,
+          "validation_bce": 0.42741310596466064,
+          "validation_macro_auroc": 0.8726123886784217
+        },
+        {
+          "epoch": 7,
+          "train_bce": 0.4733257715553999,
+          "validation_bce": 0.4231526255607605,
+          "validation_macro_auroc": 0.8755956238438657
+        },
+        {
+          "epoch": 8,
+          "train_bce": 0.45909390711659537,
+          "validation_bce": 0.4362223148345947,
+          "validation_macro_auroc": 0.8733729551976265
+        },
+        {
+          "epoch": 9,
+          "train_bce": 0.44483948386273736,
+          "validation_bce": 0.42404794692993164,
+          "validation_macro_auroc": 0.869344377492202
+        },
+        {
+          "epoch": 10,
+          "train_bce": 0.4329137799436787,
+          "validation_bce": 0.431884229183197,
+          "validation_macro_auroc": 0.872057845423568
+        },
+        {
+          "epoch": 11,
+          "train_bce": 0.42249294219364114,
+          "validation_bce": 0.42061617970466614,
+          "validation_macro_auroc": 0.8688450413871829
+        },
+        {
+          "epoch": 12,
+          "train_bce": 0.41413220467393724,
+          "validation_bce": 0.42084723711013794,
+          "validation_macro_auroc": 0.8692717917122553
+        },
+        {
+          "epoch": 13,
+          "train_bce": 0.4065029726381597,
+          "validation_bce": 0.43158072233200073,
+          "validation_macro_auroc": 0.8664338314883199
+        },
+        {
+          "epoch": 14,
+          "train_bce": 0.4017571119711869,
+          "validation_bce": 0.4350242614746094,
+          "validation_macro_auroc": 0.8655263045508819
+        },
+        {
+          "epoch": 15,
+          "train_bce": 0.3971883287439865,
+          "validation_bce": 0.42775559425354004,
+          "validation_macro_auroc": 0.8648099361721181
+        },
+        {
+          "epoch": 16,
+          "train_bce": 0.39395312186050996,
+          "validation_bce": 0.42493942379951477,
+          "validation_macro_auroc": 0.8643922483508836
+        }
+      ]
+    },
+    {
+      "key": "u9-b1 (label, u9)",
+      "name": "r4a-k8-omnirad-base-soft-336-u9-b1",
+      "title": "Label only \u00b7 u9, batch 1",
+      "source": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1",
+      "best_epoch": 12,
+      "epochs_completed": 17,
+      "validation_masked_bce": 0.43078508973121643,
+      "history": [
+        {
+          "epoch": 1,
+          "train_bce": 0.6167313487460233,
+          "validation_bce": 0.5804242491722107,
+          "validation_macro_auroc": 0.7860135343177442
+        },
+        {
+          "epoch": 2,
+          "train_bce": 0.5780519327888869,
+          "validation_bce": 0.4852921962738037,
+          "validation_macro_auroc": 0.8236523042229615
+        },
+        {
+          "epoch": 3,
+          "train_bce": 0.5555382150552035,
+          "validation_bce": 0.5054088830947876,
+          "validation_macro_auroc": 0.8364089691114663
+        },
+        {
+          "epoch": 4,
+          "train_bce": 0.5408938990503879,
+          "validation_bce": 0.46559712290763855,
+          "validation_macro_auroc": 0.8402194553614432
+        },
+        {
+          "epoch": 5,
+          "train_bce": 0.5257883390098584,
+          "validation_bce": 0.4542163610458374,
+          "validation_macro_auroc": 0.8513679835310058
+        },
+        {
+          "epoch": 6,
+          "train_bce": 0.5098898580819021,
+          "validation_bce": 0.4411465525627136,
+          "validation_macro_auroc": 0.8646833709124153
+        },
+        {
+          "epoch": 7,
+          "train_bce": 0.49498377647142533,
+          "validation_bce": 0.44051069021224976,
+          "validation_macro_auroc": 0.8611460282921777
+        },
+        {
+          "epoch": 8,
+          "train_bce": 0.47997592629159413,
+          "validation_bce": 0.45047527551651,
+          "validation_macro_auroc": 0.8610077268278601
+        },
+        {
+          "epoch": 9,
+          "train_bce": 0.46449500977897656,
+          "validation_bce": 0.45078760385513306,
+          "validation_macro_auroc": 0.8574755036951935
+        },
+        {
+          "epoch": 10,
+          "train_bce": 0.4506463258217862,
+          "validation_bce": 0.43497204780578613,
+          "validation_macro_auroc": 0.8587960143989268
+        },
+        {
+          "epoch": 11,
+          "train_bce": 0.43878629331711577,
+          "validation_bce": 0.44847357273101807,
+          "validation_macro_auroc": 0.8628360149937199
+        },
+        {
+          "epoch": 12,
+          "train_bce": 0.42839070007155167,
+          "validation_bce": 0.43078508973121643,
+          "validation_macro_auroc": 0.8643458764094533
+        },
+        {
+          "epoch": 13,
+          "train_bce": 0.4186141292812165,
+          "validation_bce": 0.44112178683280945,
+          "validation_macro_auroc": 0.8612066271306601
+        },
+        {
+          "epoch": 14,
+          "train_bce": 0.4099320405346535,
+          "validation_bce": 0.4315102994441986,
+          "validation_macro_auroc": 0.8583825302526326
+        },
+        {
+          "epoch": 15,
+          "train_bce": 0.40339494485206523,
+          "validation_bce": 0.4321906566619873,
+          "validation_macro_auroc": 0.8608315138437094
+        },
+        {
+          "epoch": 16,
+          "train_bce": 0.398369605010435,
+          "validation_bce": 0.438486248254776,
+          "validation_macro_auroc": 0.8590783985391184
+        },
+        {
+          "epoch": 17,
+          "train_bce": 0.39487672369892496,
+          "validation_bce": 0.43155375123023987,
+          "validation_macro_auroc": 0.8614942622717697
+        }
+      ]
+    },
+    {
+      "key": "joint (u9)",
+      "name": "omnirad-base-k8-soft-336-u9-b1-bank-l0.1",
+      "title": "One stage \u00b7 joint loss, u9",
+      "source": "checkpoints/joint/omnirad-base-k8-soft-336-u9-b1-bank-l0.1",
+      "best_epoch": 17,
+      "epochs_completed": 20,
+      "validation_masked_bce": 0.4294899106025696,
+      "history": [
+        {
+          "epoch": 1,
+          "train_bce": 0.6141826032512995,
+          "validation_bce": 0.5717992782592773,
+          "train_contrastive_loss": 7.2574558737251635,
+          "validation_retrieval_loss": 4.465854644775391,
+          "mean_recall_at_1": 0.0410798117518425,
+          "image_to_text_r@1": 0.04929577559232712,
+          "text_to_image_r@1": 0.03286384791135788
+        },
+        {
+          "epoch": 2,
+          "train_bce": 0.5825490528200777,
+          "validation_bce": 0.4975205361843109,
+          "train_contrastive_loss": 5.994642208037229,
+          "validation_retrieval_loss": 4.230863571166992,
+          "mean_recall_at_1": 0.05281689949333668,
+          "image_to_text_r@1": 0.06338027864694595,
+          "text_to_image_r@1": 0.0422535203397274
+        },
+        {
+          "epoch": 3,
+          "train_bce": 0.5662189497947779,
+          "validation_bce": 0.4896825850009918,
+          "train_contrastive_loss": 5.654117881974347,
+          "validation_retrieval_loss": 3.807547092437744,
+          "mean_recall_at_1": 0.07276995107531548,
+          "image_to_text_r@1": 0.08920187503099442,
+          "text_to_image_r@1": 0.056338027119636536
+        },
+        {
+          "epoch": 4,
+          "train_bce": 0.550264313658824,
+          "validation_bce": 0.45996877551078796,
+          "train_contrastive_loss": 5.349937885496907,
+          "validation_retrieval_loss": 3.8987934589385986,
+          "mean_recall_at_1": 0.07335680723190308,
+          "image_to_text_r@1": 0.09037558734416962,
+          "text_to_image_r@1": 0.056338027119636536
+        },
+        {
+          "epoch": 5,
+          "train_bce": 0.5345447751898763,
+          "validation_bce": 0.4572599232196808,
+          "train_contrastive_loss": 5.105407088518212,
+          "validation_retrieval_loss": 3.4116663932800293,
+          "mean_recall_at_1": 0.11208920180797577,
+          "image_to_text_r@1": 0.14201878011226654,
+          "text_to_image_r@1": 0.082159623503685
+        },
+        {
+          "epoch": 6,
+          "train_bce": 0.5222404115313773,
+          "validation_bce": 0.46561112999916077,
+          "train_contrastive_loss": 4.889087536294769,
+          "validation_retrieval_loss": 3.7332863807678223,
+          "mean_recall_at_1": 0.09507042169570923,
+          "image_to_text_r@1": 0.09859155118465424,
+          "text_to_image_r@1": 0.09154929220676422
+        },
+        {
+          "epoch": 7,
+          "train_bce": 0.5090539982047207,
+          "validation_bce": 0.4415803849697113,
+          "train_contrastive_loss": 4.607908098251408,
+          "validation_retrieval_loss": 3.40516996383667,
+          "mean_recall_at_1": 0.1232394389808178,
+          "image_to_text_r@1": 0.13615024089813232,
+          "text_to_image_r@1": 0.11032863706350327
+        },
+        {
+          "epoch": 8,
+          "train_bce": 0.4968383968745452,
+          "validation_bce": 0.44890302419662476,
+          "train_contrastive_loss": 4.357695484296606,
+          "validation_retrieval_loss": 3.205148458480835,
+          "mean_recall_at_1": 0.1631455346941948,
+          "image_to_text_r@1": 0.19483567774295807,
+          "text_to_image_r@1": 0.13145539164543152
+        },
+        {
+          "epoch": 9,
+          "train_bce": 0.4866833311845313,
+          "validation_bce": 0.44328969717025757,
+          "train_contrastive_loss": 4.035315172305768,
+          "validation_retrieval_loss": 3.245042562484741,
+          "mean_recall_at_1": 0.15727699548006058,
+          "image_to_text_r@1": 0.17136150598526,
+          "text_to_image_r@1": 0.14319248497486115
+        },
+        {
+          "epoch": 10,
+          "train_bce": 0.47552535071136853,
+          "validation_bce": 0.43903300166130066,
+          "train_contrastive_loss": 3.6857887072409565,
+          "validation_retrieval_loss": 3.3881916999816895,
+          "mean_recall_at_1": 0.160798117518425,
+          "image_to_text_r@1": 0.17840375006198883,
+          "text_to_image_r@1": 0.14319248497486115
+        },
+        {
+          "epoch": 11,
+          "train_bce": 0.46562151156567416,
+          "validation_bce": 0.4335818588733673,
+          "train_contrastive_loss": 3.247969545382809,
+          "validation_retrieval_loss": 3.6708884239196777,
+          "mean_recall_at_1": 0.17429577559232712,
+          "image_to_text_r@1": 0.19835680723190308,
+          "text_to_image_r@1": 0.15023474395275116
+        },
+        {
+          "epoch": 12,
+          "train_bce": 0.4558751980967521,
+          "validation_bce": 0.43182775378227234,
+          "train_contrastive_loss": 2.7285567291797186,
+          "validation_retrieval_loss": 3.8736071586608887,
+          "mean_recall_at_1": 0.18544600903987885,
+          "image_to_text_r@1": 0.19953051209449768,
+          "text_to_image_r@1": 0.17136150598526
+        },
+        {
+          "epoch": 13,
+          "train_bce": 0.44854044396356574,
+          "validation_bce": 0.4395313560962677,
+          "train_contrastive_loss": 2.2265288134197876,
+          "validation_retrieval_loss": 4.340356826782227,
+          "mean_recall_at_1": 0.2065727710723877,
+          "image_to_text_r@1": 0.24178403615951538,
+          "text_to_image_r@1": 0.17136150598526
+        },
+        {
+          "epoch": 14,
+          "train_bce": 0.4435498336370148,
+          "validation_bce": 0.42991626262664795,
+          "train_contrastive_loss": 1.698771753512553,
+          "validation_retrieval_loss": 4.776633262634277,
+          "mean_recall_at_1": 0.17840375751256943,
+          "image_to_text_r@1": 0.19014084339141846,
+          "text_to_image_r@1": 0.1666666716337204
+        },
+        {
+          "epoch": 15,
+          "train_bce": 0.4368784878329266,
+          "validation_bce": 0.43358132243156433,
+          "train_contrastive_loss": 1.2426352911182355,
+          "validation_retrieval_loss": 5.387660503387451,
+          "mean_recall_at_1": 0.17840375751256943,
+          "image_to_text_r@1": 0.19248826801776886,
+          "text_to_image_r@1": 0.16431924700737
+        },
+        {
+          "epoch": 16,
+          "train_bce": 0.4326794642587737,
+          "validation_bce": 0.43305686116218567,
+          "train_contrastive_loss": 0.8795795919586924,
+          "validation_retrieval_loss": 5.706881523132324,
+          "mean_recall_at_1": 0.19131454825401306,
+          "image_to_text_r@1": 0.2042253464460373,
+          "text_to_image_r@1": 0.17840375006198883
+        },
+        {
+          "epoch": 17,
+          "train_bce": 0.42862431078373414,
+          "validation_bce": 0.4294899106025696,
+          "train_contrastive_loss": 0.6237404432681125,
+          "validation_retrieval_loss": 5.892519950866699,
+          "mean_recall_at_1": 0.19131455570459366,
+          "image_to_text_r@1": 0.19718310236930847,
+          "text_to_image_r@1": 0.18544600903987885
+        },
+        {
+          "epoch": 18,
+          "train_bce": 0.425540215621847,
+          "validation_bce": 0.4306678771972656,
+          "train_contrastive_loss": 0.4667089426495328,
+          "validation_retrieval_loss": 6.155592918395996,
+          "mean_recall_at_1": 0.18896713852882385,
+          "image_to_text_r@1": 0.19718310236930847,
+          "text_to_image_r@1": 0.18075117468833923
+        },
+        {
+          "epoch": 19,
+          "train_bce": 0.4238606315407384,
+          "validation_bce": 0.43138206005096436,
+          "train_contrastive_loss": 0.3808832828556117,
+          "validation_retrieval_loss": 6.220158576965332,
+          "mean_recall_at_1": 0.19248826801776886,
+          "image_to_text_r@1": 0.19718310236930847,
+          "text_to_image_r@1": 0.18779343366622925
+        },
+        {
+          "epoch": 20,
+          "train_bce": 0.42259365460743836,
+          "validation_bce": 0.4317426383495331,
+          "train_contrastive_loss": 0.34923436285700615,
+          "validation_retrieval_loss": 6.221417427062988,
+          "mean_recall_at_1": 0.19131455570459366,
+          "image_to_text_r@1": 0.19718310236930847,
+          "text_to_image_r@1": 0.18544600903987885
+        }
+      ]
+    }
+  ],
+  "source_sha256": {
+    "checkpoints/joint/omnirad-base-k8-soft-336-u9-b1-bank-l0.1/comparison.json": "8637818748f5c2934342e8dba665d01c6064b9cc1b415ae7a9b5c1e8582ed726",
+    "checkpoints/joint/omnirad-base-k8-soft-336-u9-b1-bank-l0.1/config.json": "59f37f65c528db5dbc0dfa42fb655df8864ae62a6662c2bd3c8df25354ae6599",
+    "checkpoints/joint/omnirad-base-k8-soft-336-u9-b1-bank-l0.1/run_manifest.json": "ad69f5f3625f9b95cc48e67b2f9d4f5f36e1fb2faf14144bebd85fb85bd177a1",
+    "checkpoints/finetune/r4a-k8-omnirad-base-soft-336/report.json": "32d846a4bf57550683fad5d3cccc61b7720948bdff148ac76684e3bf9528b64f",
+    "checkpoints/finetune/r4a-k8-omnirad-base-soft-336/history.jsonl": "f4db5967aa936213bc13d9a80802b0ceb0bbe3f8ec833337e15fa84a22152eb7",
+    "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-seed2027/report.json": "fe496a1c5859c48d0b02ef17b383c17504321a762509a2154fc8f36d581e86f6",
+    "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-seed2027/history.jsonl": "f01a913ca0194ec36e59e5eea88315a87715637cd9841781d2b4cfc3ab1b009f",
+    "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-from-clip/report.json": "60b931f9288d82db5c7506f9f90778a01e74c90755f0b5f66efd6d39ca289de8",
+    "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-from-clip/history.jsonl": "cc5e921810724fb0645709ff240bbc54ed2483ebf0dfe23c18fd3609e87b03e9",
+    "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1/report.json": "470075240a29e146a95385fbcee8f4e5bd708e4346574864b75d6cc46285cbe9",
+    "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1/history.jsonl": "506a64cc57d935767d5dbeb949d4bf3258b9ba57ddd6a27f6c571026c87efe9a",
+    "checkpoints/joint/omnirad-base-k8-soft-336-u9-b1-bank-l0.1/report.json": "fdc9c2c43d3e58071c87867dbffeadae4288e732438cd9d2a17cc53187826ef0",
+    "checkpoints/joint/omnirad-base-k8-soft-336-u9-b1-bank-l0.1/metrics.jsonl": "96a61ab2251ca4f325b75fa128cf8dcdc23b4364a4a74f8b447e98cb914694db"
+  }
+}

@@ -24,7 +24,7 @@ from __future__ import annotations
 import re
 
 from .. import data
-from ..shell import Page, chart, esc, notice, num, section, table
+from ..shell import Page, chart, esc, group_major, notice, num, section, table
 from ..sitemap import BY_SLUG
 
 SLUG = "adaptation"
@@ -143,7 +143,7 @@ def depth_lora_section(ctx=None) -> tuple[str, dict]:
                f"Right: gold macro-AUROC difference vs unadapted DINOv2 (level {num(floor)}), bootstrap mean and 95% CI "
                f"over {boot.get('resamples', '?')} study resamples, {pop} exposed gold studies, uniform-mean feature.")
 
-    blob = {"groups": GROUPS, "series": series, "probe": rows,
+    blob = {"groups": GROUPS, "series": group_major(series, GROUPS), "probe": group_major(rows, GROUPS),
             "refLabel": f"unadapted DINOv2 = {num(floor)}"}
 
     body = f"""<div data-role="filter"></div>

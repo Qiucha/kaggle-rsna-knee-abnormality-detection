@@ -22,5 +22,8 @@
   "output_dir": null,
 
   "_image_cache_dir": "Optional on-disk cache of preprocessed studies, reused across runs. No default.",
-  "image_cache_dir": null
+  "image_cache_dir": null,
+
+  "_train_series_mirror": "Optional byte-identical local copy of <data_root>/train_series (same <study>/<series> layout). Fine-tuning rungs that draw fresh slices every epoch read training series from it instead of a slow mount. No default -- leave null to read data_root.",
+  "train_series_mirror": null
 }

@@ -20,7 +20,10 @@ historical experiments and are not current instructions.
 For offline Kaggle inference, supervised label-head fitting, and current checkpoint
 selection, see the [submission and benchmark guide](digest/kaggle-submission-pipeline.md).
 
-## Start here: the current best pipeline (2026-10-03)
+**To train a variant of the best model or submit one to Kaggle, follow
+[TRAIN_AND_SUBMIT.md](TRAIN_AND_SUBMIT.md).**
+
+## Start here: the current best pipeline (updated 2026-10-13)
 
 The leaderboard models are no longer contrastive encoders with a fitted head. They
 are **image backbones fine-tuned end to end on LM-extracted labels** (the "R4a"
@@ -31,8 +34,8 @@ the two lines of work relate.
 
 | What | Where |
 | --- | --- |
-| Best public score, 0.879 (run 5, submission 56789799) | `configs/finetune/r4a-k8-omnirad-base-soft-336.json` (OmniRad-base, soft targets, 336 px) |
-| Previous best, 0.839 | `configs/finetune/r4a-k8-omnirad-base-pretrained.json` (OmniRad-base, hard verdict targets, 224 px) |
+| Best public score, 0.890 (A30, submission 57094902, 2026-10-12) | `configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30.json` (u9-b1 + lateral-label oversampling and noise, 30 epochs) |
+| Previous bests: 0.888 (u9-b1), 0.879 (run 5) | `configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json` (OmniRad-base, soft targets, 336 px, 9 blocks unfrozen); `r4a-k8-omnirad-base-soft-336.json` (3 blocks) |
 | Three-member candidate, not yet submitted | soft-target R4a (`r4a-soft-224-k8-mean.json`) + OmniRad-base + OmniRad-base soft 336 (`r4a-k8-omnirad-base-soft-336.json`), combined by per-label rank mean |
 | Train one member | `.venv-cuda/bin/python scripts/finetune_supervised.py --config configs/finetune/<rung>.json --output checkpoints/finetune/<rung>` |
 | Export members as one Kaggle bundle | `scripts/export_finetune_bundle.py --run <run dir> [--run ...] --output checkpoints/kaggle/<name>` |
@@ -54,8 +57,12 @@ own. Single-seed differences under about 0.024 are within run-to-run noise.
 - The DICOM tree (set `data_root` in `paths.json`, see
   `configs/paths.template.json`) and, for the soft R4a member, the contrastive
   init checkpoint named in its config's `init_checkpoint`.
-- `train_series_mirror.to` in each fine-tuning config points at one machine's
-  local copy of `train_series`. Edit it, or delete the key, to read from `data_root`.
+- The Hugging Face model snapshots each config pins by `*_revision`. Configs that
+  set `local_files_only: true` never download, so fetch the pinned revisions into
+  the Hugging Face cache first (e.g. `huggingface-cli download <model> --revision <sha>`).
+- Optionally, a local copy of `train_series` for fine-tuning rungs that draw fresh
+  slices every epoch: set `train_series_mirror` in `paths.json`. Unset, they read
+  from `data_root`.
 
 Image caches are keyed by `PREPROCESSING_VERSION`, the image settings and each
 series' `<study>/<series>` identity. Commit `084d086` (2026-09-29, exact-extent
@@ -83,6 +90,12 @@ stage we are satisfied with. The reference recipe is run 5,
 `digest/finetune-ladder-v1.json`. Runs still queued against run 5 (a second seed,
 more epochs, deeper unfreezing, 384 px) will be reviewed before the next
 direction is set.
+
+Supervised fine-tuning also supports optional training image augmentation through
+an `image_augmentation` config object. The [augmentation trial](digest/finetune-image-augmentation-v1.md)
+adds coherent rotation, zoom, translation and intensity gain to the u9-b1
+30-epoch oversampling-and-target-noise recipe. Omit the object to retain the
+existing behavior; evaluation and inference always use unaugmented images.
 
 **Track 2: report-based representation learning.** The LM labels compress each
 report into twelve YES/NO/UNK verdicts, and weak supervision on those verdicts is
@@ -177,6 +190,8 @@ configurations resolve consistently.
 | `build_project_digest.py` | Rebuild `digest/project-state.html` from local experiment artifacts. Takes no arguments. |
 | `evaluate_downstream_probe.py` | Score representations on the downstream label-extraction task before and after contrastive learning: cross-validated per-label logistic probes over the gold cohort, pooled out-of-fold AUROC, paired bootstrap intervals. Read-only; never loads the locked test split. |
 | `analyze_plane_pooling.py` | Decompose why the image tower's learned plane attention reads labels worse than averaging the same three planes: per-plane probes, the attention weights, and the pooling with and without its plane-embedding term. Reuses the downstream probe's contract by import, not by copy. |
+| `extract_setting_features.py` | Per-window features for up to six series per study (each plane's selected series and its opposite fat-suppression counterpart), read through a windowed rung's evaluation path and encoded by both the rung's adapted backbone and its pretrained starting point. Fsynced shards; a rerun resumes. |
+| `train_setting_heads.py` | Fit heads on those features (selected planes only, plus the counterparts, slot mean, per-label slot attention) over several seeds, after a gate that the rung's own head reproduces its saved predictions. Paired deltas against the selected-planes arm with study-bootstrap intervals. |
 | `translate_reports_claude.py` | Prepare, run, and merge report translations used by the `translated_english` cohorts. Only `run --execute` calls out to Claude; everything else is offline. |
 | `templates/` | HTML template used by `build_project_digest.py`. |
 
@@ -240,15 +255,17 @@ cp configs/paths.template.json paths.json   # then edit data_root
 `paths.json` is git-ignored and read from the repository root; set
 `CONTRASTIVE_PATHS_CONFIG` or pass `--paths-config` to keep it elsewhere. It may
 assign `data_root` (the DICOM mount, required by anything that reads DICOM data),
-`reports_csv`, `cohort_manifest`, `output_dir`, and `image_cache_dir`. Relative
+`reports_csv`, `cohort_manifest`, `output_dir`, `image_cache_dir`, and
+`train_series_mirror` (an optional fast local copy of `train_series` for fine-tuning). Relative
 values resolve against the file's own directory, and a command-line flag always
 overrides the file, so a frozen experiment matrix runs unchanged on a new host.
 `run_contrastive_matrix.py` trains in subprocesses that inherit the environment, so
 `CONTRASTIVE_PATHS_CONFIG` reaches them without a flag of its own.
 
-To resume a run recorded before this change, `data_root` must resolve to the value
-in that run's `config.json`. A resume compares every immutable setting, so a
-different mount — including no mount where one was recorded — is rejected.
+A resume compares every immutable setting with the run's `config.json`, except
+where this host keeps its data (`data_root` and the paths derived from it), which
+may differ: series are matched by `<study>/<series>`, so moving the mount does not
+change the data.
 
 ### Private and local artifacts
 

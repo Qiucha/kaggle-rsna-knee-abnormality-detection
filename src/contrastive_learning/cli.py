@@ -25,6 +25,7 @@ from contrastive_learning.training import run_training
 # configuration, read from the dataclass so the two cannot drift apart. They are
 # repository-relative, hence portable as they stand; the settings missing from this
 # mapping -- data_root above all -- have no sensible default and must be configured.
+_TRAIN_FIELDS = {field.name for field in fields(TrainConfig)}
 _PATH_DEFAULTS = {
     field.name: field.default
     for field in fields(TrainConfig)
@@ -133,6 +134,14 @@ def build_parser() -> argparse.ArgumentParser:
     image = parser.add_argument_group("image tower")
     image.add_argument("--image-model", default="facebook/dinov2-small")
     image.add_argument("--image-model-revision")
+    image.add_argument("--image-model-format", choices=("huggingface", "timm_dinov2"), default="huggingface")
+    image.add_argument("--image-model-base")
+    image.add_argument("--image-model-base-revision")
+    image.add_argument("--windows-per-plane", type=int, default=0)
+    image.add_argument("--window-cache-dir", type=Path)
+    image.add_argument("--train-series-mirror", type=Path)
+    image.add_argument("--contrastive-microbatch-size", type=int, default=0)
+    image.add_argument("--loader-prefetch-factor", type=int, default=2)
     image.add_argument("--image-unfreeze-last", type=int, default=3)
     image.add_argument(
         "--image-plane-pooling", choices=("attention", "uniform"), default="attention"
@@ -141,6 +150,7 @@ def build_parser() -> argparse.ArgumentParser:
     # Physical extent of the centre crop. read_slot crops or pads to exactly this,
     # so every series lands at crop_mm / image_size millimetres per pixel.
     image.add_argument("--crop-mm", type=float, default=130.0)
+    image.add_argument("--image-size", type=int, default=224)
 
     optimization = parser.add_argument_group("optimization")
     optimization.add_argument("--embedding-dim", type=int, default=256)
@@ -276,6 +286,9 @@ def _apply_path_settings(values: dict[str, Any]) -> None:
     """
     configured = paths.load_settings(values.pop("paths_config", None))
     for name in paths.PATH_SETTINGS:
+        # Skip settings that are not TrainConfig fields, should one be added for another entry point.
+        if name not in _TRAIN_FIELDS:
+            continue
         if values.get(name) is None:
             values[name] = configured.get(name, _PATH_DEFAULTS.get(name))
 

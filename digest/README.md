@@ -5,9 +5,11 @@ Start at the top; everything below is grouped by what it is for, not by when it 
 
 ## Navigable report site
 
-Open [the research digest site](index.html) (it redirects to `site/index.html`). It walks the project as eight stages, from pipeline to Kaggle submission, with one page per stage, and adds an [Evidence library](site/pages/library.html) that lists every file in this folder with its page, kind and status. Every markdown document is also rendered inside the site under `site/docs/`. The root-level HTML reports stay here unchanged, and the site links to them as "original report".
+Open [the research digest site](index.html) (it redirects to `site/index.html`). It follows the project's question, *which model to transfer?*, as a main track: [Phase 1 · contrastive pre-training](site/pages/phase1.html) → [Picking · which Phase-1 model to transfer](site/pages/picking.html) → [Phase 2 · label fine-tuning](site/pages/phase2.html) → [Kaggle submission](site/pages/submission.html). Three background pages hold the earlier work: [how the Phase-1 recipe was chosen](site/pages/recipe.html) (adaptation, tower sizes, probes), [overfitting & closed gates](site/pages/overfitting.html), and [pipeline, data & report text](site/pages/foundations.html). The [Evidence library](site/pages/library.html) lists every file in this folder with its page, kind and status. Every markdown document is also rendered inside the site under `site/docs/`. Old stage-page URLs (`pipeline`, `data`, `text`, `adaptation`, `probes`, `encoders`, `finetune`) redirect to the section's new page.
 
 Rebuild from the repository root with `.venv/bin/python scripts/build_digest_site.py`. Run `.venv/bin/python scripts/build_digest_site.py export` first when run histories in `checkpoints/` have changed. The build fails if a file in `digest/` has no row in `scripts/digest_site/catalog.py`. The site works as local files; for HTTP serving, see [HOSTING.md](HOSTING.md).
+
+**One-stage joint loss (2026-10-10).** The [Phase-2 results](site/pages/phase2.html#joint-loss) now include label BCE + 0.1 × image-to-report contrastive loss: LM-test 0.8809 vs label-only u9's 0.8834 (paired interval crosses zero), and exploratory gold-58 0.8494 vs 0.8775. See the [write-up](joint-loss-v1.md) and [snapshot](joint-loss-v1.json) for the matched u9 comparison, two-stage comparison, curves and per-label scores.
 
 **Two numbers to carry everywhere.** The gold-probe level **0.7106** (pooled over three seeds; 0.7105
 is seed 2026) is a *development statistic* read on studies the encoder trained on. **0.6938** is the
@@ -36,6 +38,12 @@ same exposure. See [gold-holdout-v1](gold-holdout-v1.md).
 
 | | |
 | --- | --- |
+| [finetune-clip-init-u9-v1.md](finetune-clip-init-u9-v1.md) · [latest results](site/pages/phase2.html#latest-results) | Completed runs through 2026-10-17: A30 stays the best single LM-test run; the first ensemble, CLIP-init swap and deep three scored **0.894 → 0.899 → 0.902 public** |
+| [ensemble-a30-v1.json](ensemble-a30-v1.json) · [digest charts](site/pages/phase2.html#a30-ensemble-sweep) | All 17 A30 and 12 CLIP-init combinations, 8 exportability checks, paired intervals, gold guard and Lateral Meniscus; deep three leads public |
+| [omnirad-clip-frozen-probe-v1.md](omnirad-clip-frozen-probe-v1.md) · [digest page](site/pages/picking.html#frozen-probe) | Plain CLIP lifts the frozen OmniRad tower +0.043 LM-test (gold +0.027, CI spans zero); a frozen head still trails fine-tuning by 0.04 on gold; scanner identity also became easier to read |
+| [combined-lora-k8-336-v1.md](combined-lora-k8-336-v1.md) · [digest page](site/pages/phase1.html#combined-lora-k8-336) | Combined CLIP + LoRA + K8 + 336, both arms complete: OmniRad-base 0.8812 LM-test / 0.7844 gold-58, DINOv2-small 0.8670 / 0.7652 (frozen MLP heads) |
+| [run5-followups-v1.md](run5-followups-v1.md) · [digest page](site/pages/phase2.html#run5-followups) | Completed run-5 follow-ups, including label fine-tuning from the combined LoRA checkpoint, paired comparisons, and remaining queue |
+| [factor-isolation-v1.md](factor-isolation-v1.md) · [digest page](site/pages/phase1.html#factor-isolation) | Completed contrastive arms, gold/LM-test heads, reference and matched-control deltas with paired intervals, training curves and per-label heatmaps; current evaluation status in the report |
 | [lm-head-tower-size-58-v1.md](lm-head-tower-size-58-v1.md) · [HTML](lm-head-tower-size-58-v1.html) | Full five-row settings matrix: original 56-case gold-only submission plus four 58-case LM-head runs (**0.7659, 0.7541, 0.7504, 0.7605** AUROC); paired size intervals include zero |
 | [crop150-probe-v1.md](crop150-probe-v1.md) | **The 150mm crop does not help the labels either: −0.0201 macro AUROC**, same sign 3/3. Costs retrieval AND label readout — the crop is not adopted |
 | [budget-40ep-v1.md](budget-40ep-v1.md) | **The budget arm.** Both arms retrained at 40 epochs: drop-path 0.1 gained +0.0150 vs the baseline's +0.0062, deficit −0.0255 → **−0.0167**, CI now grazes zero. Pre-registered rule: **ambiguous** |

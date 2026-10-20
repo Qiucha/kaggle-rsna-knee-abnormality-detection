@@ -16,6 +16,7 @@ from .manifest import read_cohort_manifest
 from .submission import (
     LABELS,
     UID,
+    assert_reload_matches,
     benchmark_head,
     export_member,
     extract_features,
@@ -23,6 +24,7 @@ from .submission import (
     load_encoder,
     load_member,
     predict_head,
+    reload_tolerance,
     score_predictions,
     validate_ids,
 )
@@ -131,7 +133,7 @@ def train_bundle(
             reloaded, records[:1], payload["image_kwargs"], device, 1, cache_dir
         )
         after = predict_head(reloaded_features, payload["head"])
-        np.testing.assert_allclose(before, after, atol=1e-5, rtol=1e-5)
+        assert_reload_matches(before, after, reload_tolerance(config))
         results[name]["reload_max_probability_error"] = float(
             np.abs(before - after).max()
         )

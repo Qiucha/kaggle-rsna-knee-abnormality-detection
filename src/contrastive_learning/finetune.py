@@ -36,7 +36,8 @@ import pandas as pd
 import torch
 from torch import nn
 
-from .artifacts import sha256_file, sha256_text, write_atomic, write_json
+from . import paths
+from .artifacts import read_json, sha256_file, sha256_text, write_atomic, write_json
 from .data import KneeReportDataset, slot_identity
 from .lm_proxy import load_test_population, masked_macro_auroc
 from .lm_supervision import load_population
@@ -45,6 +46,7 @@ from .preprocessing import (
     PREPROCESSING_VERSION,
     apply_left_knee,
     apply_left_knee_windows,
+    augment_study_images,
     read_slot,
     read_windows,
 )
@@ -56,6 +58,31 @@ ROOT = Path(__file__).resolve().parents[2]
 TARGETS = ("verdict", "soft")
 SLICE_SAMPLING = ("fixed", "random")
 POOLING = ("mean", "attention", "grouped")
+# Offsets from config["seed"] for the independent RNG streams a rung may add, so each
+# option draws from its own generator and leaves sampling, dropout and the others alone.
+LABEL_NOISE_SEED_OFFSET = 1
+AUGMENTATION_SEED_OFFSET = 2
+# image_augmentation parameter -> (default, upper limit); every lower limit is 0.
+IMAGE_AUGMENTATION_PARAMETERS = {
+    "rotation_degrees": (8.0, 180.0), "zoom": (0.08, 1.0), "shift": (0.05, 1.0), "intensity": (0.10, 1.0),
+}
+IMAGE_AUGMENTATION_DEFAULTS = {name: default for name, (default, _) in IMAGE_AUGMENTATION_PARAMETERS.items()}
+
+
+def image_augmentation_settings(config: dict) -> dict | None:
+    """An optional augmentation object; omission disables it, an empty object uses defaults."""
+    if "image_augmentation" not in config:
+        return None
+    spec = config["image_augmentation"]
+    if not isinstance(spec, dict) or set(spec) - set(IMAGE_AUGMENTATION_PARAMETERS):
+        raise ValueError(f"image_augmentation must be an object with {', '.join(IMAGE_AUGMENTATION_PARAMETERS)}")
+    settings = {**IMAGE_AUGMENTATION_DEFAULTS, **spec}
+    for name, value in settings.items():
+        limit = IMAGE_AUGMENTATION_PARAMETERS[name][1]
+        if (isinstance(value, bool) or not isinstance(value, (int, float))
+                or not math.isfinite(value) or not 0 <= value <= limit):
+            raise ValueError(f"image_augmentation {name} must be finite and in [0, {limit}]")
+    return settings
 
 
 def image_kwargs(config: dict) -> dict:
@@ -96,6 +123,63 @@ def unk_supervision(lm_labels_csv: Path, uids: list[str], hard_masks: np.ndarray
         raise ValueError("Soft LM value missing for an UNK verdict")
     weights = np.where(unknown, unk_weight, 1.0).astype(np.float32)
     return np.where(unknown, values, targets).astype(np.float32), weights
+
+
+def label_columns(names: list[str]) -> list[int]:
+    unknown = set(names) - set(LABELS)
+    if unknown or not names:
+        raise ValueError(f"Unknown or empty label list: {sorted(unknown)}")
+    return [LABELS.index(name) for name in names]
+
+
+def oversampled_rows(hard_y: np.ndarray, masks: np.ndarray, spec: dict) -> tuple[np.ndarray, np.ndarray]:
+    """Training rows for one epoch: every study once, then ``copies`` extra draws of each
+    study with an observed positive verdict on any of ``spec["labels"]``.
+
+    Returns the rows and a per-row weight multiplier. With ``mask_other_labels`` the extra
+    draws carry weight 0 on every other label, so those labels see exactly the base
+    data and only the named labels gain repeats.
+    """
+    columns = label_columns(spec["labels"])
+    positive = ((hard_y[:, columns] == 1) & (masks[:, columns] > 0)).any(1)
+    extra = np.repeat(np.flatnonzero(positive), spec["copies"])
+    rows = np.concatenate([np.arange(len(hard_y)), extra])
+    keep = np.ones((len(rows), len(LABELS)), np.float32)
+    if spec.get("mask_other_labels", True):
+        others = [i for i in range(len(LABELS)) if i not in columns]
+        keep[len(hard_y):, others] = 0.0
+    return rows, keep
+
+
+def label_weight_vector(weights: dict) -> np.ndarray:
+    """Per-label loss weights, named labels at their value and the rest at 1, rescaled to
+    mean 1 so the total loss scale (and with it the clipped gradient) matches the base."""
+    vector = np.ones(len(LABELS), np.float32)
+    for column, name in zip(label_columns(list(weights)), weights):
+        vector[column] = weights[name]
+    return vector / vector.mean()
+
+
+def noisy_targets(targets: torch.Tensor, columns: list[int], sigma: float,
+                  generator: torch.Generator) -> torch.Tensor:
+    """Fresh Gaussian noise on ``columns`` of the soft targets, clipped back into [0, 1]."""
+    noise = torch.randn(targets.shape[0], len(columns), generator=generator, device=targets.device)
+    targets = targets.clone()
+    targets[:, columns] = (targets[:, columns] + sigma * noise).clamp(0.0, 1.0)
+    return targets
+
+
+class TrainingRows(torch.utils.data.Dataset):
+    """A dataset read at ``rows`` (repeats allowed); each item carries its position."""
+
+    def __init__(self, dataset, rows):
+        self.dataset, self.rows = dataset, [int(r) for r in rows]
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> dict:
+        return {**self.dataset[self.rows[index]], "row": index}
 
 
 def dense_head(width: int, hidden_dims: list[int], dropout: float) -> nn.Sequential:
@@ -225,8 +309,21 @@ def load_backbone(config: dict) -> tuple[nn.Module, dict]:
         from .submission import load_encoder
 
         backbone, run_config, adaptation = load_encoder(ROOT / config["init_checkpoint"])
-        if run_config.image_kwargs != image_kwargs(config):
+        expected_images = image_kwargs(config)
+        if run_config.windows_per_plane:
+            expected_images["windows"] = config.get("windows_per_plane")
+        if run_config.image_kwargs != expected_images:
             raise ValueError("init_checkpoint was trained on different image settings")
+        if config.get("init_unfreeze_last") is not None:
+            if adaptation["use_lora"]:
+                raise ValueError("init_unfreeze_last requires a full-block checkpoint without LoRA")
+            for key in ("image_model", "image_model_revision", "image_model_format",
+                        "image_model_base", "image_model_base_revision"):
+                if config.get(key) != getattr(run_config, key):
+                    raise ValueError(f"init_checkpoint differs from the fine-tuning {key}")
+            # Keep every contrastively learned weight, but match the supervised recipe's depth.
+            freeze_then_unfreeze_last(backbone, config["init_unfreeze_last"])
+            adaptation = {**adaptation, "image_unfreeze_last": config["init_unfreeze_last"]}
         return backbone.train(), adaptation
     if config.get("image_model_format") == "timm_dinov2":
         # e.g. OmniRad: timm weights renamed onto HF's Dinov2Model, config from the base.
@@ -264,7 +361,8 @@ class RandomSliceDataset(torch.utils.data.Dataset):
 
     Every epoch decodes DICOMs again, which is too slow over the WSL ``/mnt`` mount.
     ``mirror["to"]`` is a byte-identical local copy of the ``<study>/<series>`` tree,
-    found by slot identity wherever the source tree is mounted.
+    found by slot identity wherever the source tree is mounted. It is a host setting,
+    filled in by :func:`with_host_mirror`.
     """
 
     def __init__(self, records, kwargs: dict, mirror: dict | None = None):
@@ -368,14 +466,17 @@ def _dataset(records, config, *, training):
     return KneeReportDataset(records, image_kwargs(config), image_cache_dir=ROOT / config["image_cache_dir"])
 
 
-def _loader(records, config, *, training, generator=None):
+def _loader(records, config, *, training, generator=None, rows=None):
     dataset = _dataset(records, config, training=training)
+    if rows is not None:
+        dataset = TrainingRows(dataset, rows)
 
     def collate(batch):
-        # Model inputs first, as a tuple the model is called with; study uids last.
+        # Model inputs first, as a tuple the model is called with; then the training row
+        # positions, or the study uids when the dataset is read without rows.
         inputs = tuple(torch.stack([item[key] for item in batch])
                        for key in ("images", "valid") if key in batch[0])
-        return inputs, [item["study_uid"] for item in batch]
+        return inputs, [item["row"] if "row" in item else item["study_uid"] for item in batch]
 
     return torch.utils.data.DataLoader(
         dataset,
@@ -392,6 +493,25 @@ def _loader(records, config, *, training, generator=None):
 
 def _to(inputs, device):
     return tuple(x.to(device, non_blocking=True) for x in inputs)
+
+
+def augment_training_inputs(inputs: tuple, settings: dict | None,
+                            generator: torch.Generator | None) -> tuple:
+    """Fresh transforms per study/plane, shared across its channels and depth windows.
+
+    Window channels are folded together before resampling so one coherent transform
+    serves all K windows. Validity masks pass through, and invalid windows stay zero.
+    Call only after device transfer in the training loop; cached pixels remain raw.
+    """
+    if settings is None:
+        return inputs
+    images = inputs[0]
+    windowed = len(inputs) == 2
+    grouped = images.flatten(-4, -3) if windowed else images
+    augmented = augment_study_images(grouped, **settings, generator=generator).reshape_as(images)
+    if windowed:
+        augmented = augmented.masked_fill(~inputs[1][..., None, None, None], 0.0)
+    return (augmented, *inputs[1:])
 
 
 @torch.inference_mode()
@@ -441,6 +561,12 @@ def _scheduler(optimizer, total_steps: int, warmup_fraction: float):
 
 
 def validate_config(config: dict) -> None:
+    if config.get("init_unfreeze_last") is not None and (
+        not config.get("init_checkpoint")
+        or config["init_unfreeze_last"] != config["image_unfreeze_last"]
+    ):
+        raise ValueError("init_unfreeze_last requires init_checkpoint and must match image_unfreeze_last")
+    image_augmentation_settings(config)
     if config["targets"] not in TARGETS:
         raise ValueError(f"targets must be one of {TARGETS}")
     if config.get("train_slice_sampling", "fixed") not in SLICE_SAMPLING:
@@ -470,11 +596,45 @@ def validate_config(config: dict) -> None:
     for key in ("epochs", "batch_size", "patience"):
         if config[key] < 1:
             raise ValueError(f"{key} must be positive")
+    if "oversample" in config:
+        label_columns(config["oversample"]["labels"])
+        if config["oversample"]["copies"] < 1:
+            raise ValueError("oversample copies must be positive")
+    if "label_noise" in config:
+        label_columns(config["label_noise"]["labels"])
+        if not config["label_noise"]["sigma"] > 0:
+            raise ValueError("label_noise sigma must be positive")
+    if "divergence_stop" in config:
+        if not config["divergence_stop"]["margin"] > 0 or config["divergence_stop"]["epochs"] < 1:
+            raise ValueError("divergence_stop needs a positive margin and epochs")
+    if "resume_from" in config and not config["resume_from"]["lr_scale"] > 0:
+        raise ValueError("resume_from needs a positive lr_scale")
+    if "label_weights" in config:
+        label_columns(list(config["label_weights"]))
+        if any(w <= 0 for w in config["label_weights"].values()):
+            raise ValueError("label_weights must be positive")
+
+
+def with_host_mirror(config: dict, paths_config: Path | None = None) -> dict:
+    """Name this machine's ``train_series`` mirror in a rung's configuration.
+
+    Where the mirror lives is a property of the host, not of the experiment, so
+    committed rungs leave ``train_series_mirror`` out and ``paths.json`` supplies it.
+    A rung that still states one (an older run's ``config.json``) keeps it. Called by
+    entry points, so the run's own ``config.json`` records the concrete path.
+    """
+    if config.get("train_series_mirror") is not None:
+        return config
+    mirror = paths.load_settings(paths_config).get("train_series_mirror")
+    return config if mirror is None else {**config, "train_series_mirror": {"to": str(mirror)}}
 
 
 def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     """Train one rung, select its epoch on validation, then score LM-test and gold once."""
     validate_config(config)
+    augmentation = image_augmentation_settings(config)
+    if augmentation is not None:
+        config = {**config, "image_augmentation": augmentation}
     started = time.perf_counter()
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
@@ -491,7 +651,14 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     if config.get("unk_weight"):
         train_y, train_w = unk_supervision(lm_csv, [r.study_uid for r in groups["train"]], masks["train"],
                                            train_y, config["unk_weight"])
-    train_rows = {r.study_uid: i for i, r in enumerate(groups["train"])}
+    # Rows index the training tables. Without oversampling each study is read once, as before.
+    epoch_rows = np.arange(len(groups["train"]))
+    if config.get("oversample"):
+        epoch_rows, keep = oversampled_rows(hard["train"], masks["train"], config["oversample"])
+        train_y, train_w = train_y[epoch_rows], train_w[epoch_rows] * keep
+    clean_w = train_w
+    if config.get("label_weights"):
+        train_w = train_w * label_weight_vector(config["label_weights"])
 
     torch.manual_seed(config["seed"])
     np.random.seed(config["seed"])
@@ -513,14 +680,40 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         weight_decay=config["weight_decay"],
     )
     generator = torch.Generator().manual_seed(config["seed"])
-    train_loader = _loader(groups["train"], config, training=True, generator=generator)
+    augmentation_generator = (torch.Generator(device=device).manual_seed(config["seed"] + AUGMENTATION_SEED_OFFSET)
+                              if augmentation is not None else None)
+    train_loader = _loader(groups["train"], config, training=True, generator=generator, rows=epoch_rows)
     validation_loader = _loader(groups["validation"], config, training=False)
     accumulation = config.get("grad_accumulation", 1)
     steps_per_epoch = math.ceil(len(train_loader) / accumulation)
-    scheduler = _scheduler(optimizer, config["epochs"] * steps_per_epoch, config["warmup_fraction"])
     scaler = torch.amp.GradScaler(enabled=config["amp"])
+    resume = config.get("resume_from")
+    start_epoch = 0
+    if resume:
+        # Warm restart: weights, optimizer moments and AMP scale from the parent's last.pt,
+        # then a fresh warmup + cosine over the remaining epochs at lr_scale x the base rates.
+        parent = ROOT / resume["run"]
+        last = torch.load(parent / "last.pt", map_location="cpu", weights_only=False)
+        model.load_state_dict(last["trainable_state_dict"], strict=False)
+        optimizer.load_state_dict(last["optimizer"])
+        scaler.load_state_dict(last["scaler"])
+        if augmentation_generator is not None and "augmentation_rng_state" in last:
+            augmentation_generator.set_state(last["augmentation_rng_state"].cpu())
+        for group, base in zip(optimizer.param_groups, (config["lr_backbone"], config["lr_head"])):
+            group["lr"] = base * resume["lr_scale"]
+            group.pop("initial_lr", None)
+        start_epoch = last["epoch"]
+        if start_epoch >= config["epochs"]:
+            raise ValueError("resume_from parent already reached the epoch budget")
+    scheduler = _scheduler(optimizer, (config["epochs"] - start_epoch) * steps_per_epoch, config["warmup_fraction"])
     y_all = torch.as_tensor(train_y, device=device)
     m_all = torch.as_tensor(train_w, device=device)
+    # The logged training BCE stays unweighted and noise-free, comparable with the base rung.
+    m_clean = torch.as_tensor(clean_w, device=device)
+    noise = config.get("label_noise")
+    if noise:
+        noise_columns = label_columns(noise["labels"])
+        noise_generator = torch.Generator(device=device).manual_seed(config["seed"] + LABEL_NOISE_SEED_OFFSET)
     # Fixed full-split observation rates keep minibatch losses on one macro scale.
     # They come from the hard mask, so UNK weight adds to a label's loss without
     # rescaling its observed cells.
@@ -533,20 +726,37 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
     )
 
     best = {"validation_masked_bce": float("inf"), "epoch": 0, "state": None}
-    stale = 0
-    for epoch in range(1, config["epochs"] + 1):
+    if resume:
+        # The parent's history and best checkpoint carry over: the extension must beat it.
+        (output / "history.jsonl").write_text((parent / "history.jsonl").read_text())
+        parent_best = torch.load(parent / "best.pt", map_location="cpu", weights_only=False)
+        best = {"validation_masked_bce": read_json(parent / "report.json")["validation_masked_bce"],
+                "epoch": parent_best["epoch"], "state": parent_best["trainable_state_dict"]}
+    stale, above, stopped = 0, 0, "max_epochs"
+    divergence = config.get("divergence_stop")
+    for epoch in range(start_epoch + 1, config["epochs"] + 1):
         model.train()
-        epoch_started, losses, train_valid = time.perf_counter(), [], []
+        epoch_started, losses, objectives, train_valid = time.perf_counter(), [], [], []
         optimizer.zero_grad(set_to_none=True)
-        for batch, (inputs, uids) in enumerate(train_loader, start=1):
-            index = torch.as_tensor([train_rows[u] for u in uids], device=device)
+        for batch, (inputs, batch_rows) in enumerate(train_loader, start=1):
+            index = torch.as_tensor(batch_rows, device=device)
+            training_inputs = augment_training_inputs(_to(inputs, device), augmentation, augmentation_generator)
             with torch.autocast(device_type=device.split(":")[0], enabled=config["amp"]):
-                logits = model(*_to(inputs, device))
-            loss = masked_bce(logits.float(), y_all[index], m_all[index], observed_rates)
+                logits = model(*training_inputs)
+            targets_batch = y_all[index]
+            if noise:
+                targets_batch = noisy_targets(targets_batch, noise_columns, noise["sigma"], noise_generator)
+            loss = masked_bce(logits.float(), targets_batch, m_all[index], observed_rates)
             if not torch.isfinite(loss):
                 raise ValueError(f"Nonfinite training loss at epoch {epoch}")
             scaler.scale(loss / accumulation).backward()
-            losses.append(float(loss))
+            objectives.append(loss.item())
+            losses.append(float(masked_bce(logits.detach().float(), y_all[index], m_clean[index], observed_rates)))
+            if config.get("log_progress") and (batch == 1 or batch % 100 == 0):
+                progress = {"epoch": epoch, "training_batch": batch, "training_batches": len(train_loader),
+                            "epoch_seconds_so_far": time.perf_counter() - epoch_started}
+                write_json(output / "progress.json", progress)
+                print(json.dumps({"training_progress": progress}), flush=True)
             if windowed:
                 train_valid.append(inputs[1].numpy())
             # Step every `accumulation` micro-batches, and flush a partial group at epoch end.
@@ -559,7 +769,7 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
                 optimizer.zero_grad(set_to_none=True)
             if config.get("max_steps") and batch >= config["max_steps"]:
                 break
-        if windowed and epoch == 1:
+        if windowed and epoch == start_epoch + 1:
             window_counts = {"train": masked_window_counts(np.concatenate(train_valid))}
         probabilities, uids = predict(model, validation_loader, device, config["amp"])
         order = {u: i for i, u in enumerate(uids)}
@@ -572,6 +782,8 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         row = {
             "epoch": epoch,
             "train_masked_bce": float(np.mean(losses)),
+            **({"train_objective": float(np.mean(objectives))}
+               if noise or config.get("label_weights") else {}),
             "validation_masked_bce": validation_bce,
             "validation_macro_auroc": validation_auroc["macro_auroc"],
             "seconds": time.perf_counter() - epoch_started,
@@ -592,8 +804,24 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         else:
             stale += 1
             if stale >= config["patience"]:
+                stopped = "patience"
+                break
+        # Divergence stop: end only once validation BCE sits clearly above its best for
+        # several epochs in a row, rather than after a run of epochs that merely fail to improve.
+        if divergence:
+            above = above + 1 if validation_bce > best["validation_masked_bce"] + divergence["margin"] else 0
+            if above >= divergence["epochs"]:
+                stopped = "divergence"
                 break
 
+    if config.get("save_last"):
+        # The final epoch's full training state, so a later run can extend this one.
+        last = {"config": config, "epoch": epoch,
+                "trainable_state_dict": {k: v.detach().cpu() for k, v in model.state_dict().items() if k in trainable},
+                "optimizer": optimizer.state_dict(), "scheduler": scheduler.state_dict(), "scaler": scaler.state_dict()}
+        if augmentation_generator is not None:
+            last["augmentation_rng_state"] = augmentation_generator.get_state()
+        write_atomic(output / "last.pt", lambda t: torch.save(last, t))
     model.load_state_dict(best["state"], strict=False)
     write_atomic(output / "best.pt", lambda t: torch.save(
         {"config": config, "epoch": best["epoch"], "trainable_state_dict": best["state"]}, t))
@@ -652,7 +880,11 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         )
     report = {
         "rung": config["name"],
+        **({"image_augmentation": {**augmentation, "shared_across_windows": True,
+                                   "seed": config["seed"] + AUGMENTATION_SEED_OFFSET}}
+           if augmentation is not None else {}),
         "best_epoch": best["epoch"],
+        "stopped": stopped,
         "validation_masked_bce": best["validation_masked_bce"],
         "lm_test": {**lm_test, "studies": len(test_y),
                     "manifest_sha256": test_identity["manifest_sha256"]},
@@ -663,6 +895,11 @@ def run_finetune(config: dict, output: Path, *, device: str = "cuda") -> dict:
         **({"unk_weight": config["unk_weight"], "unk_weight_share": dict(zip(LABELS, (
             (train_w.sum(0) - masks["train"].sum(0)) / masks["train"].sum(0)).round(4).tolist()))}
            if config.get("unk_weight") else {}),
+        **({"oversample": {"draws_per_epoch": len(epoch_rows), "extra_draws": len(epoch_rows) - len(groups["train"]),
+                           "observed_draws": dict(zip(LABELS, (clean_w > 0).sum(0).tolist()))}}
+           if config.get("oversample") else {}),
+        **({"label_weights": dict(zip(LABELS, label_weight_vector(config["label_weights"]).round(4).tolist()))}
+           if config.get("label_weights") else {}),
         **({"window_counts": window_counts, "exported": False} if windowed else {}),
         "seconds": time.perf_counter() - started,
     }

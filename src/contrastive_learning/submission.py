@@ -94,29 +94,19 @@ def _adapt(backbone, config: dict) -> None:
 
 def load_encoder(checkpoint_path: Path, *, baseline: bool = False):
     """Restore just the image backbone; compact deltas require pinned local weights."""
-    from transformers import AutoConfig, AutoModel
+    from .model import load_image_backbone
 
     checkpoint = read_checkpoint(checkpoint_path)
     config = checkpoint_config(checkpoint)
-    architecture = AutoConfig.from_pretrained(
-        config.image_model,
-        revision=config.image_model_revision,
-        local_files_only=True,
+    if (baseline or not has_full_weights(checkpoint)) and not config.image_model_revision:
+        raise ValueError("Compact checkpoints must pin their pretrained image revision")
+    backbone = load_image_backbone(
+        config.image_model, config.image_model_revision,
+        image_model_format=config.image_model_format, image_model_base=config.image_model_base,
+        image_model_base_revision=config.image_model_base_revision,
+        image_drop_path_rate=config.image_drop_path_rate,
+        pretrained=baseline or not has_full_weights(checkpoint), local_files_only=True,
     )
-    architecture.drop_path_rate = config.image_drop_path_rate
-    if baseline or not has_full_weights(checkpoint):
-        if not config.image_model_revision:
-            raise ValueError(
-                "Compact checkpoints must pin their pretrained image revision"
-            )
-        backbone = AutoModel.from_pretrained(
-            config.image_model,
-            revision=config.image_model_revision,
-            config=architecture,
-            local_files_only=True,
-        )
-    else:
-        backbone = AutoModel.from_config(architecture)
     adaptation = {
         key: getattr(config, key)
         for key in (
@@ -413,6 +403,24 @@ def export_member(path: Path, backbone, config, adaptation, head) -> None:
     }
     write_atomic(path, lambda temporary: torch.save(payload, temporary))
 
+
+
+# The fp32 feature path reproduces a bundle's predictions to this; configs whose
+# features run under fp16 autocast (K8 windows) set a looser ``reload_tolerance``.
+DEFAULT_RELOAD_TOLERANCE = 1e-5
+
+
+def reload_tolerance(config: dict) -> float:
+    """The absolute and relative tolerance a config allows on bundle reload."""
+    tolerance = float(config.get("reload_tolerance", DEFAULT_RELOAD_TOLERANCE))
+    if not tolerance > 0:
+        raise ValueError("reload_tolerance must be positive")
+    return tolerance
+
+
+def assert_reload_matches(actual, desired, tolerance: float = DEFAULT_RELOAD_TOLERANCE) -> None:
+    """A reloaded bundle must reproduce the predictions it was exported with."""
+    np.testing.assert_allclose(actual, desired, atol=tolerance, rtol=tolerance)
 
 def load_member(path: Path, device):
     from transformers import AutoConfig, AutoModel

@@ -504,6 +504,8 @@ def collate_image_reports(
         "attention_mask": tokens["attention_mask"],
         "study_uid": [item["study_uid"] for item in batch],
     }
+    if "valid" in batch[0]:
+        collated["valid"] = torch.stack([item["valid"] for item in batch])
     if "label_values" in batch[0]:
         collated["label_values"] = torch.stack([item["label_values"] for item in batch])
         collated["label_mask"] = torch.stack([item["label_mask"] for item in batch])

@@ -52,6 +52,7 @@ PATH_SETTINGS = (
     "cohort_manifest",
     "output_dir",
     "image_cache_dir",
+    "train_series_mirror",
 )
 
 

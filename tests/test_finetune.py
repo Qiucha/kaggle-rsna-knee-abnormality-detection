@@ -124,6 +124,21 @@ def test_random_slices_read_from_the_local_mirror(tmp_path):
         dataset._series(Path("/any/train_series/study/other"))
 
 
+def test_the_mirror_comes_from_the_host_unless_the_rung_names_one(tmp_path):
+    import json
+
+    from contrastive_learning.finetune import with_host_mirror
+
+    host = tmp_path / "paths.json"
+    host.write_text(json.dumps({"train_series_mirror": "mirror"}))
+    resolved = with_host_mirror({"seed": 1}, host)
+    assert resolved["train_series_mirror"] == {"to": str(tmp_path / "mirror")}
+    stated = {"train_series_mirror": {"to": "/elsewhere"}}
+    assert with_host_mirror(stated, host) == stated
+    host.write_text("{}")
+    assert "train_series_mirror" not in with_host_mirror({"seed": 1}, host)
+
+
 def test_eval_windows_sit_inside_the_strata_training_draws_from():
     from contrastive_learning.preprocessing import window_indices
 
@@ -285,3 +300,193 @@ def test_grouped_pooling_keeps_slice_runs_and_planes_apart():
     pooled = pool_windows(tokens, valid, groups=2)
     assert pooled.tolist() == [[0.0, 2.5, 4.5, 6.5, 8.5, 0.0]]
     assert pool_windows(tokens, valid).shape == (1, 1)
+
+
+def test_oversampling_repeats_target_positives_and_masks_other_labels_on_repeats():
+    from contrastive_learning.finetune import oversampled_rows
+
+    lateral, acl = LABELS.index("Lateral Meniscus"), LABELS.index("ACL")
+    hard = np.zeros((4, len(LABELS)), np.float32)
+    masks = np.ones((4, len(LABELS)), np.float32)
+    hard[1, lateral] = 1
+    hard[2, lateral] = 1
+    masks[2, lateral] = 0  # a positive verdict that is not observed does not count
+    hard[3, acl] = 1
+    rows, keep = oversampled_rows(hard, masks, {"labels": ["Lateral Meniscus"], "copies": 2})
+    assert rows.tolist() == [0, 1, 2, 3, 1, 1]
+    assert (keep[:4] == 1).all()
+    assert (keep[4:, lateral] == 1).all() and keep[4:].sum() == 2
+    _, kept = oversampled_rows(hard, masks, {"labels": ["Lateral Meniscus"], "copies": 1,
+                                             "mask_other_labels": False})
+    assert (kept == 1).all()
+
+
+def test_label_weights_keep_the_mean_weight_at_one():
+    from contrastive_learning.finetune import label_weight_vector
+
+    vector = label_weight_vector({"Lateral OA": 2.0, "Synovitis": 2.0})
+    assert vector.mean() == pytest.approx(1.0)
+    assert vector[LABELS.index("Lateral OA")] == pytest.approx(2 * vector[LABELS.index("ACL")])
+
+
+def test_label_noise_touches_only_its_columns_and_stays_in_range():
+    from contrastive_learning.finetune import noisy_targets
+
+    targets = torch.full((500, len(LABELS)), 0.08)
+    columns = [LABELS.index("Lateral Meniscus"), LABELS.index("Lateral OA")]
+    generator = torch.Generator().manual_seed(0)
+    noisy = noisy_targets(targets, columns, 0.1, generator)
+    others = [i for i in range(len(LABELS)) if i not in columns]
+    assert torch.equal(noisy[:, others], targets[:, others])
+    assert (noisy[:, columns] >= 0).all() and (noisy[:, columns] <= 1).all()
+    assert noisy[:, columns].std() > 0.05
+    assert torch.equal(targets, torch.full((500, len(LABELS)), 0.08))  # input untouched
+    again = noisy_targets(targets, columns, 0.1, generator)
+    assert not torch.equal(again, noisy)  # fresh noise on every draw
+
+
+@pytest.mark.parametrize("change", [
+    {"oversample": {"labels": ["Lateral Menisci"], "copies": 1}},
+    {"oversample": {"labels": ["Lateral OA"], "copies": 0}},
+    {"label_noise": {"labels": ["Lateral OA"], "sigma": 0.0}},
+    {"label_weights": {"Synovitis": -1.0}},
+    {"divergence_stop": {"margin": 0.0, "epochs": 3}},
+    {"divergence_stop": {"margin": 0.02, "epochs": 0}},
+    {"resume_from": {"run": "checkpoints/finetune/x", "lr_scale": 0.0}},
+])
+def test_invalid_rebalancing_configs_are_rejected(change):
+    config = {"targets": "soft", "image_unfreeze_last": 3, "slices_per_plane": 3,
+              "epochs": 20, "batch_size": 16, "patience": 5, **change}
+    with pytest.raises(ValueError):
+        validate_config(config)
+
+
+def test_training_rows_read_repeats_and_report_their_position():
+    from contrastive_learning.finetune import TrainingRows
+
+    base = [{"study_uid": u} for u in "abc"]
+    rows = TrainingRows(base, [0, 1, 2, 1])
+    assert len(rows) == 4
+    assert rows[3] == {"study_uid": "b", "row": 3}
+
+
+@pytest.mark.parametrize("spec", [True, False, None, [], {"flip": True},
+                                  {"zoom": -0.1}, {"shift": float("nan")},
+                                  {"intensity": float("inf")}, {"rotation_degrees": 181},
+                                  {"zoom": True}, {"intensity": "0.1"}])
+def test_invalid_image_augmentation_is_rejected_before_training(spec):
+    with pytest.raises(ValueError, match="image_augmentation"):
+        validate_config({"image_augmentation": spec})
+
+
+def test_disabled_augmentation_keeps_inputs_and_rng_unchanged():
+    from contrastive_learning.finetune import augment_training_inputs, image_augmentation_settings
+
+    inputs = (torch.rand(2, 3, 3, 28, 28),)
+    generator = torch.Generator().manual_seed(2028)
+    state = generator.get_state().clone()
+    assert image_augmentation_settings({}) is None
+    assert augment_training_inputs(inputs, None, generator) is inputs
+    assert torch.equal(generator.get_state(), state)
+
+
+def test_window_augmentation_is_coherent_masked_and_reproducible():
+    from contrastive_learning.finetune import augment_training_inputs, image_augmentation_settings
+
+    # Identical slices/windows expose accidental independent transforms along depth.
+    ramp = torch.linspace(0.0, 0.8, 28 * 28).reshape(1, 1, 1, 1, 28, 28)
+    images = ramp.expand(2, 3, 8, 3, 28, 28).clone()
+    valid = torch.ones(2, 3, 8, dtype=torch.bool)
+    valid[0, 1, 4:] = False
+    valid[1, 2] = False
+    before = images.clone()
+    settings = image_augmentation_settings({"image_augmentation": {}})
+    torch_state = torch.get_rng_state().clone()
+    generator = torch.Generator().manual_seed(2028)
+    augmented, mask = augment_training_inputs((images, valid), settings, generator)
+    assert torch.equal(torch.get_rng_state(), torch_state)
+    assert mask is valid and torch.equal(images, before)
+    assert augmented.shape == images.shape and augmented.dtype == images.dtype
+    assert augmented.min() >= 0 and augmented.max() <= 1
+    assert torch.count_nonzero(augmented[~valid]) == 0
+    torch.testing.assert_close(augmented[0, 0], augmented[0, 0, :1].expand_as(augmented[0, 0]))
+    torch.testing.assert_close(augmented[0, 0, 0, 0], augmented[0, 0, 0, 1])
+    assert not torch.equal(augmented[0, 0, 0], augmented[0, 2, 0])
+    replay, _ = augment_training_inputs((images, valid), settings, torch.Generator().manual_seed(2028))
+    torch.testing.assert_close(replay, augmented, rtol=0, atol=0)
+    fresh, _ = augment_training_inputs((images, valid), settings, generator)
+    assert not torch.equal(fresh, augmented)
+
+
+def test_three_slice_augmentation_supports_nonwindowed_finetuning():
+    from contrastive_learning.finetune import augment_training_inputs, image_augmentation_settings
+
+    ramp = torch.linspace(0, 0.8, 28 * 28).reshape(1, 1, 1, 28, 28)
+    images = ramp.expand(2, 3, 3, 28, 28).clone()
+    (augmented,) = augment_training_inputs((images,), image_augmentation_settings({"image_augmentation": {}}),
+                                          torch.Generator().manual_seed(2028))
+    assert augmented.shape == images.shape and not torch.equal(images, augmented)
+    torch.testing.assert_close(augmented[:, :, 0], augmented[:, :, 1])
+
+
+def test_augmented_oversampling_run_transforms_only_training_and_records_the_recipe(tmp_path, monkeypatch):
+    import json
+    from pathlib import Path
+    from types import SimpleNamespace
+
+    from contrastive_learning import finetune
+
+    config = json.loads((Path(__file__).resolve().parents[1] / "configs/finetune" /
+                         "r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30.json").read_text())
+    config["image_augmentation"] = {}  # an empty object turns augmentation on at its defaults
+    config.update(epochs=1, patience=1, image_size=28, windows_per_plane=2, amp=False)
+    monkeypatch.setattr(finetune, "ROOT", tmp_path)
+    lm_csv = tmp_path / config["lm_labels_csv"]
+    lm_csv.parent.mkdir(parents=True)
+    lm_csv.write_text("synthetic labels\n")
+    groups = {split: [SimpleNamespace(study_uid=f"{split}-{i}") for i in range(2)]
+              for split in ("train", "validation", "gold")}
+    hard = np.array([[0] * len(LABELS), [1] * len(LABELS)], np.float32)
+    targets = {split: hard.copy() for split in groups}
+    masks = {split: np.ones_like(hard) for split in groups}
+    monkeypatch.setattr(finetune, "load_population", lambda *args: (groups, targets, masks, {"coverage": {}}))
+    monkeypatch.setattr(finetune, "soft_targets", lambda *args: hard * 0.86 + 0.08)
+    test_records = [SimpleNamespace(study_uid=f"test-{i}") for i in range(2)]
+    monkeypatch.setattr(finetune, "load_test_population", lambda *args: (
+        test_records, hard, np.ones_like(hard),
+        {"study_uids": [r.study_uid for r in test_records], "manifest_sha256": "test-manifest"}))
+    monkeypatch.setattr(finetune, "load_backbone", lambda cfg: (tiny_backbone(), {}))
+    batches, forwards = {}, []
+
+    def loader(records, cfg, *, training, generator=None, rows=None):
+        count = len(rows) if rows is not None else len(records)
+        images = torch.linspace(0, 0.8, count * 3 * 2 * 3 * 28 * 28).reshape(count, 3, 2, 3, 28, 28)
+        valid = torch.ones(count, 3, 2, dtype=torch.bool)
+        valid[:, 1, 1] = False
+        images[~valid] = 0
+        batches[training] = (images.clone(), valid.clone())
+        return [((images, valid), list(range(count)) if training else [r.study_uid for r in records])]
+
+    class RecordingModel(finetune.WindowModel):
+        def forward(self, images, valid, **kwargs):
+            forwards.append((self.training, images.detach().clone(), valid.detach().clone()))
+            return super().forward(images, valid, **kwargs)
+
+    monkeypatch.setattr(finetune, "_loader", loader)
+    monkeypatch.setattr(finetune, "WindowModel", RecordingModel)
+    report = finetune.run_finetune(config, tmp_path / "run", device="cpu")
+    (training, transformed, mask), *evaluations = forwards
+    assert training and not torch.equal(transformed, batches[True][0])
+    assert torch.equal(mask, batches[True][1]) and torch.count_nonzero(transformed[~mask]) == 0
+    assert evaluations
+    for training, images, valid in evaluations:
+        assert not training
+        torch.testing.assert_close(images, batches[False][0], rtol=0, atol=0)
+        assert torch.equal(valid, batches[False][1])
+    saved = json.loads((tmp_path / "run/config.json").read_text())
+    assert saved["image_augmentation"] == finetune.image_augmentation_settings(config)
+    assert saved["label_noise"] == config["label_noise"] and saved["oversample"] == config["oversample"]
+    assert report["image_augmentation"]["shared_across_windows"] is True
+    assert report["oversample"]["extra_draws"] == 1
+    last = torch.load(tmp_path / "run/last.pt", weights_only=False)
+    assert "augmentation_rng_state" in last

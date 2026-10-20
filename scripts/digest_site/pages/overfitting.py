@@ -338,6 +338,7 @@ def droppath05_section(ctx):
         v = sd["validation_r@1"]
         forest.append({"id": f"diff-{s}", "label": f"Seed {s}", "group": "droppath", "est": v["difference"],
                        "lo": v["paired_query_bootstrap_95_ci"][0], "hi": v["paired_query_bootstrap_95_ci"][1]})
+    rows.sort(key=lambda r: list(groups).index(r["group"]))  # arm-major: all baseline seeds, then all drop-path seeds
     p = j["pooled"]
     forest.append({"id": "diff-pooled", "label": "Pooled (3 seeds)", "group": "droppath",
                    "est": p["mean_difference"], "lo": p["bootstrap_95_ci"][0], "hi": p["bootstrap_95_ci"][1],
@@ -668,6 +669,7 @@ def crop_section(ctx):
             dumb.append({"id": f"{arm}-{s}", "label": f"{arm[:4].title()} {arm[4:]} mm, seed {s}", "group": arm,
                          "a": x["validation_r@1"], "b": x["train_r@1_mean"] if "train_r@1_mean" in x else x.get("train_r@1"),
                          "gap": x.get("r@1_gap")})
+    dumb.sort(key=lambda r: list(groups).index(r["group"]))  # arm-major: all 130 mm seeds, then all 150 mm seeds
     forest = []
     for p in data.paired_comparisons(comp):
         s = seed_of(p.candidate)
@@ -862,6 +864,7 @@ def duplicates_section(ctx):
             c = dd["cuts"][cut]
             dumb.append({"id": f"{s}-{g}", "label": f"s{seed_of(s)} {'txt→img' if g == 't2i' else 'img→txt'}", "group": g, "a": dd["r@1"],
                          "b": c["duplicate_tolerant_r@1"], "enr": c["enrichment_over_background"], "miss": c["share_of_misses"]})
+    dumb.sort(key=lambda r: r["group"])  # direction-major: every img→txt seed, then every txt→img seed
     gains = [r["b"] - r["a"] for r in dumb]
     b32 = eb["train"]["by_batch_size"]["32"]
     ceiling = eb["validation"]["text_to_image_r@1_ceiling"]

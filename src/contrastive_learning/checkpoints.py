@@ -52,9 +52,15 @@ RUN_MANIFEST_VERSION = 1
 SELECTION_POLICY = "mean_r@1 descending, validation_loss ascending, earliest epoch"
 
 # Settings a resume is allowed to differ on: the new epoch target, the pointer to
-# the checkpoint, the directory being continued, and the indexing-only shortcut.
-# Everything else must match, or the continued run would not be the same run.
-_RESUME_MUTABLE_FIELDS = frozenset({"epochs", "resume", "output_dir", "prepare_only"})
+# the checkpoint, the directory being continued, the indexing-only shortcut, and
+# where this host keeps the DICOM tree and its optional byte-identical local
+# mirror (series are matched by <study>/<series>, so moving the mount or adding
+# a mirror does not change the data). Everything else must match, or the
+# continued run would not be the same run.
+_RESUME_MUTABLE_FIELDS = frozenset({
+    "epochs", "resume", "output_dir", "prepare_only",
+    "data_root", "series_csv", "series_root", "train_series_mirror",
+})
 
 
 # --------------------------------------------------------------------------- #
