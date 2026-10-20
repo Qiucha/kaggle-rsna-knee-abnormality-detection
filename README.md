@@ -180,7 +180,7 @@ package under `src/`:
 
 | Package | Holds |
 | --- | --- |
-| `experiment_tools/` | `gold_probe.py` (the gold-58 probe contract: population, features, out-of-fold AUROC, bootstraps), `cohort_audit.py` (cohort sampling for the audits), `curves.py` (metrics.jsonl reader and SVG line chart), `lm_heads.py` (reload and verify a finished LM head), `joint_loss.py` and `text_hubs.py` (snapshots the digest site exports) |
+| `experiment_tools/` | Probes and comparisons: `gold_probe.py` (the gold-58 probe contract: population, features, out-of-fold AUROC, bootstraps), `paired_runs.py` (paired LM-test/gold-58 trials of fine-tuning runs), `lm_heads.py` (reload and verify a finished LM head), `tower_size_runs.py`. Audits: `cohort_audit.py` (cohort sampling), `dicom_series.py` (series hashing, header reads). Digests: `curves.py`, `digest_charts.py`, `digest_arms.py`, and `joint_loss.py` / `text_hubs.py` (snapshots the digest site exports) |
 | `digest_site/` | The research-digest site builder: catalog, data export, page renderers |
 
 ### Scripts — `scripts/`

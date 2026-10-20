@@ -2,7 +2,8 @@
 
 Run every script from the repository root, for example
 `.venv/bin/python scripts/training/train_contrastive.py --help`. Relative paths in
-matrices and configurations resolve from there.
+matrices and configurations resolve from there. Every script answers `--help` with
+its docstring (what it reads, what it writes, how to run it) without doing any work.
 
 Each script is one command. Scripts never import each other. Code shared by more
 than one script lives under `src/`: `src/contrastive_learning/` holds the pipeline,
@@ -47,7 +48,10 @@ builder. A script reaches `src/` with one line:
 
 ## `analysis/`: paired comparisons and follow-ups
 
-All read-only over finished runs.
+All read-only over finished runs. The four paired fine-tuning trials (`compare_clip_init_u9`,
+`compare_image_augmentation`, `compare_lateral_rebalance`, `compare_slice_band`) share
+`experiment_tools.paired_runs`; the gold-probe comparisons use `experiment_tools.gold_probe`;
+the tower-size scripts read their four pinned runs from `experiment_tools.tower_size_runs`.
 
 | Script | What it does |
 | --- | --- |
@@ -68,7 +72,8 @@ All read-only over finished runs.
 
 ## `audits/`: data and preprocessing checks
 
-All read-only. Shared sampling helpers are in `experiment_tools.cohort_audit`.
+All read-only. Cohort sampling is in `experiment_tools.cohort_audit`; series hashing and
+header reads are in `experiment_tools.dicom_series`.
 
 | Script | What it does |
 | --- | --- |
@@ -87,12 +92,15 @@ All read-only. Shared sampling helpers are in `experiment_tools.cohort_audit`.
 ## `digests/`: reports under `digest/`
 
 Each `build_*_digest.py` rewrites its own files in `digest/` from local, gitignored
-artifacts and touches nothing else.
+artifacts and touches nothing else. Shared pieces: `experiment_tools.curves` (metrics
+reader, static chart), `experiment_tools.digest_charts` (interactive chart),
+`experiment_tools.digest_arms` (arm-comparison helpers), and the page CSS and JavaScript
+in `templates/`.
 
 | Script | What it does |
 | --- | --- |
 | `build_digest_site.py` | Build the navigable site under `digest/site/`; `export` first refreshes its data snapshots from `checkpoints/`. |
-| `build_project_digest.py` | Rebuild `digest/project-state.html` from `templates/project-digest.html`. Takes no arguments. |
+| `build_project_digest.py` | Rebuild `digest/project-state.html` from `templates/project-digest.html`. |
 | `build_both_block_digest.py`, `build_declip_digest.py`, `build_codec_declip_digest.py` | Both-block adaptation, DeCLIP alignment, and the codec-declip-v1 replicate. |
 | `build_extended_curves.py`, `build_convergence_curves.py` | Curves pages for the image-block variants and their convergence audit. |
 | `build_factor_isolation_digest.py`, `build_combined_lora_digest.py` | Factor-isolation and combined CLIP + LoRA + K8 + 336 results, verified through `experiment_tools.lm_heads`. |
