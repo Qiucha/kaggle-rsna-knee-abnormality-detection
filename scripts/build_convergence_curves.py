@@ -21,8 +21,10 @@ from zoneinfo import ZoneInfo
 import json
 from html import escape
 from pathlib import Path
+import sys
 
-from build_extended_curves import line_chart, history
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
+from experiment_tools.curves import history, line_chart  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 CK = ROOT / 'checkpoints/contrastive'
