@@ -20,7 +20,10 @@ Three candidate explanations are separable from saved artifacts:
 Every arm is paired against ``uniform_mean_768`` of the same checkpoint, under the
 probe contract copied by value from the frozen downstream-probe config.
 
-Output: digest/plane-pooling-analysis.json
+Reads: the frozen config ``configs/downstream/gold-probe-planes-v1.json``, the checkpoints it lists,
+the image cache and the gold labels. Runs the backbone over the 58 gold studies (CPU by default).
+Writes: ``--output`` (default ``digest/plane-pooling-analysis.json``).
+Run: ``.venv/bin/python scripts/analysis/analyze_plane_pooling.py [--device cuda]``
 """
 
 from __future__ import annotations
@@ -38,11 +41,12 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPOSITORY_ROOT / "src"))
 
 from experiment_tools.gold_probe import (  # the identical probe contract, not a copy
-    label_bootstrap,
     load_gold_labels,
     paired_bootstrap,
+    per_label_auroc_difference,
     resolve_population,
     score_arm,
+    without_oof_scores,
 )
 
 from contrastive_learning.artifacts import sha256_file, write_json
@@ -199,9 +203,7 @@ def main() -> None:
             scored[key] = score_arm(matrix, gold, labels, probe)
         reference = scored["uniform_mean_768"]
         for key, value in scored.items():
-            results[f"{name}/{key}"] = {
-                part: content for part, content in value.items() if part != "_oof_scores"
-            }
+            results[f"{name}/{key}"] = without_oof_scores(value)
             if key == "uniform_mean_768":
                 continue
             comparison = paired_bootstrap(
@@ -212,19 +214,9 @@ def main() -> None:
             # Per-label intervals only for the arm the finding is about; the rest
             # would be thousands of intervals nobody reads.
             if key == "attention_pooled_768":
-                comparison["per_label_auroc_difference"] = {
-                    label: {
-                        "difference": value["per_label"][label]["auroc"]
-                        - reference["per_label"][label]["auroc"],
-                        "ci95": label_bootstrap(
-                            gold[:, index],
-                            reference["_oof_scores"][:, index],
-                            value["_oof_scores"][:, index],
-                            bootstrap,
-                        ),
-                    }
-                    for index, label in enumerate(labels)
-                }
+                comparison["per_label_auroc_difference"] = per_label_auroc_difference(
+                    gold, labels, reference, value, bootstrap
+                )
             comparisons[f"{name}/{key}"] = comparison
 
     write_json(
