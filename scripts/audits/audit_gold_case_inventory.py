@@ -19,10 +19,14 @@ from __future__ import annotations
 import collections
 import hashlib
 import json
+import sys
 import time
 from pathlib import Path
 
 import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from contrastive_learning.artifacts import sha256_file
 
 ROOT = Path(__file__).resolve().parents[2]
 COHORT = ROOT / "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl"
@@ -51,10 +55,6 @@ LABELS = [
 # judgement call made later against a result someone already wants.
 MIN_POSITIVES_FOR_ANY_ESTIMATE = 2
 MIN_POSITIVES_FOR_GROUPED_FOLDS = 5
-
-
-def sha256_file(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def normalise_report(text: str) -> str:
