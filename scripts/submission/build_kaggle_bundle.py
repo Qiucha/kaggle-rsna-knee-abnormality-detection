@@ -1,4 +1,13 @@
-"""Benchmark trained contrastive encoders and export a self-contained Kaggle bundle."""
+"""Benchmark trained contrastive encoders and export a self-contained Kaggle bundle.
+
+Reads ``--config`` (default ``configs/kaggle/lora-holdout-v1.json``) and the encoder
+checkpoints it lists, trains the bundle and writes it to ``--output``, which must not
+exist. It then scores the bundle on the locked test split (LM-verdict AUROC) and
+prints the macro AUROC.
+
+    .venv-cuda/bin/python scripts/submission/build_kaggle_bundle.py \\
+        --config configs/kaggle/lora-holdout-v1.json --output checkpoints/kaggle/<bundle> --device cuda
+"""
 
 import argparse
 import sys
@@ -10,7 +19,9 @@ from contrastive_learning.submission_training import train_bundle
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument(
         "--config", type=Path, default=Path("configs/kaggle/lora-holdout-v1.json")
     )

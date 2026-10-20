@@ -1,4 +1,12 @@
-"""Run offline inference; works in the checkout or beside an exported bundle."""
+"""Run offline inference; works in the checkout or beside an exported bundle.
+
+Reads ``--bundle`` (the exported ``bundle/`` directory) and the competition data under
+``--data-root``; writes the submission CSV ``--output``. This file is copied verbatim
+into every Kaggle bundle and runs offline there with only ``src/`` beside it, so it
+imports nothing but ``contrastive_learning`` and the standard library.
+
+    python predict_kaggle.py --bundle <bundle> --data-root <data> --output submission.csv
+"""
 
 import argparse
 import json
@@ -13,7 +21,9 @@ from contrastive_learning.submission import predict_submission
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--bundle", type=Path, required=True)
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, default=Path("submission.csv"))
