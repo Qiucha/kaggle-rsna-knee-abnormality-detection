@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+"""Run a frozen contrastive experiment matrix, one fresh ``train_contrastive.py`` process each.
+
+Reads the matrix JSON (default ``configs/contrastive/full-multilingual-matrix.json``)
+and verifies its cohort checksum. Each experiment writes its run directory under the
+matrix's ``output_root``. ``--dry-run`` prints one JSON command per experiment and
+trains nothing; ``--experiment NAME`` (repeatable) restricts the grid.
+
+    .venv-cuda/bin/python scripts/training/run_contrastive_matrix.py --matrix <matrix.json> --dry-run
+"""
 from __future__ import annotations
 
 import argparse

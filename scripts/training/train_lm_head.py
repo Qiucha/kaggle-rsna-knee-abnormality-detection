@@ -1,4 +1,14 @@
-"""Train masked-label MLP/linear heads on a frozen contrastive image encoder."""
+"""Train masked-label MLP/linear heads on a frozen contrastive image encoder.
+
+Reads a head config (``configs/kaggle/lm-*.json``) and extracts frozen-tower features
+into ``--features`` (an ``.npz`` cache, reused when its recorded identity matches). Then
+fits the head and writes the experiment directory ``--output``, which must not exist.
+Unless the config is an image baseline, it ends by scoring LM-verdict AUROC on the
+locked test split. ``--features-only`` stops after the feature cache.
+
+    .venv-cuda/bin/python scripts/training/train_lm_head.py \\
+        --config configs/kaggle/lm-mlp-v1.json --output checkpoints/kaggle/<run>
+"""
 
 import argparse
 import sys
@@ -10,7 +20,9 @@ from contrastive_learning.lm_supervision import prepare_features
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument(
         "--config", type=Path, default=Path("configs/kaggle/lm-mlp-v1.json")
     )

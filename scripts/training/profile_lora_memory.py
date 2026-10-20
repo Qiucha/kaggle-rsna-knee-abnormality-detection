@@ -13,6 +13,12 @@ Measures:
   - Trainable parameters
   - LoRA parameters
   - Whether training fits in the 8GB memory envelope or throws OOM
+
+Reads the pinned DINOv2-small and Multilingual-E5-base weights from the local Hugging
+Face cache (no download) and trains on random tensors, never on the cohort. Writes the
+results to ``--output-json`` (default ``digest/lora-memory-profile.json``). Requires CUDA.
+
+    .venv-cuda/bin/python scripts/training/profile_lora_memory.py --include-full-ft
 """
 
 from __future__ import annotations
