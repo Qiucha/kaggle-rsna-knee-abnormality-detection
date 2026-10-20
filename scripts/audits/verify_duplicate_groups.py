@@ -14,38 +14,19 @@ Output: digest/duplicate-group-pixel-verification.json
 
 from __future__ import annotations
 
-import hashlib
 import json
 import sys
 import time
 from pathlib import Path
 
-import numpy as np
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from contrastive_learning.manifest import read_manifest_rows
-from contrastive_learning.preprocessing import _decode_pixels, ordered_slice_paths
+from experiment_tools.dicom_series import plane_digest
 
 ROOT = Path(__file__).resolve().parents[2]
 COHORT = ROOT / "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl"
 SCREEN = ROOT / "digest/acquisition-duplicate-screen.json"
 OUT = ROOT / "digest/duplicate-group-pixel-verification.json"
-
-
-def plane_hash(directory: str) -> tuple[str, int]:
-    """sha256 over every slice's raw decoded array, in the pipeline's own slice order."""
-    digest = hashlib.sha256()
-    paths = ordered_slice_paths(Path(directory))
-    for path in paths:
-        pixels = _decode_pixels(path)
-        if pixels is None:
-            digest.update(b"<undecodable>")
-            continue
-        array = np.ascontiguousarray(pixels)
-        digest.update(str(array.shape).encode())
-        digest.update(str(array.dtype).encode())
-        digest.update(array.tobytes())
-    return digest.hexdigest(), len(paths)
 
 
 def main() -> None:
@@ -80,10 +61,10 @@ def main() -> None:
                 "planes": {},
             }
             for plane, directory in sorted(row["slots"].items()):
-                digest, slices = plane_hash(directory)
+                digest = plane_digest(directory)
                 per_study[uid]["planes"][plane] = {
-                    "ordered_decoded_pixel_sha256": digest,
-                    "slices": slices,
+                    "ordered_decoded_pixel_sha256": digest["ordered_decoded_pixel_sha256"],
+                    "slices": digest["slices"],
                 }
 
         planes = sorted({p for s in per_study.values() for p in s["planes"]})
