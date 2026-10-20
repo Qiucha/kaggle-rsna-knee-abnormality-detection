@@ -11,6 +11,12 @@ control for epochs. "u9-b1 ep43" matches A ep30's training draws (43 x 3,438 vs 
 and must match run 5 study for study. Intervals are study bootstraps shared across runs
 (:func:`lm_proxy.paired_intervals`), so each delta is paired. The run-5 seed replicate
 gives the training-noise reference.
+
+Reads: ``predictions.npz``, ``report.json``, ``config.json`` and ``history.jsonl`` of each run under
+``checkpoints/finetune`` (arms whose run is not there yet are listed as missing, not an error), and
+the cohort files named in run 5's config.
+Writes: only ``--output``.
+Run: ``.venv/bin/python scripts/analysis/compare_lateral_rebalance.py --output FILE.json``
 """
 
 import argparse
@@ -18,17 +24,17 @@ import json
 import sys
 from pathlib import Path
 
-import numpy as np
-
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
-from contrastive_learning.lm_proxy import (  # noqa: E402
-    load_test_population,
-    masked_macro_auroc,
-    paired_intervals,
+from experiment_tools.paired_runs import (  # noqa: E402
+    load_predictions,
+    pick,
+    print_report,
+    run_records,
+    score_splits,
+    split_populations,
 )
-from contrastive_learning.submission import LABELS  # noqa: E402
 
 FINETUNE = ROOT / "checkpoints/finetune"
 BASE = "u9-b1"
@@ -57,24 +63,10 @@ PAIRS = [("run5 seed2027", "run5"), ("oversample+noise", BASE), ("loss weight 2x
          ("u9-b1 ep43", BASE), ("oversample+noise ep30", "u9-b1 ep43"), ("oversample+noise ep50", "u9-b1 ep43")]
 
 
-def _paired(predictions, y, m):
-    raw = paired_intervals(predictions, y, m)
-    out = {}
-    for first, second in PAIRS:
-        if first not in predictions or second not in predictions:
-            continue
-        key = f"{first} - {second}"
-        if key in raw:
-            out[key] = raw[key]
-        else:
-            flipped = raw[f"{second} - {first}"]
-            out[key] = {"difference": -flipped["difference"], "ci95": [-flipped["ci95"][1], -flipped["ci95"][0]]}
-    return out
-
-
-def _history(run_dir):
-    path = run_dir / "history.jsonl"
-    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()] if path.exists() else []
+def run_extras(report, run_config):
+    return {**pick(run_config, ("oversample", "label_noise", "label_weights")),
+            **pick(report, ("oversample", "label_weights", "stopped")),
+            **pick(run_config, ("epochs", "patience", "divergence_stop", "resume_from"))}
 
 
 def main():
@@ -83,67 +75,19 @@ def main():
     args = parser.parse_args()
     available = {k: v for k, v in RUNS.items() if (v[0] / "predictions.npz").exists()}
     missing = [k for k in ARMS if k not in available]
-    saved = {}
-    for name, (path, _) in available.items():
-        with np.load(path / "predictions.npz", allow_pickle=False) as data:
-            saved[name] = {key: data[key].copy() for key in data.files}
-    base = saved["run5"]
-    for name, data in saved.items():
-        for key in ("lm_test_uids", "gold_uids", "gold_targets"):
-            if not np.array_equal(data[key], base[key]):
-                raise ValueError(f"{name}: {key} differs from run 5")
-    config = json.loads((RUNS["run5"][0] / "config.json").read_text())
-    _, targets, masks, identity = load_test_population(
-        ROOT / config["cohort_manifest"], ROOT / config["lm_labels_csv"], ROOT / config["gold_labels_csv"])
-    if identity["study_uids"] != base["lm_test_uids"].tolist():
-        raise ValueError("LM-test population differs from saved predictions")
-    gold_y = base["gold_targets"]
-    splits = {"lm_test": (targets, masks), "gold": (gold_y, np.ones_like(gold_y))}
-    result = {"point": {}, "paired": {}, "per_label": {}, "paired_target_labels": {},
+    saved = load_predictions(available)
+    populations = split_populations(ROOT, available, saved)
+    predictions = {split: {name: data[split] for name, data in saved.items()} for split in populations}
+    result = {**score_splits(predictions, populations, PAIRS, TARGETS, available=saved),
               "bootstrap": {"resamples": 2000, "seed": 2030}, "base": BASE, "arms": ARMS,
               "target_labels": TARGETS, "missing_arms": missing}
-    for split, (y, m) in splits.items():
-        predictions = {name: data[split] for name, data in saved.items()}
-        scores = {name: masked_macro_auroc(p, y, m) for name, p in predictions.items()}
-        result["point"][split] = {name: s["macro_auroc"] for name, s in scores.items()}
-        result["per_label"][split] = {name: {label: s["per_label"].get(label) for label in LABELS}
-                                      for name, s in scores.items()}
-        result["paired"][split] = _paired(predictions, y, m)
-        # Per target label: mask every other label so the "macro" is that label alone.
-        result["paired_target_labels"][split] = {}
-        for label in TARGETS:
-            only = np.zeros_like(m)
-            only[:, LABELS.index(label)] = m[:, LABELS.index(label)]
-            result["paired_target_labels"][split][label] = _paired(predictions, y, only)
-    result["runs"] = []
-    for name, (path, title) in available.items():
-        report = json.loads((path / "report.json").read_text())
-        run_config = json.loads((path / "config.json").read_text())
-        history = _history(path)
-        result["runs"].append({
-            "key": name, "title": title, "dir": str(path.relative_to(ROOT)),
-            "best_epoch": report["best_epoch"], "validation_masked_bce": report["validation_masked_bce"],
-            "epochs_completed": len(history), "history": history,
-            **{k: run_config[k] for k in ("oversample", "label_noise", "label_weights") if k in run_config},
-            **{k: report[k] for k in ("oversample", "label_weights", "stopped") if k in report},
-            **{k: run_config[k] for k in ("epochs", "patience", "divergence_stop", "resume_from") if k in run_config},
-        })
+    result["runs"] = run_records(ROOT, available, run_extras, seconds=False)
     result["recipe"] = {k: json.loads((RUNS[BASE][0] / "config.json").read_text())[k]
                         for k in ("image_model", "image_unfreeze_last", "image_size", "windows_per_plane",
                                   "targets", "epochs", "patience", "seed")}
     args.output.write_text(json.dumps(result, indent=2) + "\n")
-    for split in splits:
-        print(f"\n{split}")
-        for name, value in result["point"][split].items():
-            print(f"  {name:20s} {value:.4f}")
-        for key, value in result["paired"][split].items():
-            low, high = value["ci95"]
-            print(f"  {key:40s} {value['difference']:+.4f} [{low:+.4f}, {high:+.4f}]")
-        for label, pairs in result["paired_target_labels"][split].items():
-            for key, value in pairs.items():
-                if key.endswith((f" - {BASE}", " - u9-b1 ep30", " - u9-b1 ep43")):
-                    low, high = value["ci95"]
-                    print(f"  {label:18s} {key:32s} {value['difference']:+.4f} [{low:+.4f}, {high:+.4f}]")
+    print_report(result, widths=(20, 40, 32),
+                 label_pair=lambda key: key.endswith((f" - {BASE}", " - u9-b1 ep30", " - u9-b1 ep43")))
     if missing:
         print(f"\nmissing arms: {missing}")
 
