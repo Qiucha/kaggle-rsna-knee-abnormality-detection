@@ -32,7 +32,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from contrastive_learning import paths  # noqa: E402
-from contrastive_learning.manifest import read_manifest_rows  # noqa: E402
+from experiment_tools.cohort_audit import load_studies  # noqa: E402
 
 TARGETS = ["ACL", "MCL", "Medial Meniscus", "Lateral Meniscus", "Medial OA", "Lateral OA",
            "PF OA", "Effusion", "Synovitis", "Baker's", "Contusion", "Fracture"]
@@ -71,11 +71,9 @@ def main():
     parser.add_argument("--out", default="digest/protocol-leak-check.json")
     args = parser.parse_args()
 
-    rows = read_manifest_rows(args.manifest)
+    rows = load_studies(args.manifest, None)
     counts, reports = {}, {}
     for row in rows:
-        if not row.get("slots"):
-            continue
         study_dir = Path(next(iter(row["slots"].values()))).parent
         n = series_count(study_dir)
         if n:

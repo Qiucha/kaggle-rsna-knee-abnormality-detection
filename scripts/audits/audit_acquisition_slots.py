@@ -12,7 +12,7 @@ are byte-identical (digest/acquisition-metadata-trust.md).
 
 Usage: audit_acquisition_slots.py [--sample N] [--out PATH]
 """
-import argparse, json, os, random, sys
+import argparse, json, os, sys
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -22,7 +22,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from contrastive_learning import paths  # noqa: E402
 from contrastive_learning.acquisition import recover  # noqa: E402
-from contrastive_learning.manifest import read_manifest_rows  # noqa: E402
+from experiment_tools.cohort_audit import load_studies  # noqa: E402
 
 TAGS = ("SeriesDescription", "SequenceName", "ScanOptions", "ScanningSequence",
         "RepetitionTime", "EchoTime")
@@ -68,9 +68,7 @@ def main():
     parser.add_argument("--seed", type=int, default=20260914)
     args = parser.parse_args()
 
-    rows = [r for r in read_manifest_rows(args.manifest) if r["slots"]]
-    if args.sample:
-        rows = random.Random(args.seed).sample(rows, min(args.sample, len(rows)))
+    rows = load_studies(args.manifest, None, args.sample, args.seed)
 
     jobs, selected = [], set()
     for row in rows:
