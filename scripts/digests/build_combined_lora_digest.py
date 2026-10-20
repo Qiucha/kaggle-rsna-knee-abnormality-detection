@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'src'))
 from contrastive_learning.checkpoints import selection_key  # noqa: E402
 from contrastive_learning.config import _PATH_FIELDS  # noqa: E402
+from experiment_tools.curves import history  # noqa: E402
 from experiment_tools.lm_heads import load_head  # noqa: E402
 
 RUNS = 'checkpoints/contrastive/combined-lora-k8-336-v1'
@@ -39,17 +40,6 @@ REPRODUCE = [
     "For a seed variant, add a matrix entry whose `args` set `--seed`. Copy the head config and point `checkpoint` at the new run's `best.pt`.",
     'Not in git: the cohort manifest (checked against `manifest_sha256`), `data/lm_label/lm_labels_kaggle.csv`, and the pinned Hugging Face snapshots.',
 ]
-
-
-def history(path):
-    records = []
-    if path.exists():
-        for line in path.read_text().splitlines():
-            try:
-                records.append(json.loads(line))
-            except ValueError:
-                pass
-    return records
 
 
 def repo_relative(value, root):

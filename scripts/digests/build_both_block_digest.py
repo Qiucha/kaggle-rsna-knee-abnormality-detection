@@ -6,27 +6,16 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from html import escape
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "src"))
+from experiment_tools.curves import history  # noqa: E402
 CK = ROOT / "checkpoints/contrastive"
 DIGEST_DIR = ROOT / "digest"
 
 W, H, PAD_L, PAD_R, PAD_T, PAD_B = 840, 340, 60, 24, 24, 46
-
-
-def history(path: Path) -> list[dict]:
-    rows = []
-    if path.exists():
-        for line in path.read_text().splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                rows.append(json.loads(line))
-            except json.JSONDecodeError:
-                continue
-    return rows
 
 
 def get_run_stat(rel_path: str) -> tuple[str, str]:
