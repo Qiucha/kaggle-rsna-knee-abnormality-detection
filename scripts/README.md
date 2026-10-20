@@ -2,7 +2,7 @@
 
 Run every script from the repository root, for example
 `.venv/bin/python scripts/training/train_contrastive.py --help`. Relative paths in
-matrices and configurations resolve from there. Every script answers `--help` with
+matrices and configurations resolve from there. Every Python script answers `--help` with
 its docstring (what it reads, what it writes, how to run it) without doing any work.
 
 Each script is one command. Scripts never import each other. Code shared by more
