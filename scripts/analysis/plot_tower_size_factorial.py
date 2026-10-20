@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render the four-arm 20-epoch training and validation curves.
 
-Reads: ``metrics.jsonl`` of the four pinned runs (``experiment_tools.paired_tower_size``).
+Reads: ``metrics.jsonl`` of the four pinned runs (``experiment_tools.tower_size_runs``).
 Writes: ``digest/tower-size-factorial-curves.svg``.
 Run: ``.venv/bin/python scripts/analysis/plot_tower_size_factorial.py``
 """
@@ -18,7 +18,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
-from experiment_tools.paired_tower_size import ARM_RUNS  # noqa: E402
+from experiment_tools.tower_size_runs import ARM_RUNS  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / "digest/tower-size-factorial-curves.svg"

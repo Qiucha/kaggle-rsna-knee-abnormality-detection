@@ -3,7 +3,7 @@
 
 Reads: each arm's run directory (``config.json``, ``metrics.jsonl``, ``best.pt``), its cached gold
 features under ``digest/*.npz``, the probe config and the gold labels. The run directories are pinned in
-``experiment_tools.paired_tower_size``.
+``experiment_tools.tower_size_runs``.
 Writes: ``digest/tower-size-factorial-v1.json``.
 Run: ``.venv/bin/python scripts/analysis/compare_tower_size_factorial.py``
 """
@@ -28,7 +28,7 @@ from experiment_tools.gold_probe import (
     resolve_population,
     score_arm,
 )
-from experiment_tools.paired_tower_size import ARM_RUNS
+from experiment_tools.tower_size_runs import ARM_RUNS
 
 ROOT = Path(__file__).resolve().parents[2]
 PROBE = ROOT / "configs/downstream/gold-probe-size-matched-holdout-v1.json"
