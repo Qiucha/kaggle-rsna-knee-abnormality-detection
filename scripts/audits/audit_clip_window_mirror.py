@@ -1,4 +1,14 @@
-"""Check every training-series path through the actual K8 CLIP image reader."""
+"""Check every training-series path through the actual K8 CLIP image reader.
+
+Reads a CLIP pre-training config (``configs/contrastive/omnirad-clip-*.json``) and the
+cohort it names, then asks the window reader for the series directory of every plane
+of every train-split study, so a missing or empty entry in the local series mirror
+shows up before a long run starts. Decodes no pixels. Writes ``--report`` (counts and
+failures as JSON) and exits non-zero if any series is missing or empty.
+
+    .venv/bin/python scripts/audits/audit_clip_window_mirror.py \\
+        --config configs/contrastive/omnirad-clip-run5-v1.json --report <report.json>
+"""
 
 import argparse
 import json
@@ -13,7 +23,9 @@ from contrastive_learning.window_reports import WindowReportDataset
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--paths-config", type=Path,
