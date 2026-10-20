@@ -3,7 +3,7 @@
 Status comes from the run directories alone: an arm is completed once it has every
 epoch of its recipe and a best.pt, incomplete if it has started, queued otherwise. The
 recipe is configs/contrastive/combined-lora-k8-336-v1.json; the runs, LM heads and
-feature caches are gitignored checkpoints (see build_factor_isolation_digest.load_head).
+feature caches are gitignored checkpoints (see experiment_tools.lm_heads.load_head).
 
 Usage: build_combined_lora_digest.py [--project DIR] [--digest DIR]
 """
@@ -13,12 +13,11 @@ import sys
 import time
 from pathlib import Path
 
-from build_factor_isolation_digest import load_head
-
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 from contrastive_learning.checkpoints import selection_key  # noqa: E402
 from contrastive_learning.config import _PATH_FIELDS  # noqa: E402
+from experiment_tools.lm_heads import load_head  # noqa: E402
 
 RUNS = 'checkpoints/contrastive/combined-lora-k8-336-v1'
 MATRIX = ROOT / 'configs/contrastive/combined-lora-k8-336-v1.json'
