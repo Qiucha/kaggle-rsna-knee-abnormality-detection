@@ -32,16 +32,13 @@ from collections import Counter
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO / "src"))
+
+from experiment_tools.text_hubs import RUNS, load_rankings, monte_carlo_null  # noqa: E402
 
 MANIFEST = REPO / "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl"
 SOURCE_CSV = REPO / "data/train.csv"
 PACKET = REPO / "digest/english-medical-text-error-review-packet.md"
-
-RUNS = {
-    "baseline multilingual-e5": REPO / "checkpoints/contrastive/claude-translated-dfd07db-q2-v1/00-full-seed2026",
-    "e5-base-v2": REPO / "checkpoints/contrastive/english-medical-text-v1/e5-base-v2-seed2026",
-    "pubmedbert": REPO / "checkpoints/contrastive/english-medical-text-v1/pubmedbert-base-embeddings-seed2026",
-}
 
 # A UTF-8 byte sequence decoded as cp1252 leaves a leading U+00E2 followed by two more
 # characters from the cp1252 high range. Match by codepoint, never by eyeballing a
@@ -75,12 +72,6 @@ def load_manifest() -> dict[str, dict]:
                 record = json.loads(line)
                 records[record["study_uid"]] = record
     return records
-
-
-def load_rankings(run_dir: Path) -> list[dict]:
-    path = run_dir / "rankings-validation-best.jsonl"
-    with path.open(encoding="utf-8") as handle:
-        return [json.loads(line) for line in handle if line.strip()]
 
 
 def report_mojibake() -> None:
@@ -131,29 +122,6 @@ def report_mojibake() -> None:
     print(f"\n{PACKET.relative_to(REPO)}: {len(MOJIBAKE.findall(packet))} mangled sequence(s) "
           f"alongside {packet.count(chr(0x2013))} clean en dashes")
     print("  -> the packet renderer reproduces the stored text faithfully; it is not the cause.")
-
-
-def monte_carlo_null(n_queries: int, n_candidates: int, draws: int = 20000, seed: int = 12345) -> dict:
-    """Each query independently picks a top-1 uniformly at random."""
-    rng = random.Random(seed)
-    maxes, top_twos, distincts = [], [], []
-    for _ in range(draws):
-        counts = Counter(rng.randrange(n_candidates) for _ in range(n_queries))
-        common = counts.most_common()
-        maxes.append(common[0][1])
-        top_twos.append(common[0][1] + common[1][1])
-        distincts.append(len(counts))
-    for series in (maxes, top_twos, distincts):
-        series.sort()
-
-    def pct(series, p):
-        return series[min(len(series) - 1, int(p * len(series)))]
-
-    return {
-        "max p50/p95/p99": (pct(maxes, .50), pct(maxes, .95), pct(maxes, .99)),
-        "top-two p50/p95/p99": (pct(top_twos, .50), pct(top_twos, .95), pct(top_twos, .99)),
-        "distinct p05/p50": (pct(distincts, .05), pct(distincts, .50)),
-    }
 
 
 def report_hubs() -> None:

@@ -20,7 +20,6 @@ degrade to a notice, never fails the build.
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import math
 import sys
@@ -399,18 +398,13 @@ def export_text_block() -> None:
 
 def export_text_hubs() -> None:
     """Retrieval-hub concentration per text-encoder screen (from the saved rank-1 rankings)."""
-    script = ROOT / "scripts" / "analyze_text_screen_followups.py"
-    if not script.exists():
-        warn("scripts/analyze_text_screen_followups.py missing; hub table skipped")
-        return
+    from experiment_tools.text_hubs import RUNS, load_rankings, monte_carlo_null
+
     try:
-        spec = importlib.util.spec_from_file_location("_hubs", script)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
         runs = []
         pool = None
-        for label, path in mod.RUNS.items():
-            rows = mod.load_rankings(path)
+        for label, path in RUNS.items():
+            rows = load_rankings(path)
             for direction in ("text_to_image", "image_to_text"):
                 subset = [r for r in rows if r["direction"] == direction]
                 counts = Counter(r["top_uid"] for r in subset)
@@ -422,7 +416,7 @@ def export_text_hubs() -> None:
                     "distinct_rank1_targets": len(counts),
                     "biggest_hub": common[0][1], "top_two": common[0][1] + common[1][1],
                 })
-        null = mod.monte_carlo_null(pool, pool)
+        null = monte_carlo_null(pool, pool)
         _write(DATA / "text-hubs.json", {
             "source": "scripts/analyze_text_screen_followups.py hubs (saved rankings-validation-best.jsonl)",
             "runs": runs,
@@ -474,7 +468,7 @@ def export() -> None:
     export_text_block()
     export_text_hubs()
     export_lm_head_histories()
-    from build_joint_loss_digest import JOINT, build_snapshot
+    from experiment_tools.joint_loss import JOINT, build_snapshot
 
     if (JOINT / "comparison.json").exists():
         build_snapshot()
