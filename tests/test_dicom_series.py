@@ -7,7 +7,7 @@ from pydicom.dataset import FileMetaDataset
 from pydicom.uid import ExplicitVRLittleEndian, generate_uid
 
 from contrastive_learning.preprocessing import ordered_slice_paths
-from experiment_tools.dicom_series import plane_digest
+from experiment_tools.dicom_series import middle_slice_header, plane_digest
 
 
 def write_slice(path: Path, z: float, value: int, *, broken: bool = False, size: int = 8) -> None:
@@ -68,3 +68,17 @@ def test_plane_digest_marks_an_undecodable_slice_instead_of_failing(tmp_path):
     broken = plane_digest(str(write_series(tmp_path / "broken", [10, 20, 30], broken=frozenset({1}))))
     assert broken["slices"] == 3
     assert broken["ordered_decoded_pixel_sha256"] != whole["ordered_decoded_pixel_sha256"]
+
+
+def test_middle_slice_header_reads_the_middle_file_by_name(tmp_path):
+    series = write_series(tmp_path / "series", [10, 20, 30, 40, 50])
+    dataset, count = middle_slice_header(series)
+    assert count == 5
+    assert dataset.InstanceNumber == 2
+    assert "PixelData" not in dataset
+
+
+def test_middle_slice_header_is_none_when_nothing_can_be_read(tmp_path):
+    (tmp_path / "empty").mkdir()
+    assert middle_slice_header(tmp_path / "empty") is None
+    assert middle_slice_header(tmp_path / "missing") is None

@@ -5,6 +5,7 @@ Reading only: nothing here writes to the cohort, trains, or opens a label.
 from __future__ import annotations
 
 import hashlib
+import os
 from pathlib import Path
 
 import numpy as np
@@ -34,3 +35,22 @@ def plane_digest(directory: str) -> dict:
         "slice_shapes": sorted(str(s) for s in shapes),
         "dtypes": sorted(dtypes),
     }
+
+
+def middle_slice_header(series_dir: Path | str):
+    """``(dataset, slice_count)`` of a series' middle file by name, headers only, or ``None``.
+
+    Name order is arbitrary for this dataset (file names are randomised SOP UIDs), so
+    the "middle" slice is a representative one for series-level tags, not a central
+    one. Every file in the directory counts as a slice. ``None`` when the directory
+    cannot be listed, is empty, or the chosen file is not readable as DICOM.
+    """
+    import pydicom  # outside the try: a missing package must raise, not read as "unreadable"
+
+    try:
+        files = sorted(os.listdir(series_dir))
+        dataset = pydicom.dcmread(Path(series_dir) / files[len(files) // 2],
+                                  stop_before_pixels=True, force=True)
+    except Exception:
+        return None
+    return dataset, len(files)
