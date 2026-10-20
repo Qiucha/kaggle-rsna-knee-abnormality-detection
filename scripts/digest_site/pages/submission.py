@@ -14,7 +14,8 @@ from ..sitemap import BY_SLUG
 from ._encoders_util import md_interval, md_number, md_table, section_script
 
 SLUG = "submission"
-SUBTITLE = "The submitted encoder and gold-only heads, the offline Kaggle bundle, and what LM-supervised heads change."
+SUBTITLE = ("All completed public submissions, including the A30 ensembles, followed by the original frozen-encoder "
+            "pipeline, offline Kaggle bundle and LM-supervised head comparisons.")
 
 FACTORIAL = "tower-size-factorial-v1.json"
 LM58 = "lm-head-tower-size-58-v1.json"
@@ -538,7 +539,8 @@ def lm_mlp_v1_section(ctx) -> tuple[str, dict, dict]:
 
 LB_HISTORY = "leaderboard-history-v1.json"
 LB_GROUPS = {"frozen": {"label": "Frozen encoder + heads", "color": "var(--g-anchor)"},
-             "finetune": {"label": "Label fine-tuned image encoder", "color": "var(--g-sky)"}}
+             "finetune": {"label": "Label fine-tuned image encoder", "color": "var(--g-sky)"},
+             "ensemble": {"label": "Rank ensemble of fine-tuned encoders", "color": "var(--g-amber)"}}
 
 
 def _best_public() -> dict | None:
@@ -566,7 +568,7 @@ def leaderboard_section(ctx) -> tuple[str, dict]:
     tbl = table(["Recorded", "Submission", "Kaggle ref", "Public", "Local LM-test", "Local gold-58", "Outcome"],
                 rows, raw_html=True, num_cols=(3, 4, 5))
     claim = (f"Public leaderboard: {num(subs[0]['public'], '.3f')} → {num(best['public'], '.3f')} over "
-             f"{len(subs)} submissions; best single model is {esc(best['title'])}")
+             f"{len(subs)} submissions; best is {esc(best['title'])}")
     caption = ("Every recorded public-leaderboard submission, read from each bundle's leaderboard-submission.json. "
                "Public scores rest on the hidden test's public split; one submission per bundle, single seeds.")
     notes = (f'<p>Source: <a href="{ctx.raw(LB_HISTORY)}">{LB_HISTORY}</a>, built by '

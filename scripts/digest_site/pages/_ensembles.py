@@ -195,12 +195,74 @@ def per_label_section(ctx, j) -> tuple[str, dict]:
     return section(sid, claim, body, caption=caption), {f"data-{sid}": blob}
 
 
+def a30_section(ctx, *, clip_init=False) -> tuple[str, dict]:
+    j = data.read_json("ensemble-a30-v1.json")
+    if not j:
+        return "", {}
+    combos = j["clip_init_sweep"]["combos"] if clip_init else j["combos"]
+    colors = ["var(--g-anchor)", "var(--g-sky)", "var(--g-teal)", "var(--g-violet)",
+              "var(--g-lime)", "var(--g-amber)", "var(--g-rose)"]
+    names = list(dict.fromkeys(c["group"] for c in combos if c["group"] != "single"))
+    groups = {name: {"label": name.capitalize(), "color": colors[i]} for i, name in enumerate(names)}
+
+    def interval(values):
+        return {"difference": values[0], "ci95": values[1:]}
+
+    rows = group_major([{"id": c["name"], "label": c["name"], "group": c["group"],
+                         "lm": interval(c["d101"]), "gold": interval(c["d_gold"])}
+                        for c in combos if c["group"] != "single"], groups)
+    tbl = table(["Design", "Combination", "Members", "LM-test", "Δ vs A30 [95% CI], seed 101",
+                 "Seed 202", "Gold-58", "Gold Δ vs A30 [95% CI]", "Gold Lateral Meniscus", "Worst LM label"],
+                [[c["group"], c["name"], len(c["members"]), num(c["lm"]), ci_text(interval(c["d101"])),
+                  ci_text(interval(c["d202"])), num(c["gold"]), ci_text(interval(c["d_gold"])),
+                  num(c["gold_latmen"], ".3f"), num(c["worst"], ".3f")] for c in combos])
+    lead = ('<p>The completed 2026-10-14 sweep compares 17 combinations around A30, including the single-model '
+            'reference and the earlier best ensemble. A30 + u9 + shallow CLIP + CoAtNet + DINOv2-S reaches '
+            '0.9063 LM-test, +0.0146 [+0.0079, +0.0218] over A30, with gold-58 0.8760. The highest LM-test '
+            'point estimate is 0.9065 after replacing u9 with soft R4a; this does not establish it as better '
+            'than the other strong-core sets.</p>'
+            '<p>CoAtNet could not be packaged by the exporter. The four-member set without it was submitted '
+            'and scored 0.894 public. <a href="#clip-init-u9-ensembles">The later CLIP-init u9 swap and deep '
+            'three scored 0.899 and 0.902</a>; those newer results supersede the sweep as the submission choice. '
+            'A high local sweep score is not a public score.</p>')
+    notes = (f'<p>Source: <a href="{ctx.raw("ensemble-a30-v1.json")}">full sweep snapshot</a>. '
+             'Paired study bootstrap, 2,000 resamples; two bootstrap seeds use the same studies. Member sets '
+             'were picked using these LM-test results. Gold-58 is exploratory, with a veto at Δ ≤ −0.024 '
+             'against A30. <code>clip</code> means the older from-CLIP u3 member; <code>coat</code> is CoAtNet-384, '
+             '<code>dS336</code> is DINOv2-small soft 336, <code>384</code> is OmniRad-base soft 384, '
+             '<code>softR4a</code> is DINOv2-small soft 224, and <code>A30aug</code> is A30 with image augmentation. '
+             'Historical sweep deltas are bootstrap means; AUROC levels use the full population. '
+             'Ensembles reuse member histories; their training curves are in the corresponding run sections.</p>')
+    sid = "a30-ensemble-sweep"
+    claim = "A30 ensemble sweep: strong cores improve LM-test; later public tests favor deep members"
+    if clip_init:
+        sid = "clip-init-ensemble-sweep"
+        claim = "CLIP-init ensemble sweep: all 12 combinations, including swaps, additions and deep-only members"
+        lead = ('<p>The completed 2026-10-16 sweep adds the new CLIP-init u9 member (<code>clipU9</code>). '
+                'Every interval here is against A30 alone, using bootstrap seeds 101 and 202 for LM-test and '
+                '7 for gold. The <a href="#clip-init-u9-ensembles">matched submission comparison above</a> '
+                'uses the original ens4 as its reference and bootstrap seed 2030; keep those baselines distinct.</p>'
+                '<p>Adding CLIP-init u9 alongside the old shallow CLIP member reaches 0.9063 LM-test. '
+                'That local score is not a public result: only the original ens4, the four-member swap '
+                'and the deep three were submitted. Their public scores are 0.894, 0.899 and 0.902.</p>')
+    else:
+        check = j["exportability_check"]
+        tbl += ('<h3>Completed exportability check · 2026-10-15</h3>'
+                '<p>Eight recorded combinations compare the five-member CoAtNet pick with variants the exporter '
+                'could package. Values retain the precision of the original run record.</p>'
+                + table(check["headers"], check["rows"]))
+    return delta_card(sid, claim,
+                      rows, groups, x_label="Ensemble minus A30 alone", lead=lead, notes=notes,
+                      table_html=tbl, table_summary=f"All {len(combos)} combinations and paired intervals")
+
+
 def build(ctx) -> tuple[list[str], dict]:
     j = data.read_json(SRC)
     if not j:
         return [], {}
     out, blobs = [], {}
-    for html, blob in (combos_section(ctx, j), pairs_section(ctx, j), selection_section(ctx, j), per_label_section(ctx, j)):
+    for html, blob in (a30_section(ctx), a30_section(ctx, clip_init=True), combos_section(ctx, j),
+                       pairs_section(ctx, j), selection_section(ctx, j), per_label_section(ctx, j)):
         out.append(html)
         blobs.update(blob)
     return out, blobs

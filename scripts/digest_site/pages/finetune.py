@@ -295,7 +295,7 @@ def _combined_note(by_id) -> str:
             f"against OmniRad-base the LM-test gain is {num(lm['difference'], '.4f', True)} "
             f"{_ci(*lm['ci95'])}, which does not pass the bar on its own; gold {num(gold['difference'], '.3f', True)} "
             f"{_ci(*gold['ci95'])}. Submitted alone (2026-10-03) it scored "
-            + (f"<strong>{num(s['public']['score'])} public</strong>, the best so far and +0.040 over OmniRad-base's 0.839: "
+            + (f"<strong>{num(s['public']['score'])} public</strong>, the best at the time and +0.040 over OmniRad-base's 0.839: "
                "far more than either local measure predicted (+0.007 LM-test, +0.013 gold). " if s.get("public") else "")
             + "It is also a member of the proposed 3-member ensemble (ticket 14).</li>")
 
@@ -421,7 +421,7 @@ def steps_section(ctx, j, by_id) -> tuple[str, dict]:
                f"Bottom row: the same steps minus R0, the frozen-encoder baseline, so every dot shares one zero and "
                f"the gains read cumulatively. Both on {j['lm_test_studies']} LM-test "
                f"and {j['gold_studies']} gold studies. {esc(j['bootstrap'])} The full table says what each step changes. "
-               f"Best LM-test so far: {esc(best['short'])} ({num(best['lm_test']['macro'])}).")
+               f"Best LM-test within this original ladder: {esc(best['short'])} ({num(best['lm_test']['macro'])}).")
     also = [s for s in j["steps"] if s.get("vs_also")]
     notes = ("<ul>"
              f"<li><strong>Bar.</strong> {esc(j['bar'])} A step only passes against its own parent, so a backbone swap "

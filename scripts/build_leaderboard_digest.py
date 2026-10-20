@@ -19,6 +19,9 @@ TITLES = {
     "r4a-k8-omnirad-base-soft-336": ("Run 5: OmniRad-base, soft, 336 px", "finetune"),
     "r4a-k8-omb-soft-336-u9": ("u9-b1: run 5 with 9 image blocks unfrozen", "finetune"),
     "r4a-k8-omb-soft-336-u9-a30": ("A30: u9-b1 + lateral oversample + noise, 30 epochs", "finetune"),
+    "a30-ens4-rank": ("Rank ensemble: A30 + u9-b1 + CLIP-init OmniRad + DINOv2-S 336", "ensemble"),
+    "a30-ens4-swap-rank": ("Rank ensemble swap: from-clip u3 replaced by CLIP-init u9 (A30 recipe)", "ensemble"),
+    "a30-deep3-rank": ("Rank ensemble, deep three: A30 + u9-b1 + CLIP-init u9 (no shallow members)", "ensemble"),
 }
 
 

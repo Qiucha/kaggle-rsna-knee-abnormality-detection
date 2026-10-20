@@ -13,16 +13,19 @@ import re
 from .. import data
 from ..shell import Page, esc, num, table
 from ..sitemap import BY_SLUG
-from . import _ensembles, _image_augmentation, _joint, _lateral_rebalance, _settings_fusion, finetune
+from . import (_clip_init_u9, _ensembles, _image_augmentation, _joint, _lateral_rebalance, _latest_results, _settings_fusion,
+               _slice_band, finetune)
 from ._mindmap import ci_text, delta_card, excludes_zero
 
 SLUG = "phase2"
 SUBTITLE = ("Fine-tune the image encoder on LM labels. Each Phase-2 factor is one ladder step against the step it "
             "builds on; run 5 (OmniRad-base, K8, soft labels, 336 px) is the reference for every follow-up, unfreezing "
-            "9 blocks (u9) is the best single run, and rank ensembles of u9 with other backbones add about +0.02. "
+            "9 blocks with the A30 recipe is the best single LM-test run (0.8917; public 0.890). "
             "The tested one-stage label + contrastive loss shows no clear LM-test gain over label-only u9, and the "
             "non-fat-suppressed series add no label information (settings fusion). Training-time image augmentation "
-            "on the A30 recipe (u9-b1 + lateral oversampling, 30 epochs) gives no gain.")
+            "on the A30 recipe (u9-b1 + lateral oversampling, 30 epochs) gives no gain, nor does widening the slice band "
+            "or any inference-only change (checkpoint averaging, weight soups, window-jitter TTA). Starting A30 from the "
+            "CLIP-adapted OmniRad-base ties it as a single model; as an ensemble member it lifts gold-58, and dropping both shallow members (A30 + u9-b1 + CLIP-init u9) scored 0.902 public, the best so far.")
 
 GROUPS = {"multi-slice": {"label": "① Multi-slice", "color": "var(--g-teal)"},
           "resolution": {"label": "② Resolution", "color": "var(--g-amber)"},
@@ -107,18 +110,33 @@ def build(ctx) -> Page:
     fusion_sections, fusion_blob = _settings_fusion.build(ctx)
     lateral_sections, lateral_blob = _lateral_rebalance.build(ctx)
     aug_sections, aug_blob = _image_augmentation.build(ctx)
-    # u9-b1 follow-ups (joint loss, settings fusion, weak-label rebalancing, image augmentation) and the ensembles
-    # follow the run-5 scores they build on.
-    sections = (page.sections[:1] + joint_sections + fusion_sections + lateral_sections + aug_sections + ens_sections
-                + page.sections[1:])
+    band_sections, band_blob = _slice_band.build(ctx)
+    clip_sections, clip_blob = _clip_init_u9.build(ctx)
+    # u9-b1 follow-ups (joint loss, settings fusion, weak-label rebalancing, image augmentation, slice band,
+    # A30's inference probes, CLIP init) and the ensembles follow the run-5 scores they build on.
+    sections = (page.sections[:1] + joint_sections + fusion_sections + lateral_sections + aug_sections
+                + band_sections + clip_sections + ens_sections + page.sections[1:])
+    latest = _latest_results.build(ctx)
+    best = _latest_results.best_single()
+    kpis = list(page.kpis or [])
+    if best and kpis:
+        kpis[0] = {"label": "Best single LM-test", "value": num(best["lm"]),
+                   "sub": f'{best["name"]} · gold-58 {num(best["gold"])} · one seed'}
+        if len(kpis) > 1 and best["gold"] > float(kpis[1]["value"]):
+            kpis[1] = {"label": "Best single gold-58", "value": num(best["gold"]),
+                       "sub": f'{best["name"]} · exploratory'}
     return Page(title=BY_SLUG[SLUG].title, subtitle=SUBTITLE,
-                sections=([lead] if lead else []) + sections,
-                data={**blob, **page.data, **joint_blob, **fusion_blob, **lateral_blob, **aug_blob, **ens_blob}, kpis=page.kpis)
+                sections=([latest] if latest else []) + ([lead] if lead else []) + sections,
+                data={**blob, **page.data, **joint_blob, **fusion_blob, **lateral_blob, **aug_blob,
+                      **band_blob, **clip_blob, **ens_blob}, kpis=kpis)
 
 
 def summary() -> dict:
     s = dict(finetune.summary())
     s["stage"] = BY_SLUG[SLUG].number
-    s["headline"] = ("Label-only u9 leads singles; joint loss, weak-label rebalancing and image augmentation do not beat it; "
-                     "mixed-backbone ensembles add ~+0.02")
+    best = _latest_results.best_single()
+    if best:
+        s.update(value=num(best["lm"]), value_label="best single-run LM-test macro AUROC",
+                 caveat="One seed; A30's longer-training controls remain paused", href="#latest-results")
+    s["headline"] = ("A30 leads single-run LM-test; CLIP init adds ensemble value; deep three reaches 0.902 public")
     return s
