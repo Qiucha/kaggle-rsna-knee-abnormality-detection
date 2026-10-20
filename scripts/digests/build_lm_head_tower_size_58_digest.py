@@ -9,6 +9,7 @@ the two curve SVGs, and rewrites the results half of digest/lm-head-tower-size-5
 
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import sys
@@ -55,6 +56,7 @@ def proxy_contrast(proxy_pairs, reference, candidate):
 
 
 def main():
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     reports, predictions, paths, proxies = {}, {}, {}, {}
     for name, (_, _, suffix) in ARMS.items():
         path = BASE / f"lm-mlp-tower-size-58-{suffix}"

@@ -10,6 +10,7 @@ runs that existed on 2026-10-09 and the `generated` stamp pinned, a rerun reprod
 under checkpoints/finetune join the `singles` list.
 """
 
+import argparse
 import json
 import re
 import sys
@@ -63,6 +64,7 @@ def per_label(a):
 
 
 def main():
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     ref = np.load(SRC / "lm-test-targets.npz")
     UIDS, Y, M = list(ref["uids"]), ref["y"] >= 0.5, ref["m"] > 0
     sweep = json.loads((SRC / "combo-sweep.json").read_text())

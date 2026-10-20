@@ -6,8 +6,8 @@ Refuses to drop a bundle already recorded in the JSON (those records are gitigno
     .venv/bin/python scripts/digests/build_leaderboard_digest.py [--allow-drop]
 """
 
+import argparse
 import json
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -29,6 +29,9 @@ TITLES = {
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--allow-drop", action="store_true", help="write even if a recorded bundle is missing")
+    args = parser.parse_args()
     rows = []
     for path in sorted((ROOT / "checkpoints/kaggle").glob("*/leaderboard-submission.json")):
         j = json.loads(path.read_text())
@@ -46,7 +49,7 @@ def main():
     out = ROOT / "digest/leaderboard-history-v1.json"
     # The records live in git-ignored checkpoints/kaggle, so a checkout without them
     # would silently rewrite the history as empty. Refuse to drop a recorded bundle.
-    if out.exists() and "--allow-drop" not in sys.argv[1:]:
+    if out.exists() and not args.allow_drop:
         recorded = {r["bundle"] for r in json.loads(out.read_text())["submissions"]}
         if dropped := sorted(recorded - {r["bundle"] for r in rows}):
             raise SystemExit(f"Refusing to drop recorded submissions (no leaderboard-submission.json "

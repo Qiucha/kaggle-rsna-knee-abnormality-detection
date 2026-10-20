@@ -21,6 +21,7 @@ writes digest/convergence-curves.html.
 
     .venv/bin/python scripts/digests/build_convergence_curves.py
 """
+import argparse
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import json
@@ -134,6 +135,7 @@ def diagnostics_table(audit):
 
 
 def main():
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     audit = json.loads(AUDIT.read_text())
     arms = collect_arms()
     dp = series_for(arms, {'baseline', 'drop_path'})

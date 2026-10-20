@@ -11,6 +11,7 @@ digest/image-block-variants-curves.html.
 
     .venv/bin/python scripts/digests/build_extended_curves.py
 """
+import argparse
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import json
@@ -253,6 +254,7 @@ also make a generalisation claim possible, which no rerun on these studies ever 
 
 
 def main():
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     series = [(lab, col, history(CK / rel / 'metrics.jsonl')) for rel, lab, col, _ in RUNS]
     have = [(lab, col, rows) for lab, col, rows in series if rows]
 

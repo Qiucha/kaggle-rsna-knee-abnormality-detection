@@ -10,6 +10,7 @@ probe on them and writes the paired study-bootstrap comparison and the page.
 
 from __future__ import annotations
 
+import argparse
 import html
 import json
 import sys
@@ -100,6 +101,7 @@ def chart(
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     config = json.loads(PROBE_CONFIG.read_text())
     old_train_config = json.loads((OLD_RUN / "config.json").read_text())
     new_train_config = json.loads((NEW_RUN / "config.json").read_text())

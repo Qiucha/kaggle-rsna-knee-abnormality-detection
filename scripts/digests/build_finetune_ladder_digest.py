@@ -12,6 +12,7 @@ or comparison lands, then rebuild the site:
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -173,6 +174,7 @@ def _delta(pairs: dict, split: str, child: str, parent: str) -> dict | None:
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     pairs = _pairs()
     run_of = {s["id"]: s["run"] or "R0" for s in STEPS}
     steps = []

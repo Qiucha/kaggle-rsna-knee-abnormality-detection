@@ -10,6 +10,7 @@ CSS and JavaScript are in scripts/digests/templates/both-block-digest.{css,js}.
 """
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from html import escape
@@ -1129,7 +1130,8 @@ def build_overfitting_card() -> str:
 """
 
 
-def build_digest() -> None:
+def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     DIGEST_DIR.mkdir(parents=True, exist_ok=True)
     out_html = DIGEST_DIR / "both-block-depth-v1.html"
 
@@ -1278,4 +1280,4 @@ def build_digest() -> None:
 
 
 if __name__ == "__main__":
-    build_digest()
+    main()

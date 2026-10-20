@@ -8,6 +8,7 @@ LM-test populations, and writes the results page, its JSON, and three curve figu
 
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import sys
@@ -63,6 +64,7 @@ def label(key):
 
 
 def main():
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     with (ROOT / "data/gold_label.csv").open(newline="") as handle:
         source_gold = {row["StudyInstanceUID"] for row in csv.DictReader(handle)}
     arms, gold, lm_test, lm_population = {}, {}, {}, None

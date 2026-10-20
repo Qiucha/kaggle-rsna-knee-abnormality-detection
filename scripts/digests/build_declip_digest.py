@@ -9,6 +9,7 @@ JavaScript are in scripts/digests/templates/declip-digest.{css,js}.
 """
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from html import escape
@@ -421,6 +422,7 @@ def build_pathology_table_card(probe_results: dict) -> str:
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     # Load downstream probe results

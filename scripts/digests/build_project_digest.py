@@ -7,6 +7,7 @@ The page shell is scripts/digests/templates/project-digest.html; __PROJECT_DATA_
 
     .venv/bin/python scripts/digests/build_project_digest.py
 """
+import argparse
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import json
@@ -34,6 +35,7 @@ def history(path):
     return rows
 
 def main():
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     data = {
         'generated_at': datetime.now(ZoneInfo('Asia/Taipei')).isoformat(timespec='seconds'),
         'text_status': read(ROOT/'checkpoints/contrastive/english-medical-text-execution/status.json', {}),

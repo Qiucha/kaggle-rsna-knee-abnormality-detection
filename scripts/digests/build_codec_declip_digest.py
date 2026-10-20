@@ -12,6 +12,7 @@ so the tables stay generated while the interpretation is written by hand.
 
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import sys
@@ -81,6 +82,7 @@ def finished(key):
 
 
 def main():
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     with (ROOT / "data/gold_label.csv").open(newline="") as handle:
         source_gold = {row["StudyInstanceUID"] for row in csv.DictReader(handle)}
     done = [k for k in ARMS if finished(k)]
