@@ -133,18 +133,18 @@ tuning λ addresses it.
 
 ```bash
 # arms (needs .venv-cuda)
-PYTHONPATH=src .venv-cuda/bin/python scripts/train_contrastive.py \
+PYTHONPATH=src .venv-cuda/bin/python scripts/training/train_contrastive.py \
   --cohort-manifest data/processed/contrastive-cohort-gold-holdout-v1.jsonl \
   --lm-label-csv data/lm_label/lm_labels_kaggle.csv --label-similarity-weight 0.1 \
   ...  # remaining flags in configs/contrastive/label-similarity-v2.json
 
 # probe and pairing (needs .venv — sklearn lives there, and --device cpu is required)
-PYTHONPATH=src .venv/bin/python scripts/evaluate_downstream_probe.py \
+PYTHONPATH=src .venv/bin/python scripts/evaluation/evaluate_downstream_probe.py \
   --config configs/downstream/gold-probe-label-similarity-v2.json \
   --features checkpoints/contrastive/label-similarity-v2/probe-features.npz \
   --output digest/downstream-probe-label-similarity-v2.json --device cpu
 
-PYTHONPATH=src .venv-cuda/bin/python scripts/analyze_label_similarity.py \
+PYTHONPATH=src .venv-cuda/bin/python scripts/analysis/analyze_label_similarity.py \
   --experiment-version label-similarity-v2 \
   --experiment-config configs/contrastive/label-similarity-v2.json \
   --baseline checkpoints/contrastive/label-similarity-v1/lambda00-seed2026 \

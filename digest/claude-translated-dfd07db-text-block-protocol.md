@@ -85,7 +85,7 @@ did, so treat it as a floor.
 
 ## Validation performed
 
-`.venv/bin/python scripts/run_contrastive_matrix.py --matrix
+`.venv/bin/python scripts/training/run_contrastive_matrix.py --matrix
 configs/contrastive/claude-translated-dfd07db-text-block-v1.json --dry-run`
 
 The dry run is total: it loads the matrix, checks the selection policy against the code's
@@ -98,6 +98,6 @@ environment. It trains nothing.
 Run the dry run again first; if the cohort or the selection policy has moved, it fails
 rather than training something that is no longer the frozen comparison. Then the three
 experiments, each in a fresh interpreter, followed by
-`scripts/finalize_contrastive_matrix.py`, which writes the immutable
+`scripts/evaluation/finalize_contrastive_matrix.py`, which writes the immutable
 `validation-selection.json` with `locked_test_was_used_for_selection: false`. Do not pass
 `--evaluate-locked-test`. Nothing in this document authorizes any of that.

@@ -14,7 +14,7 @@ The frozen gold-holdout cohort checksum is `d104337696a19d52d12480c1cfaae30c9379
 
 The memory method follows [gradient caching (Gao et al., 2021)](https://aclanthology.org/2021.repl4nlp-1.31/). Gradient replay first encodes every image/report chunk without keeping autograd activations, computes the global 32-study CLIP loss, and obtains gradients with respect to those embeddings and the trainable temperature. It then re-encodes each chunk and applies its embedding gradient by the chain rule. Torch CPU/CUDA RNG states are replayed so augmentation, dropout, and gradient checkpointing reproduce the first pass. The scaler, clipping, optimizer, and learning-rate scheduler advance once per full comparison batch. This differs from ordinary accumulation of independent one-study losses, which would have no negatives.
 
-Tests compare cached gradients and loss against a reference graph, including dropout, random augmentation, scaled gradients, uneven chunks, and temperature gradients. A 32-study integration check verifies that optimizer/scheduler steps are counted per full comparison batch. Masked pooled features match run 5 under missing windows and planes. Real training DICOMs from two studies were read with both pipelines using identical seeds: all pixels and masks matched exactly. A real-weight OmniRad/E5 K8 CPU forward/backward passed at 336 px, with finite gradients in every trainable parameter. The real-weight GPU preflight passed on 2026-10-03: two full 32-study loss/optimizer steps used 3,315 MiB peak allocated memory; the batch-2 supervised handoff used 3,825 MiB. The synthetic maximum-512-token profile projected 11.70 hours of pre-training compute, excluding DICOM reads, validation and checkpoint writes. The first actual training attempt exposed 120 absent mirror series from 40 studies with reports but no usable LM labels: contrastive training has 3,478 studies, whereas supervised training has 3,438. All 2,623 missing files (1.78 GB) were copied from the unchanged source and SHA256-verified. The actual K8 reader now resolves every training series, and the formerly failing study decodes all 24 windows. The failed attempt is archived and the queue retries the same recipe. `scripts/audit_clip_window_mirror.py` reproduces this missing-mirror issue and verifies coverage without loading model weights.
+Tests compare cached gradients and loss against a reference graph, including dropout, random augmentation, scaled gradients, uneven chunks, and temperature gradients. A 32-study integration check verifies that optimizer/scheduler steps are counted per full comparison batch. Masked pooled features match run 5 under missing windows and planes. Real training DICOMs from two studies were read with both pipelines using identical seeds: all pixels and masks matched exactly. A real-weight OmniRad/E5 K8 CPU forward/backward passed at 336 px, with finite gradients in every trainable parameter. The real-weight GPU preflight passed on 2026-10-03: two full 32-study loss/optimizer steps used 3,315 MiB peak allocated memory; the batch-2 supervised handoff used 3,825 MiB. The synthetic maximum-512-token profile projected 11.70 hours of pre-training compute, excluding DICOM reads, validation and checkpoint writes. The first actual training attempt exposed 120 absent mirror series from 40 studies with reports but no usable LM labels: contrastive training has 3,478 studies, whereas supervised training has 3,438. All 2,623 missing files (1.78 GB) were copied from the unchanged source and SHA256-verified. The actual K8 reader now resolves every training series, and the formerly failing study decodes all 24 windows. The failed attempt is archived and the queue retries the same recipe. `scripts/audits/audit_clip_window_mirror.py` reproduces this missing-mirror issue and verifies coverage without loading model weights.
 
 More coverage is a hypothesis about performance, not a guaranteed gain. The practical cost is extra encoder work and a replay forward pass. Mean pooling can weaken a focal finding surrounded by unrelated windows, and report alignment can prefer features that do not help the supervised findings. The predeclared AUROC checks below decide whether the completed two-stage experiment helped.
 
@@ -42,7 +42,7 @@ Live artifacts:
 - `checkpoints/pipelines/omnirad-clip-run5-v1/comparison.json`: intervals and pass checks.
 - `checkpoints/pipelines/omnirad-clip-run5-v1/completion-report.md`: report written automatically on completion or failure.
 
-When this ran, the queued config named the isolated worktree's runner by absolute path. That code is now in the repository (`src/contrastive_learning/clip_pipeline.py`, `scripts/run_clip_then_finetune.py`), and the committed config holds no host path: `scripts/finetune_supervised.py` runs both stages in-process for any config that names `contrastive_pretrain_config`, and the series mirror comes from `paths.json`. The patch that actually ran is archived at `checkpoints/pipelines/omnirad-clip-run5-v1/isolated-pipeline-code.patch`.
+When this ran, the queued config named the isolated worktree's runner by absolute path. That code is now in the repository (`src/contrastive_learning/clip_pipeline.py`, `scripts/training/run_clip_then_finetune.py`), and the committed config holds no host path: `scripts/training/finetune_supervised.py` runs both stages in-process for any config that names `contrastive_pretrain_config`, and the series mirror comes from `paths.json`. The patch that actually ran is archived at `checkpoints/pipelines/omnirad-clip-run5-v1/isolated-pipeline-code.patch`.
 
 The completion report is automatic on disk. This session has no scheduled agent wake-up capability; generating that report does not itself send a new chat message.
 
@@ -55,13 +55,13 @@ All 20 contrastive epochs finished at 06:50 Taipei; epoch 18 was selected (mean 
 Run both stages from the repository root on a CUDA host (the pipeline refuses any other device):
 
 ```bash
-python scripts/finetune_supervised.py \
+python scripts/training/finetune_supervised.py \
   --config configs/finetune/r4a-k8-omnirad-base-soft-336-from-clip.json \
   --output checkpoints/finetune/<new-name> \
   [--paths-config paths.json]
 ```
 
-`scripts/run_clip_then_finetune.py` takes the same arguments. The fine-tuning config names the pre-training config
+`scripts/training/run_clip_then_finetune.py` takes the same arguments. The fine-tuning config names the pre-training config
 (`configs/contrastive/omnirad-clip-run5-v1.json`) in `contrastive_pretrain_config`. As committed, it reuses the finished
 CLIP checkpoint (`reuse_completed_contrastive_checkpoint`, checked against `reuse_checkpoint_sha256`) and only reruns the
 supervised stage and the comparison.

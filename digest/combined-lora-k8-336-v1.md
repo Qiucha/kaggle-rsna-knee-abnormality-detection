@@ -19,10 +19,10 @@ The frozen-head exporter verifies checkpoint/bundle provenance and recomputes AU
 
 From the repository root on a CUDA host, with `paths.json` naming `data_root` and, optionally, `train_series_mirror`:
 
-1. Train one arm: `python scripts/run_contrastive_matrix.py --matrix configs/contrastive/combined-lora-k8-336-v1.json --experiment <arm>`.
-2. Fit its heads: `python scripts/train_lm_head.py --config configs/kaggle/lm-mlp-combined-58-<arm>.json --features checkpoints/kaggle/lm-mlp-combined-58-<arm>-features.npz --output checkpoints/kaggle/lm-mlp-combined-58-<arm> --device cuda`. These head configs set `reload_tolerance` to 1e-3 for the fp16 K8 features.
-3. Optionally fine-tune from the OmniRad checkpoint: `python scripts/finetune_supervised.py --config configs/finetune/r4a-k8-omnirad-base-soft-336-from-clip-lora.json --output checkpoints/finetune/<name>`.
-4. Rebuild this digest: `python scripts/build_combined_lora_digest.py`.
+1. Train one arm: `python scripts/training/run_contrastive_matrix.py --matrix configs/contrastive/combined-lora-k8-336-v1.json --experiment <arm>`.
+2. Fit its heads: `python scripts/training/train_lm_head.py --config configs/kaggle/lm-mlp-combined-58-<arm>.json --features checkpoints/kaggle/lm-mlp-combined-58-<arm>-features.npz --output checkpoints/kaggle/lm-mlp-combined-58-<arm> --device cuda`. These head configs set `reload_tolerance` to 1e-3 for the fp16 K8 features.
+3. Optionally fine-tune from the OmniRad checkpoint: `python scripts/training/finetune_supervised.py --config configs/finetune/r4a-k8-omnirad-base-soft-336-from-clip-lora.json --output checkpoints/finetune/<name>`.
+4. Rebuild this digest: `python scripts/digests/build_combined_lora_digest.py`.
 
 For a seed variant, add a matrix entry whose `args` set `--seed`. Copy the head config and point `checkpoint` at the new run's `best.pt`.
 Not in git: the cohort manifest (checked against `manifest_sha256`), `data/lm_label/lm_labels_kaggle.csv`, and the pinned Hugging Face snapshots.

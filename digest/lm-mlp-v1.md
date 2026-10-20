@@ -130,7 +130,7 @@ on the fitted models and do not capture all training/development uncertainty.
 ## Run and inspect
 
 ```bash
-.venv-cuda/bin/python scripts/train_lm_head.py \
+.venv-cuda/bin/python scripts/training/train_lm_head.py \
   --config configs/kaggle/lm-mlp-v1.json \
   --features checkpoints/kaggle/lm-mlp-features-v1.npz \
   --output checkpoints/kaggle/lm-mlp-v1 \

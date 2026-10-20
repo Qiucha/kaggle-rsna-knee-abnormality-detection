@@ -175,9 +175,9 @@ the cohort's **432 non-gold locked-test studies**.
 - **Implementation:** `src/contrastive_learning/lm_proxy.py`. Features come from each
   bundle's frozen encoder and are cached by checkpoint checksum under
   `checkpoints/kaggle/lm-proxy-cache/`. Scoring uses the deployed `predict_head`.
-- **Output:** every run writes `<run>/lm-proxy.json`. `scripts/train_lm_head.py` and
-  `scripts/build_kaggle_bundle.py` do this automatically.
-- **Comparison:** `scripts/eval_lm_proxy_heads.py <run dirs> --output <json>` adds
+- **Output:** every run writes `<run>/lm-proxy.json`. `scripts/training/train_lm_head.py` and
+  `scripts/submission/build_kaggle_bundle.py` do this automatically.
+- **Comparison:** `scripts/evaluation/eval_lm_proxy_heads.py <run dirs> --output <json>` adds
   paired study-bootstrap intervals and pairwise agreement with recorded public scores.
 - **Digest:** the LM-head digest (`lm-head-tower-size-58-v1.md`) shows it next to gold
   AUROC.
@@ -225,7 +225,7 @@ The default uses pinned Hugging Face weights already in the local cache; it make
 no network requests. Full and compact checkpoints and LoRA adapters are supported.
 
 ```bash
-.venv-cuda/bin/python scripts/build_kaggle_bundle.py \
+.venv-cuda/bin/python scripts/submission/build_kaggle_bundle.py \
   --config configs/kaggle/lora-holdout-v1.json \
   --output checkpoints/kaggle/lora-holdout-v1 \
   --device cuda \

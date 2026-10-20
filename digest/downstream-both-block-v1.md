@@ -5,8 +5,8 @@ Measured answer, 2026-09-12 (Asia/Taipei). Training config:
 Probe config:
 [`configs/downstream/gold-probe-both-block-v1.json`](../configs/downstream/gold-probe-both-block-v1.json).
 Evidence: [`downstream-probe-both-block-v1.json`](downstream-probe-both-block-v1.json) and the six
-`downstream-both-vs-image-block-*.json` files. Scripts: `scripts/evaluate_downstream_probe.py`
-(unmodified) and `scripts/compare_downstream_arms.py` (new).
+`downstream-both-vs-image-block-*.json` files. Scripts: `scripts/evaluation/evaluate_downstream_probe.py`
+(unmodified) and `scripts/analysis/compare_downstream_arms.py` (new).
 
 The paired comparison is split across six per-seed files rather than one combined artifact because
 the single six-pair invocation was killed by the host's low-memory guard before writing. The guard
@@ -137,7 +137,7 @@ was dropped as single-class in each paired bootstrap.
 
 ## One tooling defect found, not patched
 
-`scripts/evaluate_downstream_probe.py` only works on CPU. `extract_features` never moves the image
+`scripts/evaluation/evaluate_downstream_probe.py` only works on CPU. `extract_features` never moves the image
 batch onto the target device, so `_plane_features` mixes `cuda:0` and `cpu` tensors and raises; the
 closing `.numpy()` also lacks a `.cpu()`. Since `--device` defaults to `cuda` when available, the
 default path is broken, and `.venv-cuda` additionally has no `sklearn` installed. Every run of this

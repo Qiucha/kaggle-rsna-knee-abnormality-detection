@@ -1874,7 +1874,7 @@
     },
     "cohort_manifest": "data/processed/contrastive-cohort.jsonl",
     "comparisons": {
-      "primary": "crop150/* versus crop130/*, paired on seed over the same 56 studies, folds and resamples, via scripts/compare_downstream_arms.py.",
+      "primary": "crop150/* versus crop130/*, paired on seed over the same 56 studies, folds and resamples, via scripts/analysis/compare_downstream_arms.py.",
       "reference": "before_cl/dinov2-unadapted@crop130mm is the floor for crop130 and @crop150mm the floor for crop150. Report each beside its own arm; do NOT difference the two gains."
     },
     "estimand": "PRIMARY: pooled paired difference in macro out-of-fold AUROC, crop150 minus crop130, across three matched seeds (2026/2027/2028), bootstrapped over studies using the SAME resample indices for both arms and resampling the per-study difference. The arms are paired on seed, on the same 56 studies, the same folds and the same resamples; they differ only in the physical crop and therefore in the pixels each encoder was trained on and is scored at.",

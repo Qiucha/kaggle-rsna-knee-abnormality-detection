@@ -8,7 +8,7 @@ both intervals spanning zero. Keep the three-slot input; a six-slot fine-tune is
 
 **Artifacts.** [`settings-fusion-v1.json`](settings-fusion-v1.json) (histories stripped; the full
 report and the 1.2 GB of features are under `checkpoints/settings-fusion/`). Scripts:
-`scripts/extract_setting_features.py`, `scripts/train_setting_heads.py`.
+`scripts/evaluation/extract_setting_features.py`, `scripts/training/train_setting_heads.py`.
 
 ## Why this experiment existed
 
@@ -76,7 +76,7 @@ Run from the repository root. The prerequisite is a trained u9-b1 rung. Its conf
 ```bash
 git show "feat/ensemble-selection:configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json" \
   > configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json
-python scripts/finetune_supervised.py \
+python scripts/training/finetune_supervised.py \
   --config configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json \
   --output checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1
 ```
@@ -84,10 +84,10 @@ python scripts/finetune_supervised.py \
 Then extract the features and fit the heads:
 
 ```bash
-python scripts/extract_setting_features.py \
+python scripts/evaluation/extract_setting_features.py \
   --checkpoint checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1 \
   --output checkpoints/settings-fusion/u9-b1-features
-python scripts/train_setting_heads.py \
+python scripts/training/train_setting_heads.py \
   --features checkpoints/settings-fusion/u9-b1-features \
   --output checkpoints/settings-fusion/u9-b1-heads.json --device cuda
 ```

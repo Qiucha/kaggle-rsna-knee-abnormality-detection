@@ -100,14 +100,14 @@ The finalizer selects only from validation mean Recall@1 (validation loss breaks
 Once the full manifest build has completed and a CUDA environment is available:
 
 ```bash
-.venv/bin/python scripts/run_contrastive_matrix.py \
+.venv/bin/python scripts/training/run_contrastive_matrix.py \
   --experiment 00-projection-full-mean-512
 ```
 
 After reviewing the baseline's learning curves and per-query validation failures, run the remaining experiments one change at a time. Do not evaluate the locked test set until the validation-based selection is final. Then run:
 
 ```bash
-.venv/bin/python scripts/finalize_contrastive_matrix.py \
+.venv/bin/python scripts/evaluation/finalize_contrastive_matrix.py \
   --evaluate-locked-test
 ```
 

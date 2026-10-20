@@ -5,12 +5,12 @@ Run these commands from the repository root.
 ## Navigable research site
 
 ```bash
-.venv/bin/python scripts/build_digest_site.py          # rebuild the site (idempotent)
-.venv/bin/python scripts/build_digest_site.py export   # refresh digest/site/data/ from checkpoints/, then rebuild
+.venv/bin/python scripts/digests/build_digest_site.py          # rebuild the site (idempotent)
+.venv/bin/python scripts/digests/build_digest_site.py export   # refresh digest/site/data/ from checkpoints/, then rebuild
 python3 -m http.server 8765 --bind 127.0.0.1 --directory .
 ```
 
-Open <http://127.0.0.1:8765/digest/> (the new `digest/index.html` redirects to `digest/site/index.html`). The site also works straight from the file system: open `digest/index.html`. Serving the repository root keeps the rendered documents' links to configs and scripts working. Every file in `digest/` must have a row in `scripts/digest_site/catalog.py`, or the build fails and lists the missing files.
+Open <http://127.0.0.1:8765/digest/> (the new `digest/index.html` redirects to `digest/site/index.html`). The site also works straight from the file system: open `digest/index.html`. Serving the repository root keeps the rendered documents' links to configs and scripts working. Every file in `digest/` must have a row in `src/digest_site/catalog.py`, or the build fails and lists the missing files.
 
 ## Foreground server
 

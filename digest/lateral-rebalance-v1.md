@@ -73,9 +73,9 @@ Each arm is one committed config under `configs/finetune/`, trained one at a tim
 GPU environment. With `X` the config name (for example `r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30`):
 
 ```bash
-python scripts/finetune_supervised.py --config configs/finetune/X.json --output checkpoints/finetune/X
-python scripts/compare_lateral_rebalance.py --output digest/lateral-rebalance-v1.json
-python scripts/build_digest_site.py
+python scripts/training/finetune_supervised.py --config configs/finetune/X.json --output checkpoints/finetune/X
+python scripts/analysis/compare_lateral_rebalance.py --output digest/lateral-rebalance-v1.json
+python scripts/digests/build_digest_site.py
 ```
 
 - Arms: `...-u9-b1-lat-os-noise` (A), `...-u9-b1-lat-w2` (B), `...-u9-b1-lat-os-noise-ep30` (A30), and the planned but never run
@@ -96,5 +96,5 @@ weight (1.25–1.5×), oversampling without the extra steps (fixed epoch length)
 member in an ensemble rather than a single model. Per-label specialists did not replicate before
 (ensemble-selection-v1), so the last option needs an out-of-sample check.
 
-Sources: `lateral-rebalance-v1.json` (A30 run dir `...-lat-os-noise-ep30`, which also keeps `last.pt`) (built by `scripts/compare_lateral_rebalance.py` on branch
+Sources: `lateral-rebalance-v1.json` (A30 run dir `...-lat-os-noise-ep30`, which also keeps `last.pt`) (built by `scripts/analysis/compare_lateral_rebalance.py` on branch
 `t3code/fine-tune-weak-labels`), run dirs `checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-{os-noise,w2}`.

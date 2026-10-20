@@ -48,7 +48,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(-
 
 <section><h2>Exact experiment configuration</h2><div class="three"><div class="card"><h3>Image</h3><p><code>facebook/dinov2-small</code><br>224×224 · three planes · final 0/1/2 blocks tested</p></div><div class="card"><h3>Text</h3><p>Stanford RadBERT and BiomedBERT in cross-validation<br>BiomedBERT 256/512-token and block ablations</p></div><div class="card"><h3>Optimization</h3><p>5 epochs · batch 8<br>AdamW · projection LR 1e-03<br>seed 2026</p></div></div>
 <pre>source .venv/bin/activate
-HF_HOME=/tmp/novo-project-hf python scripts/train_contrastive.py \
+HF_HOME=/tmp/novo-project-hf python scripts/training/train_contrastive.py \
   --reports-csv data/gold_translated.csv \
   --report-column "Translated Report" \
   --text-model biomedbert \
