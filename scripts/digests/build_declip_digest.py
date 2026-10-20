@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Build an interactive, responsive HTML digest for DeCLIP image-report alignment."""
+"""Build digest/declip-alignment-v1.html: DeCLIP image-report alignment against the best LoRA and full fine-tuning baselines.
+
+Reads checkpoints/contrastive/*/metrics.jsonl (the DeCLIP run and the baselines named in its series list) plus
+digest/downstream-probe-declip-v1.json and downstream-probe-both-block-depth-v1.json (each optional). The page's CSS and
+JavaScript are in scripts/digests/templates/declip-digest.{css,js}.
+
+    .venv/bin/python scripts/digests/build_declip_digest.py
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass

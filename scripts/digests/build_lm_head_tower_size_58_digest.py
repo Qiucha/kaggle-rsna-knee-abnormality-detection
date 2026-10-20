@@ -1,4 +1,11 @@
-"""Summarize four frozen-encoder LM-head fits on the same 58 gold studies."""
+"""Summarize four frozen-encoder LM-head fits on the same 58 gold studies.
+
+Reads each arm's benchmark.json, lm-proxy.json, gold-predictions.npz and head histories under checkpoints/kaggle/lm-mlp-tower-size-58-*,
+data/gold_label.csv, and digest/{lm-proxy-eval-v2,tower-size-factorial-v1}.json. Writes digest/lm-head-tower-size-58-v1.{json,html},
+the two curve SVGs, and rewrites the results half of digest/lm-head-tower-size-58-v1.md (the protocol half is hand-written and kept).
+
+    .venv/bin/python scripts/digests/build_lm_head_tower_size_58_digest.py
+"""
 
 from __future__ import annotations
 

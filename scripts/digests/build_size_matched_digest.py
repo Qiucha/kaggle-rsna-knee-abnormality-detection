@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Build the paired gold-label comparison and self-contained experiment digest."""
+"""Build digest/size-matched-holdout-v1.{json,html}: the size-matched DINOv2-base + E5-small holdout run against the DINOv2-small one.
+
+Reads both runs' config.json and metrics.jsonl under checkpoints/contrastive, the cached gold-probe features
+digest/{lora,size-matched}-holdout-features.npz and configs/downstream/gold-probe-size-matched-holdout-v1.json, scores the gold
+probe on them and writes the paired study-bootstrap comparison and the page.
+
+    .venv/bin/python scripts/digests/build_size_matched_digest.py
+"""
 
 from __future__ import annotations
 

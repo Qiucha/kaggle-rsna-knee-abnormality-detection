@@ -6,6 +6,8 @@ results page, its JSON, and the curve figures. Rerun after every arm finishes.
 
 The narrative "Answer" section is read from digest/codec-declip-v1-answer.md when present,
 so the tables stay generated while the interpretation is written by hand.
+
+    .venv/bin/python scripts/digests/build_codec_declip_digest.py
 """
 
 from __future__ import annotations

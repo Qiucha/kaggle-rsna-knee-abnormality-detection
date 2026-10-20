@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-"""Build an interactive, responsive HTML digest and loss curves page for both-block adaptation."""
+"""Build digest/both-block-depth-v1.html: the both-tower adaptation record (interactive loss and retrieval curves, master table,
+per-label AUROC, memory and OOM benchmarks).
+
+Reads checkpoints/contrastive/*/metrics.jsonl for the runs in its series list, plus digest/downstream-probe-both-block-depth-v1.json,
+downstream-probe-lora-holdout-v1.json, lora-memory-profile{,-bs16}.json and oom-solutions-benchmark.json (each optional). The page's
+CSS and JavaScript are in scripts/digests/templates/both-block-digest.{css,js}.
+
+    .venv/bin/python scripts/digests/build_both_block_digest.py
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass

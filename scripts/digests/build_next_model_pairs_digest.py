@@ -2,6 +2,8 @@
 
 Reads the five contrastive runs and their 58-case LM heads, verifies the shared gold and
 LM-test populations, and writes the results page, its JSON, and three curve figures.
+
+    .venv/bin/python scripts/digests/build_next_model_pairs_digest.py
 """
 
 from __future__ import annotations

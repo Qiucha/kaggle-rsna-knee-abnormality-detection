@@ -4,6 +4,12 @@
 Training writes one metrics row per epoch, so loss and retrieval are true curves.
 AUROC is computed from a checkpoint and only ``best.pt`` is kept, so label readout
 is one point per run, drawn at the epoch that produced it rather than as a curve.
+
+Reads checkpoints/contrastive/*/metrics.jsonl for the runs in RUNS and the newest gold-probe result among
+digest/downstream-probe-extended-v{3,2,1}.json and downstream-probe-cohort-compare-v1.json. Writes
+digest/image-block-variants-curves.html.
+
+    .venv/bin/python scripts/digests/build_extended_curves.py
 """
 from datetime import datetime
 from zoneinfo import ZoneInfo

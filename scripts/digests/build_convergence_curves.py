@@ -7,7 +7,7 @@ separated *the lever makes the representation worse* from *the lever slows optim
 and a fixed 20-epoch budget stopped it early*.  This page draws the curves that
 distinguish them.
 
-Chart primitives are imported from ``build_extended_curves`` rather than re-implemented;
+Chart primitives come from ``experiment_tools.curves``, shared with ``build_extended_curves.py``;
 this script exists separately only because its output file and its run set are different,
 and because mixing crop130 and crop150 arms into that page's shared panels would put
 non-comparable pixels on one axis.
@@ -15,6 +15,11 @@ non-comparable pixels on one axis.
 Runs are identified from each checkpoint's own ``config.json``.  Never parse a run
 parameter out of a directory name -- that is what produced three silent failures in
 ``analyze_drop_path_sweep.py``.
+
+Reads config.json and metrics.jsonl of every run under the checkpoints/contrastive run sets in ROOTS and digest/convergence-audit.json;
+writes digest/convergence-curves.html.
+
+    .venv/bin/python scripts/digests/build_convergence_curves.py
 """
 from datetime import datetime
 from zoneinfo import ZoneInfo

@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Build a self-contained HTML snapshot from local experiment artifacts."""
+"""Build digest/project-state.html, a self-contained snapshot of the claude-translated-dfd07db experiments.
+
+Reads the image-block and text-block runs under checkpoints/contrastive/claude-translated-dfd07db-*, the matching configs, and
+digest/*.json audits (architecture-parameter-audit, downstream-probe-v1, plane-pooling-analysis, tower-size-factorial-v1, ...).
+The page shell is scripts/digests/templates/project-digest.html; __PROJECT_DATA__ and __DOWNSTREAM_PROBE__ are filled here.
+
+    .venv/bin/python scripts/digests/build_project_digest.py
+"""
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import json

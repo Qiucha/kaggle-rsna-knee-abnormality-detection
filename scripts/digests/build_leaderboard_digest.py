@@ -1,6 +1,9 @@
 """Collect every recorded Kaggle public-leaderboard submission into digest/leaderboard-history-v1.json.
 
 Reads checkpoints/kaggle/*/leaderboard-submission.json. Submissions without a recorded date sort first.
+Refuses to drop a bundle already recorded in the JSON (those records are gitignored) unless --allow-drop is given.
+
+    .venv/bin/python scripts/digests/build_leaderboard_digest.py [--allow-drop]
 """
 
 import json
