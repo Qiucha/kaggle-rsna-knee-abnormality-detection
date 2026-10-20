@@ -15,6 +15,12 @@ Nothing here is generalisation evidence. Fifty-six of the fifty-eight gold studi
 were image/report training pairs or members of the checkpoint-selection split, so
 every number below is a readout statistic on a cohort the representation has seen.
 The locked test split is never loaded.
+
+Reads: the frozen probe config (``configs/downstream/gold-probe-v1.json`` by default), the image
+caches and checkpoints it names, the gold labels and the LM label files. Extracts features unless
+``--features`` already holds them (``--from-features`` forces reuse; no GPU needed then).
+Writes: the features cache (``--features``) and the results JSON (``--output``).
+Run: ``.venv/bin/python scripts/evaluation/evaluate_downstream_probe.py [--config CONFIG] [--overwrite]``
 """
 
 from __future__ import annotations
@@ -37,16 +43,13 @@ from experiment_tools.gold_probe import (
     resolve_population,
     build_towers,
     extract_features_by_preprocessing,
+    load_feature_cache,
     score_arm,
     paired_bootstrap,
-    label_bootstrap,
+    per_label_auroc_difference,
+    without_oof_scores,
     lm_extraction_reference,
 )
-
-
-# --------------------------------------------------------------------------- #
-# Entry point
-# --------------------------------------------------------------------------- #
 
 
 def main() -> None:
@@ -77,11 +80,7 @@ def main() -> None:
 
     device = torch.device(arguments.device)
     if arguments.features.exists() and (arguments.from_features or not arguments.overwrite):
-        stored = np.load(arguments.features, allow_pickle=True)
-        features = json.loads(str(stored["index"]))
-        features = {name: {key: stored[f"{name}|{key}"] for key in keys} for name, keys in features.items()}
-        provenance = json.loads(str(stored["provenance"]))
-        order = [str(uid) for uid in stored["study_uids"]]
+        features, provenance, order = load_feature_cache(arguments.features)
         if order != [record.study_uid for record in records]:
             raise SystemExit("Cached features describe a different study order; rerun with --overwrite")
     else:
@@ -162,17 +161,9 @@ def main() -> None:
         comparison["baseline_key"] = baseline_key
         comparison["macro_auroc_before"] = results[baseline_key]["macro_auroc"]
         comparison["macro_auroc_after"] = value["macro_auroc"]
-        comparison["per_label_auroc_difference"] = {
-            label: {
-                "difference": value["per_label"][label]["auroc"]
-                - results[baseline_key]["per_label"][label]["auroc"],
-                "ci95": label_bootstrap(
-                    gold[:, index], baseline_scores[:, index], value["_oof_scores"][:, index],
-                    config["bootstrap"],
-                ),
-            }
-            for index, label in enumerate(labels)
-        }
+        comparison["per_label_auroc_difference"] = per_label_auroc_difference(
+            gold, labels, results[baseline_key], value, config["bootstrap"]
+        )
         comparisons[key] = comparison
 
     payload = {
@@ -184,10 +175,7 @@ def main() -> None:
         "study_uids": [record.study_uid for record in records],
         "provenance": provenance,
         "frozen_backbone_identity_check": identity_check,
-        "results": {
-            key: {name: part for name, part in value.items() if name != "_oof_scores"}
-            for key, value in results.items()
-        },
+        "results": {key: without_oof_scores(value) for key, value in results.items()},
         "comparisons_against_unadapted_dinov2": comparisons,
         "lm_label_extraction_reference": lm_extraction_reference(
             REPOSITORY_ROOT / "data/lm_label", [record.study_uid for record in records], gold, labels
