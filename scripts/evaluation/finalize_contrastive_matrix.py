@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+"""Select each run's best epoch on validation, then optionally evaluate the locked test split once.
+
+Reads: the frozen experiment matrix and every run directory it lists (history and ``best.pt``).
+Writes: ``validation-selection.json`` under the matrix's output root (immutable: an existing one
+with different content is an error) and, with ``--evaluate-locked-test``, ``locked-test-evaluation.json``
+and ``locked-test-rankings.jsonl`` there. Prints the selection.
+Run: ``.venv/bin/python scripts/evaluation/finalize_contrastive_matrix.py --matrix MATRIX.json``
+"""
 from __future__ import annotations
 
 import argparse

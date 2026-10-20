@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+"""Score one saved contrastive checkpoint on a split with tie-aware retrieval metrics.
+
+Reads: the checkpoint, its cohort manifest and the image cache. The ``test`` split is the locked one;
+spend it only through ``finalize_contrastive_matrix.py``.
+Writes: the metrics report (``--output``) and per-query rankings (``--rankings``) when given; prints the metrics.
+Run: ``.venv/bin/python scripts/evaluation/evaluate_contrastive.py CHECKPOINT [--split validation]``
+"""
 from __future__ import annotations
 
 import argparse

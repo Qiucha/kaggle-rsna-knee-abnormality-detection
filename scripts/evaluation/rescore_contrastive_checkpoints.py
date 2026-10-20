@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+"""Re-score every saved ``best.pt`` under the current metric definitions and summarize which moved.
+
+Reads: every ``best.pt`` under ``--checkpoint-root`` and the image cache.
+Writes: ``evaluation-validation-best.json`` beside each checkpoint (via ``evaluate_contrastive.py``;
+reused unless ``--overwrite``) and the summary JSON (``--summary``, default
+``digest/contrastive-checkpoint-rescore.json``).
+Run: ``.venv/bin/python scripts/evaluation/rescore_contrastive_checkpoints.py [--overwrite]``
+"""
 from __future__ import annotations
 
 import argparse
