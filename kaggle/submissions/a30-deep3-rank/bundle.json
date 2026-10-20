@@ -1,0 +1,59 @@
+{
+  "codecs": {
+    "codecs/README.md": "c6589e3bf8775ae7ecd12f57e766178cc2ec81f364992f5017a211d79dbff563",
+    "codecs/fixtures/j2kll_0.dcm": "2e4d7b2e796a6df53d6b9d02872096453dbe93f89e3f3b6128fba43485155110",
+    "codecs/fixtures/j2kll_1.dcm": "2a2de3539f1f96ddb8be1ac551a676fa129049b089776669ea1fde0709612194",
+    "codecs/fixtures/jpegll_0.dcm": "d1f338db0867c6b85ebfdde8dfaf4b5bb137944386797727d2e523a0aff79a98",
+    "codecs/fixtures/jpegll_1.dcm": "4a645e4d83ea440d175dae88525b1b37e78d76fec3bd61d8d326d316a8695bd2",
+    "codecs/fixtures/jpegls_0.dcm": "cbd0ece2fb256c30b7c6444dd9390da2c05fe6a30b5f6e63a400d0efba3977f9",
+    "codecs/fixtures/jpegls_1.dcm": "41821a1af33958c790d70a799cca411e9c79ee05c0b6b2554b3bd5732d362c20",
+    "codecs/fixtures/lossy_j2k_0.dcm": "e4aaa0c3b068c0b6bbed3e476d5cdebf0ff2438c8646a311eea6dfc0356ede18",
+    "codecs/fixtures/lossy_j2k_1.dcm": "86550649d9412fbb1609f16cc278359453c977d3e15da20ba994d6e10991ee37",
+    "codecs/fixtures/lossy_jpeg_baseline_0.dcm": "ded0e85fede53ad3e2478b03c3e33cf575bc4a8cb4dd17a8493d87b7d01d6d95",
+    "codecs/fixtures/lossy_jpeg_baseline_1.dcm": "256406981fcdd17790cfe2734ae2c1950c0d30d0b5cb0c5772f7167b1d2db572",
+    "codecs/fixtures/manifest.json": "c5e03ca66ac879add83e11ebfb6f0668ca581a1608f29ad5032f84def71794b6",
+    "codecs/fixtures/ref_0.npy": "375c76d8abf10423d4e71a2d1940c2539a13412b45e95307fe527adb5c421e43",
+    "codecs/fixtures/ref_1.npy": "377fdfd64a68b4012f96949e9bc2e890439605387a0355edf11d8490f0f965ab",
+    "codecs/install_and_selftest.py": "1fb3a5666917e359001778a30105d6f5a7d98c21829a8de5176e45033d742d97",
+    "codecs/make_fixtures.py": "7ea8fdf37827457dd0533a0083d48e1d12d0b5eb6574499017de470bcf30cf09",
+    "codecs/wheels/pylibjpeg-2.1.0-py3-none-any.whl": "25df9496a69e64e98c887fddee12a1271e275b5f74ba804f9bf98a08bb80993e",
+    "codecs/wheels/pylibjpeg_libjpeg-2.4.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl": "01d950ef496476a9223e4966376cb88098fcf5c55a12a21f722d7b5f84daae43",
+    "codecs/wheels/pylibjpeg_openjpeg-2.6.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl": "aa6b08327be6f6daf0814a61fd7410f53a08e8e0b35774c634d9907402ff4f1c",
+    "codecs/wheels/pylibjpeg_rle-2.2.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl": "1efa710f773d5d1e6420568d4fcc3c00fc8bb8147f9c6ef9f032483eb625d6f5"
+  },
+  "ensemble": "rank_mean",
+  "feature": "window_mean_cls_patch",
+  "head": "fine-tuned r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30: K=8 windows per plane at 336 px, masked mean; fine-tuned r4a-k8-omnirad-base-soft-336-u9-b1: K=8 windows per plane at 336 px, masked mean; fine-tuned r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30-from-clip: K=8 windows per plane at 336 px, masked mean",
+  "labels": [
+    "ACL",
+    "MCL",
+    "Medial Meniscus",
+    "Lateral Meniscus",
+    "Medial OA",
+    "Lateral OA",
+    "PF OA",
+    "Effusion",
+    "Synovitis",
+    "Baker's",
+    "Contusion",
+    "Fracture"
+  ],
+  "members": [
+    {
+      "checkpoint_sha256": "3b309e2c5791eefcc4c2dc7694e75b71b33ff199aed17b2df848d1caa2ffef68",
+      "file": "member-00.pt",
+      "sha256": "6a2f167e71f0c1c0252d00f6dcb76da70cc1b88fa8ab90b26ba99a5d67e2b9fc"
+    },
+    {
+      "checkpoint_sha256": "435411e75b96db2daed8d34bc092122662df1bdeca48be84a4f60b4a02fda85c",
+      "file": "member-01.pt",
+      "sha256": "d79786294edd2c8fc36fa8a31ffa87dc9d7e5b64ae52906aedeb7e0cbee384c1"
+    },
+    {
+      "checkpoint_sha256": "a2586fd686dad13d6e1be48188a56058218bc99a0f13a27b638827b60bb346a0",
+      "file": "member-02.pt",
+      "sha256": "61ee594e19c136fa6a1b21ff3247b4717e51c6337c2ad606a144fb17c9675046"
+    }
+  ],
+  "schema_version": 1
+}

@@ -1,0 +1,28 @@
+{
+  "competition": "rsna-knee-abnormality-detection",
+  "experiment": "A30: u9-b1 plus one extra draw for studies positive on Lateral Meniscus/Lateral OA/Synovitis, N(0,0.1) label noise on the two lateral labels, 30-epoch cosine budget. Best single-run LM-test so far. User asked for its public score.",
+  "prediction_if_LM_test_tracks": "about 0.896 (0.888 + 0.008; LM-test +0.0083 [-0.0025, +0.0202] over u9-b1)",
+  "prediction_if_gold_tracks": "about 0.892 (gold-58 0.8814 vs 0.8775, +0.004)",
+  "baseline_reference": {
+    "submission_ref": 56993696,
+    "run": "r4a-k8-omnirad-base-soft-336-u9-b1",
+    "public_score": 0.888,
+    "local_lm_test": 0.8834,
+    "local_gold58": 0.8775
+  },
+  "run": "r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30",
+  "kernel": "kyunhsuan/rsna-knee-omnirad-base-u9-a30-submission",
+  "dataset": "kyunhsuan/rsna-knee-omb-u9-a30-bundle",
+  "local_lm_test_macro_auroc": 0.8917,
+  "local_gold58_macro_auroc": 0.8814,
+  "recorded_at_utc": "2026-10-12",
+  "note": "Single seed 2026. LM-test CI vs u9-b1 includes zero; confounded by ~2.5x u9-b1's training draws (matched controls queued, not run). Bundle exported on CPU from t3code/fine-tune-weak-labels (bfa666f) while aug-ep30 held the GPU: 16-study gold check max |dp| 0.0024, no local LM-test bundle check (--skip-lm-test). Kernel pinned to the py3.12 image (37c64f...).",
+  "status": "complete",
+  "submission_ref": 57094902,
+  "kernel_version": 1,
+  "bundle_sha256": "c2b804507b259b501df30d5bfc5bc0e188547ae4010ceb70be691d8ea62d7e03",
+  "output_file": "submission.csv",
+  "public_score": 0.89,
+  "private_score": null,
+  "outcome": "+0.002 over u9-b1 (0.888): new best public single model by a hair, but below both predictions (about 0.896 from LM-test, 0.892 from gold-58). Public moved about a quarter of the LM-test gain; within what single-seed noise can produce, and the extra-training-draws confound is unresolved."
+}

@@ -1,0 +1,32 @@
+{
+  "competition": "rsna-knee-abnormality-detection",
+  "experiment": "Deep three: per-label rank mean of A30 + u9-b1 + CLIP-init u9, both shallow members (from-clip u3, DINOv2-S) dropped. Tests whether gold-58 still tracks public when LM-test leans slightly the other way.",
+  "prediction_if_LM_test_tracks": "about 0.896-0.899: LM-test -0.0031 [-0.008, +0.002] vs ens4 (0.894) and -0.003 vs the swap (0.899)",
+  "prediction_if_gold_tracks": "above 0.899 (gold-58 0.8897: +0.0173 [+0.005, +0.030] vs ens4, +0.004 vs the swap; gold Lateral Meniscus 0.831)",
+  "baseline_reference": {
+    "submission_ref": 57291794,
+    "run": "a30-ens4-swap-rank",
+    "public_score": 0.899,
+    "local_lm_test": 0.9047,
+    "local_gold58": 0.8859
+  },
+  "runs": [
+    "r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30",
+    "r4a-k8-omnirad-base-soft-336-u9-b1",
+    "r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30-from-clip"
+  ],
+  "kernel": "kyunhsuan/rsna-knee-a30-deep-3-submission",
+  "dataset": "kyunhsuan/rsna-knee-a30-deep3-bundle",
+  "local_lm_test_macro_auroc": 0.9017,
+  "local_gold58_macro_auroc": 0.8897,
+  "recorded_at_utc": "2026-10-17",
+  "note": "Exported from the integrate-2026-10 worktree (exp/clip-init-u9) with the full GPU LM-test + gold round trip: every member |dp| <= 0.0002, bundle LM-test 0.9017, 1.98 s/study summed. Comparison: digest/finetune-clip-init-u9-v1.json. Kernel pinned to the py3.12 image (37c64f...). Kernel v1 ran without its dataset (the first upload was rejected: subtitle over 80 characters) and was not submitted; v2: codec self-test passed, 3 visible studies.",
+  "status": "complete",
+  "bundle_sha256": "9aecd7787de72b4eee590359017edbf81c7a319673043ceaab163ef80d7269e8",
+  "output_file": "submission.csv",
+  "submission_ref": 57296356,
+  "kernel_version": 2,
+  "public_score": 0.902,
+  "private_score": null,
+  "outcome": "+0.003 over the swap (0.899) and +0.008 over ens4 (0.894): new best public score. LM-test leaned the other way (-0.003 vs the swap); gold-58 (+0.004 vs the swap, +0.017 vs ens4) called the direction, the second time in a row. Single submission; public-split noise not estimated."
+}
