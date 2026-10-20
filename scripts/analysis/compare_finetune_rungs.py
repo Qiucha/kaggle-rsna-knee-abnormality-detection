@@ -2,6 +2,11 @@
 
 R0's LM-test predictions are rebuilt from its bundle through the lm_proxy feature
 cache, without writing into R0's run directory.
+
+Reads: R0's bundle and ``gold-predictions.npz`` (``--r0``), each rung's ``config.json`` and
+``predictions.npz`` (``--runs``), and the lm_proxy feature cache.
+Writes: only ``--output``.
+Run: ``.venv/bin/python scripts/analysis/compare_finetune_rungs.py --runs RUN_DIR... --output FILE.json``
 """
 
 import argparse

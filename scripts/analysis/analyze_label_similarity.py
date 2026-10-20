@@ -13,6 +13,9 @@ target whose entropy is nonzero, which raises the achievable floor regardless of
 how well the model fits. ``validation_loss`` and ``mean_r@1`` are computed by
 :mod:`contrastive_learning.evaluation` against the unmodified hard diagonal for
 both arms, and those two are directly comparable.
+
+Writes: ``--output`` (default ``digest/label-similarity-v1.json``) and prints the headline comparison.
+Run: ``.venv/bin/python scripts/analysis/analyze_label_similarity.py [--treatment ARM ...] [--control RUN]``
 """
 
 from __future__ import annotations

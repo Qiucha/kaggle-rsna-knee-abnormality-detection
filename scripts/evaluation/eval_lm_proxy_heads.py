@@ -2,6 +2,8 @@
 
 Writes ``<run>/lm-proxy.json`` for every run and, with --output, a comparison with
 paired study-bootstrap intervals and any recorded Kaggle public scores.
+
+Run: ``.venv/bin/python scripts/evaluation/eval_lm_proxy_heads.py RUN_DIR... [--output FILE.json]``
 """
 
 import argparse

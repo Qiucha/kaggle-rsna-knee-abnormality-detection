@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Render the tower-size Markdown record as a styled digest page."""
+"""Render the tower-size Markdown record as a styled digest page.
+
+Reads: ``digest/tower-size-factorial-v1.md``.
+Writes: ``digest/tower-size-factorial-v1.html``.
+Run: ``.venv/bin/python scripts/analysis/render_tower_size_factorial_html.py``
+"""
 
 from __future__ import annotations
 
