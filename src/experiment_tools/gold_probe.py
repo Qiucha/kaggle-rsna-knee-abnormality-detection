@@ -548,6 +548,48 @@ def label_bootstrap(
     return [float(np.percentile(array, 2.5)), float(np.percentile(array, 97.5))]
 
 
+def per_label_auroc_difference(
+    gold: np.ndarray,
+    labels: list[str],
+    baseline: dict[str, Any],
+    candidate: dict[str, Any],
+    settings: dict[str, Any],
+) -> dict[str, Any]:
+    """Per label, candidate minus baseline AUROC and its paired interval.
+
+    ``baseline`` and ``candidate`` are :func:`score_arm` results, so the point
+    differences come from the same scores the intervals resample.
+    """
+    return {
+        label: {
+            "difference": candidate["per_label"][label]["auroc"] - baseline["per_label"][label]["auroc"],
+            "ci95": label_bootstrap(
+                gold[:, index], baseline["_oof_scores"][:, index], candidate["_oof_scores"][:, index],
+                settings,
+            ),
+        }
+        for index, label in enumerate(labels)
+    }
+
+
+def without_oof_scores(scored: dict[str, Any]) -> dict[str, Any]:
+    """A :func:`score_arm` result minus the out-of-fold score matrix, for JSON."""
+    return {name: part for name, part in scored.items() if name != "_oof_scores"}
+
+
+def load_feature_cache(path: Path) -> tuple[dict[str, dict[str, np.ndarray]], dict[str, Any], list[str]]:
+    """Read the ``features.npz`` of ``evaluate_downstream_probe.py``.
+
+    Returns ``{arm: {feature set: matrix}}``, the provenance, and the study order the
+    rows follow, which the caller must check against the population it resolved.
+    """
+    stored = np.load(path, allow_pickle=True)
+    index = json.loads(str(stored["index"]))
+    features = {name: {key: stored[f"{name}|{key}"] for key in keys} for name, keys in index.items()}
+    provenance = json.loads(str(stored["provenance"]))
+    return features, provenance, [str(uid) for uid in stored["study_uids"]]
+
+
 def _notebook_argsort_auroc(targets: np.ndarray, scores: np.ndarray) -> float:
     """Section 6 of the EDA notebook's AUROC, reproduced verbatim for comparison.
 
