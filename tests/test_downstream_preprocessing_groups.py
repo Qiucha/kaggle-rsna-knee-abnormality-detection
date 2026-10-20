@@ -13,20 +13,11 @@ produced a plausible number with no error. These tests pin both halves of the fi
 """
 from __future__ import annotations
 
-import importlib.util
-import sys
 from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
-
-spec = importlib.util.spec_from_file_location(
-    "evaluate_downstream_probe", ROOT / "scripts/evaluate_downstream_probe.py"
-)
-probe = importlib.util.module_from_spec(spec)
-sys.modules["evaluate_downstream_probe"] = probe
-spec.loader.exec_module(probe)
+from experiment_tools import gold_probe as probe
 
 
 CROP130 = {"image_size": 224, "crop_mm": 130.0, "slices_per_plane": 3, "slice_band": (0.2, 0.8)}

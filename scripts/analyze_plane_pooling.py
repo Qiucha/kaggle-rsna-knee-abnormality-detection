@@ -36,9 +36,8 @@ import torch
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT / "src"))
-sys.path.insert(0, str(REPOSITORY_ROOT / "scripts"))
 
-from evaluate_downstream_probe import (  # the identical probe contract, not a copy
+from experiment_tools.gold_probe import (  # the identical probe contract, not a copy
     label_bootstrap,
     load_gold_labels,
     paired_bootstrap,

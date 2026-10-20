@@ -5,19 +5,22 @@ from __future__ import annotations
 
 import html
 import json
+import sys
 import warnings
 from pathlib import Path
 
 import numpy as np
-from evaluate_downstream_probe import (
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from contrastive_learning.artifacts import sha256_file
+from contrastive_learning.checkpoints import verified_best_epoch
+from experiment_tools.gold_probe import (
     load_gold_labels,
     paired_bootstrap,
     resolve_population,
     score_arm,
 )
-
-from contrastive_learning.artifacts import sha256_file
-from contrastive_learning.checkpoints import verified_best_epoch
 
 ROOT = Path(__file__).resolve().parents[1]
 OLD_RUN = (

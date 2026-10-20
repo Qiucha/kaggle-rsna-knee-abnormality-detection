@@ -4,20 +4,23 @@
 from __future__ import annotations
 
 import json
+import sys
 import warnings
 from pathlib import Path
 
 import numpy as np
-from evaluate_downstream_probe import (
-    _fast_auroc,
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from contrastive_learning.artifacts import sha256_file
+from contrastive_learning.checkpoints import verified_best_epoch
+from experiment_tools.gold_probe import (
+    fast_auroc,
     load_gold_labels,
     paired_bootstrap,
     resolve_population,
     score_arm,
 )
-
-from contrastive_learning.artifacts import sha256_file
-from contrastive_learning.checkpoints import verified_best_epoch
 
 ROOT = Path(__file__).resolve().parents[1]
 PROBE = ROOT / "configs/downstream/gold-probe-size-matched-holdout-v1.json"
@@ -114,7 +117,7 @@ def _interaction_bootstrap(gold: np.ndarray, scores: dict, settings: dict) -> di
             if np.unique(target).size < 2:
                 continue
             for name in names:
-                per_arm[name].append(_fast_auroc(target, scores[name][index, column]))
+                per_arm[name].append(fast_auroc(target, scores[name][index, column]))
         mean = {name: float(np.mean(values)) for name, values in per_arm.items()}
         values.append(
             (mean["base_image_small_text"] - mean["base_image_base_text"])

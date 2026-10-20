@@ -24,16 +24,15 @@ from pathlib import Path
 import numpy as np
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPOSITORY_ROOT / "scripts"))
+sys.path.insert(0, str(REPOSITORY_ROOT / "src"))
 
-from evaluate_downstream_probe import (  # noqa: E402
+from contrastive_learning.artifacts import sha256_file, write_json  # noqa: E402
+from experiment_tools.gold_probe import (  # noqa: E402
     label_bootstrap,
     load_gold_labels,
     paired_bootstrap,
     resolve_population,
     score_arm,
-    sha256_file,
-    write_json,
 )
 
 
