@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
-"""Run the training CLI unchanged and record CUDA memory and elapsed time."""
+"""Run the training CLI unchanged and record CUDA memory and elapsed time.
+
+Executes ``train_contrastive.py`` in this process with the arguments after ``--`` and
+writes ``--telemetry`` (which must not exist): torch/CUDA versions, GPU, elapsed
+seconds and peak allocated/reserved bytes, republished durably so a killed run leaves a
+whole file. Requires CUDA.
+
+    .venv-cuda/bin/python scripts/training/run_measured_training.py \\
+        --telemetry <telemetry.json> -- --output-dir checkpoints/contrastive/<run> [flags]
+"""
 from __future__ import annotations
 
 import argparse
@@ -19,7 +28,9 @@ from contrastive_learning.artifacts import write_text
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument('--telemetry', type=Path, required=True)
     parser.add_argument('training_args', nargs=argparse.REMAINDER)
     args = parser.parse_args()

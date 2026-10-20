@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+# Historical chain runner (2026-09 DeCLIP experiments), kept for its exact command
+# sequence rather than for reuse. Run from anywhere; it changes to the repository root.
+#
+# Trains the two DeCLIP arms that were still missing, each skipped when its best.pt
+# exists: declip-mv-only-frozen-seed2026 and declip-lora-depth6-r64-seed2026 (both via
+# contrastive_learning.cli, under checkpoints/contrastive/declip-v1/). After each arm it
+# re-syncs configs/downstream/gold-probe-declip-v1.json to the checkpoints that exist,
+# reruns the gold-58 probe into digest/downstream-probe-declip-v1.json, and rebuilds the
+# DeCLIP digest (the final step also the both-block digest). Needs .venv-cuda and a GPU.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
