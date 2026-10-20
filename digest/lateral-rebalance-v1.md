@@ -78,9 +78,9 @@ python scripts/compare_lateral_rebalance.py --output digest/lateral-rebalance-v1
 python scripts/build_digest_site.py
 ```
 
-- Arms: `...-u9-b1-lat-os-noise` (A), `...-u9-b1-lat-w2` (B), `...-u9-b1-lat-os-noise-ep30` (A30), and the queued
+- Arms: `...-u9-b1-lat-os-noise` (A), `...-u9-b1-lat-w2` (B), `...-u9-b1-lat-os-noise-ep30` (A30), and the planned but never run
   `...-u9-b1-ep30` / `...-u9-b1-ep43` (matched-epoch and matched-draw u9-b1 controls) and `...-u9-b1-lat-os-noise-ep50`
-  (A50). Rerun the comparison and the site after each run; arms without `predictions.npz` are listed as missing.
+  (A50); that queue was abandoned at the 2026-10-20 wrap-up. Rerun the comparison and the site after each run; arms without `predictions.npz` are listed as missing.
 - A30 and the controls set `"save_last": true`, so the run keeps `last.pt`. A50 is a warm restart:
   `"resume_from": {"run": "checkpoints/finetune/...-lat-os-noise-ep30", "lr_scale": 0.5}` loads A30's `last.pt`,
   `best.pt`, `history.jsonl` and `report.json`, so A30 must finish first and keep those files.

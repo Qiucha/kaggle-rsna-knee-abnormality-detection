@@ -41,7 +41,7 @@ def _controls_paragraph(j) -> str:
              'draws (30 × 4,946 against 17 × 3,438). Two u9-b1 controls use A30\'s schedule and stopping rule: '
              '<b>30 epochs</b> matches A30\'s epochs, and <b>43 epochs</b> matches its draws (43 × 3,438 = 147,834).')
     if not done:
-        return intro + ' Both are queued, so for now the gain could come from the longer schedule alone.</p>'
+        return intro + ' Neither was run: the queue was abandoned at the 2026-10-20 wrap-up, so the gain could still come from the longer schedule alone.</p>'
     parts = []
     for c in done:
         parts.append(f'{CONTROL_SHORT[c]} scores {num(j["point"]["lm_test"][c])} LM-test '
@@ -49,7 +49,7 @@ def _controls_paragraph(j) -> str:
                      f'{ci_text(_pair(j, "lm_test", ARM_A30, c))} LM-test, {ci_text(_pair(j, "gold", ARM_A30, c))} gold-58')
     pending = [CONTROL_SHORT[c] for c in (CTRL30, CTRL43) if c not in done]
     return (intro + ' ' + '; '.join(parts) + '.'
-            + (f' Still queued: {", ".join(pending)}.' if pending else '') + '</p>')
+            + (f' Not run (queue abandoned 2026-10-20): {", ".join(pending)}.' if pending else '') + '</p>')
 
 
 def results(ctx, j) -> tuple[str, dict]:
@@ -129,9 +129,9 @@ def results(ctx, j) -> tuple[str, dict]:
             f'gold-58. It ran to epoch {a50["epochs_completed"]}, stopped by {a50.get("stopped", "?").replace("_", " ")}, '
             f'and selected epoch {a50["best_epoch"]} (validation BCE {num(a50["validation_masked_bce"])}).</p>' + verdict)
     elif a30:
-        verdict = ('<p><b>Pending:</b> the 30-epoch A will be extended to 50 epochs after the two u9-b1 controls finish. It resumes from its epoch-30 state '
-                   'with a warm restart at half the original learning rates, and stops early once validation BCE sits '
-                   '0.02 above its best for 3 epochs in a row.</p>' + verdict)
+        verdict = ('<p><b>Not run:</b> a 50-epoch extension of the 30-epoch A was planned after the two u9-b1 controls, resuming from its epoch-30 state '
+                   'with a warm restart at half the original learning rates and stopping early once validation BCE sat '
+                   '0.02 above its best for 3 epochs in a row. The queue was abandoned at the 2026-10-20 wrap-up.</p>' + verdict)
     lead = ('<p><b>Question:</b> u9 deep unfreezing left <b>Lateral Meniscus</b>, <b>Lateral OA</b> and '
             '<b>Synovitis</b> behind the other labels. Does pushing training toward them lift them, and what does it '
             'cost the macro score? Both arms keep the u9-b1 recipe (OmniRad-base, 9 unfrozen blocks, soft targets, '
