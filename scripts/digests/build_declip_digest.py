@@ -69,12 +69,9 @@ class MasterRow:
     is_peak: bool = False
 
 
-def build_master_table_card(probe_results: dict) -> str:
-    """Build the comparative master table pitting DeCLIP against the best baseline."""
-    anchor_key = "before_cl/dinov2-unadapted/uniform_mean_768"
-    anchor_auroc = probe_results.get(anchor_key, {}).get("macro_auroc", 0.6440)
-
-    rows: list[MasterRow] = [
+def master_rows(anchor_key: str) -> list[MasterRow]:
+    """The rows of the master table: one MasterRow per run, in display order."""
+    return [
         # Foundation Anchor
         MasterRow(
             category="anchor",
@@ -206,6 +203,14 @@ def build_master_table_card(probe_results: dict) -> str:
             highlight=True,
         ),
     ]
+
+
+def build_master_table_card(probe_results: dict) -> str:
+    """Build the comparative master table pitting DeCLIP against the best baseline."""
+    anchor_key = "before_cl/dinov2-unadapted/uniform_mean_768"
+    anchor_auroc = probe_results.get(anchor_key, {}).get("macro_auroc", 0.6440)
+
+    rows = master_rows(anchor_key)
 
     grouped_rows: dict[str, tuple[str, list[MasterRow]]] = {}
     for r in rows:

@@ -72,12 +72,9 @@ class MasterRow:
     is_peak: bool = False
 
 
-def build_master_table_card(probe_results: dict) -> str:
-    """Build the unified master experiment table with independent setting columns and group headers."""
-    anchor_key = "before_cl/dinov2-unadapted/uniform_mean_768"
-    anchor_auroc = probe_results.get(anchor_key, {}).get("macro_auroc", 0.6438)
-
-    rows: list[MasterRow] = [
+def master_rows(anchor_key: str) -> list[MasterRow]:
+    """The rows of the master table: one MasterRow per run, in display order."""
+    return [
         # Zero-Shot Anchor
         MasterRow(
             category="anchor",
@@ -451,6 +448,14 @@ def build_master_table_card(probe_results: dict) -> str:
             highlight=True,
         ),
     ]
+
+
+def build_master_table_card(probe_results: dict) -> str:
+    """Build the unified master experiment table with independent setting columns and group headers."""
+    anchor_key = "before_cl/dinov2-unadapted/uniform_mean_768"
+    anchor_auroc = probe_results.get(anchor_key, {}).get("macro_auroc", 0.6438)
+
+    rows = master_rows(anchor_key)
 
     # Load holdout probe json if available
     holdout_probe_file = DIGEST_DIR / "downstream-probe-lora-holdout-v1.json"
