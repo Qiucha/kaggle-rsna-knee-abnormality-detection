@@ -1,4 +1,4 @@
-"""Shared helpers for the read-only preprocessing audits.
+"""Shared helpers for the read-only cohort and preprocessing audits under scripts/.
 
 These scripts kept re-deriving the same three things -- how to sample studies from the
 cohort, how many millimetres a slice step is, and how to print a distribution -- so they

@@ -11,9 +11,8 @@ from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, "src")
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from audit_common import DEFAULT_MANIFEST, DEFAULT_SEED, load_studies, slice_step_mm  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from experiment_tools.cohort_audit import DEFAULT_MANIFEST, DEFAULT_SEED, load_studies, slice_step_mm  # noqa: E402
 from contrastive_learning.preprocessing import _slice_indices, slice_group_indices  # noqa: E402
 
 BAND = (0.20, 0.80)

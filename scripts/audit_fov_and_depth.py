@@ -17,9 +17,8 @@ from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, "src")
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from audit_common import (  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from experiment_tools.cohort_audit import (  # noqa: E402
     DEFAULT_MANIFEST, DEFAULT_SEED, describe, load_studies, slice_step_mm,
 )
 from contrastive_learning.preprocessing import series_fov_mm, _slice_indices  # noqa: E402
