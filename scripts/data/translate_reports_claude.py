@@ -3,6 +3,19 @@
 
 Preparation and dry runs are offline. Only `run --execute` invokes Claude.
 Row numbers are zero-based in the pinned source CSV; stop is exclusive.
+
+Three subcommands share one bundle directory (``--bundle``, default
+``checkpoints/translations/config-8e3bd68``):
+
+  prepare  reads the pinned revision from the repository history; writes ``source.csv``
+           and ``contract.json`` into the bundle (never overwriting different bytes).
+  run      translates rows ``[--start, --stop)``, appending JSONL to ``--output`` under
+           a lock with a ``.run.json`` record beside it; resumes from ``--completed``.
+  merge    reads result JSONL files and writes the training CSV ``--output`` plus its
+           ``.provenance.json``; refuses while any non-English row is missing.
+
+    .venv/bin/python scripts/data/translate_reports_claude.py prepare
+    .venv/bin/python scripts/data/translate_reports_claude.py run --start 0 --stop 100 --output <shard.jsonl>
 """
 from __future__ import annotations
 
@@ -236,7 +249,7 @@ def merge(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--bundle', type=Path, default=DEFAULT_BUNDLE)
     subs = parser.add_subparsers(dest='action', required=True)
     subs.add_parser('prepare')

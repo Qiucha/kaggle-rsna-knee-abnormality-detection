@@ -3,6 +3,11 @@
 Validation, LM-test and gold series are not in the local training mirror, so their
 first read comes from the slow source mount. Building the cache up front keeps that
 cost out of the training run. Safe to rerun: cached studies are skipped.
+
+Reads the rung config (``configs/finetune/<rung>.json``) and the DICOM series of its
+validation, gold and LM-test studies; writes only the window cache the config names.
+
+    .venv-cuda/bin/python scripts/data/build_window_cache.py --config configs/finetune/<rung>.json
 """
 
 import argparse
@@ -19,7 +24,9 @@ from contrastive_learning.lm_supervision import load_population
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=16)
     args = parser.parse_args()

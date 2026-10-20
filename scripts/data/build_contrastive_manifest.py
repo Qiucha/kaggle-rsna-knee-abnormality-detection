@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+"""Freeze a contrastive cohort: pair reports with DICOM series and assign splits.
+
+Reads the reports CSV, the series inventory and the DICOM series tree (unset paths
+come from the paths configuration), resolves the text policy (``multilingual_raw`` or
+``translated_english``, the latter with ``--translations-csv``), assigns study-grouped
+train/validation/test splits and writes the manifest JSONL with checksums to
+``--output``. Prints the build summary as JSON. Run once per cohort version.
+
+    .venv/bin/python scripts/data/build_contrastive_manifest.py --output data/processed/<cohort>.jsonl
+"""
 from __future__ import annotations
 
 import argparse
@@ -7,8 +17,7 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO_ROOT / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from contrastive_learning import paths
 from contrastive_learning.manifest import ManifestConfig, build_cohort_manifest
