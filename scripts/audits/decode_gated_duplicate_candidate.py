@@ -18,11 +18,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sys
 import time
 from pathlib import Path
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from contrastive_learning.manifest import read_manifest_rows
 from contrastive_learning.preprocessing import _decode_pixels, ordered_slice_paths
 

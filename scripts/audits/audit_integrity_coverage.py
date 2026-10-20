@@ -17,11 +17,13 @@ from __future__ import annotations
 import collections
 import hashlib
 import json
+import sys
 import time
 from pathlib import Path
 
 import pydicom
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from contrastive_learning.manifest import read_manifest_rows
 
 ROOT = Path(__file__).resolve().parents[2]
