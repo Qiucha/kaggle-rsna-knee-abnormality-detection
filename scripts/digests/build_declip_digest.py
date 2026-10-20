@@ -12,10 +12,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 from experiment_tools.curves import history  # noqa: E402
+from experiment_tools.digest_charts import H, W, line_chart  # noqa: E402
 CK = ROOT / "checkpoints/contrastive"
 DIGEST_DIR = ROOT / "digest"
 
-W, H, PAD_L, PAD_R, PAD_T, PAD_B = 840, 340, 60, 24, 24, 46
+# (series group, filter-pill label, pill dot colour, legend heading) for experiment_tools.digest_charts.line_chart
+CHART_GROUPS = [
+    ("declip", "DeCLIP Series", "#0284c7", "✨ DeCLIP Architecture (Cyan/Sky Hue)"),
+    ("baseline_lora", "Best LoRA Baseline", "#047857", "⚡ Previous Best LoRA Baseline (Emerald Hue)"),
+    ("baseline_ft", "Best Full FT Baseline", "#2563eb", "🔄 Previous Best Full FT Baseline (Blue Hue)"),
+]
 
 
 def get_run_stat(rel_path: str) -> tuple[str, str]:
@@ -42,173 +48,6 @@ class SeriesSpec:
     color: str           # Hex color
     stroke_width: float = 2.4
     dash: str | None = None
-
-
-def line_chart(
-    series_list: list[dict],
-    key: str,
-    title: str,
-    ylabel: str,
-    yfmt: str = "{:.3f}",
-    chart_idx: int = 1,
-) -> str:
-    """Generate an interactive SVG line chart with hover effects, tooltip, and grouped legend."""
-    chart_id = f"chart-{key.replace('@', '_')}-{chart_idx}"
-
-    active_series = []
-    for s in series_list:
-        mkey = s.get("metric_key", key)
-        valid_pts = [(r["epoch"], r[mkey]) for r in s["rows"] if mkey in r and r[mkey] is not None]
-        if valid_pts:
-            active_series.append({**s, "pts": valid_pts, "metric_key": mkey})
-
-    if not active_series:
-        return f'<p class="muted">No data available yet for {escape(title)}.</p>'
-
-    xs = [x for s in active_series for x, _ in s["pts"]]
-    ys = [y for s in active_series for _, y in s["pts"]]
-    if not xs or not ys:
-        return f'<p class="muted">No points to plot for {escape(title)}.</p>'
-
-    x0, x1 = min(xs), max(xs)
-    y0, y1 = min(ys), max(ys)
-    span = (y1 - y0) or 1.0
-    y0, y1 = y0 - span * 0.08, y1 + span * 0.08
-
-    def sx(x: float) -> float:
-        return PAD_L + (x - x0) / max(x1 - x0, 1) * (W - PAD_L - PAD_R)
-
-    def sy(y: float) -> float:
-        return H - PAD_B - (y - y0) / (y1 - y0) * (H - PAD_T - PAD_B)
-
-    svg_parts = [
-        f'<svg id="{chart_id}" class="interactive-chart" viewBox="0 0 {W} {H}" '
-        f'role="img" aria-label="{escape(title)}" data-chart-id="{chart_id}">'
-    ]
-    svg_parts.append(f'<rect x="{PAD_L}" y="{PAD_T}" width="{W - PAD_L - PAD_R}" height="{H - PAD_T - PAD_B}" fill="#fafbfc" rx="4"/>')
-
-    # Grid & Y ticks
-    for i in range(5):
-        gy = y0 + (y1 - y0) * i / 4
-        y_pos = sy(gy)
-        svg_parts.append(f'<line x1="{PAD_L}" y1="{y_pos:.1f}" x2="{W-PAD_R}" y2="{y_pos:.1f}" stroke="#e2e8f0" stroke-dasharray="2,2" stroke-width="1"/>')
-        svg_parts.append(f'<text x="{PAD_L-8}" y="{y_pos+4:.1f}" text-anchor="end" class="chart-axis-text" font-size="11" fill="#64748b" font-family="system-ui,sans-serif">{yfmt.format(gy)}</text>')
-
-    # X ticks
-    step = 5 if x1 > 22 else (2 if x1 > 10 else 1)
-    for x in range(int(x0), int(x1) + 1):
-        if x % step == 0 or x == int(x1):
-            x_pos = sx(x)
-            svg_parts.append(f'<line x1="{x_pos:.1f}" y1="{H-PAD_B}" x2="{x_pos:.1f}" y2="{H-PAD_B+5}" stroke="#cbd5e1" stroke-width="1"/>')
-            svg_parts.append(f'<text x="{x_pos:.1f}" y="{H-PAD_B+18}" text-anchor="middle" class="chart-axis-text" font-size="11" fill="#64748b" font-family="system-ui,sans-serif">{x}</text>')
-
-    svg_parts.append(f'<text x="{(PAD_L+W-PAD_R)/2:.0f}" y="{H-10}" text-anchor="middle" font-size="12" font-weight="600" fill="#475569" font-family="system-ui,sans-serif">Epoch</text>')
-    svg_parts.append(f'<text x="18" y="{H/2:.0f}" text-anchor="middle" font-size="12" font-weight="600" fill="#475569" font-family="system-ui,sans-serif" transform="rotate(-90 18 {H/2:.0f})">{escape(ylabel)}</text>')
-
-    # Series lines
-    for s in active_series:
-        sid = s["id"]
-        group = s["group"]
-        col = s["color"]
-        sw = s.get("stroke_width", 2.4)
-        dash_attr = f' stroke-dasharray="{s["dash"]}"' if s.get("dash") else ""
-        pts = s["pts"]
-
-        svg_parts.append(f'<g class="chart-series group-{group}" data-series-id="{sid}" data-chart="{chart_id}">')
-        if len(pts) == 1:
-            cx, cy = sx(pts[0][0]), sy(pts[0][1])
-            svg_parts.append(f'<circle class="series-point" cx="{cx:.1f}" cy="{cy:.1f}" r="4.5" fill="{col}" data-epoch="{pts[0][0]}" data-val="{pts[0][1]:.4f}" data-series="{escape(s["label"])}" data-group="{group}"/>')
-        else:
-            d = " ".join(("M" if i == 0 else "L") + f"{sx(x):.1f},{sy(y):.1f}" for i, (x, y) in enumerate(pts))
-            svg_parts.append(f'<path class="series-path" d="{d}" fill="none" stroke="{col}" stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round"{dash_attr}/>')
-            for x, y in pts:
-                cx, cy = sx(x), sy(y)
-                svg_parts.append(f'<circle class="series-point" cx="{cx:.1f}" cy="{cy:.1f}" r="3" fill="{col}" data-epoch="{x}" data-val="{y:.4f}" data-series="{escape(s["label"])}" data-group="{group}"/>')
-        svg_parts.append("</g>")
-
-    svg_parts.append("</svg>")
-
-    controls_html = f"""
-    <div class="chart-controls-bar">
-      <div class="filter-pills" data-chart="{chart_id}">
-        <span class="filter-label">Filter:</span>
-        <button class="pill-btn active" data-group="all" data-chart="{chart_id}">Show All</button>
-        <button class="pill-btn" data-group="declip" data-chart="{chart_id}"><i class="dot" style="background:#0284c7;"></i> DeCLIP Series</button>
-        <button class="pill-btn" data-group="baseline_lora" data-chart="{chart_id}"><i class="dot" style="background:#047857;"></i> Best LoRA Baseline</button>
-        <button class="pill-btn" data-group="baseline_ft" data-chart="{chart_id}"><i class="dot" style="background:#2563eb;"></i> Best Full FT Baseline</button>
-      </div>
-      <div class="chart-hint">Hover line/legend to highlight &bull; Click legend to isolate</div>
-    </div>
-    """
-
-    groups_dict: dict[str, list[dict]] = {
-        "declip": [],
-        "baseline_lora": [],
-        "baseline_ft": [],
-    }
-    for s in active_series:
-        g = s["group"]
-        if g in groups_dict:
-            groups_dict[g].append(s)
-
-    group_titles = {
-        "declip": "✨ DeCLIP Architecture (Cyan/Sky Hue)",
-        "baseline_lora": "⚡ Previous Best LoRA Baseline (Emerald Hue)",
-        "baseline_ft": "🔄 Previous Best Full FT Baseline (Blue Hue)",
-    }
-
-    legend_sections = []
-    for g_key, g_items in groups_dict.items():
-        if not g_items:
-            continue
-        badges = []
-        for s in g_items:
-            sid = s["id"]
-            col = s["color"]
-            lbl = s["label"]
-            pts = s["pts"]
-            mkey = s.get("metric_key", key)
-            if "loss" in mkey:
-                best_val = min(y for _, y in pts)
-                stat_str = f"min: {best_val:.3f}"
-            elif "r@1" in mkey:
-                best_val = max(y for _, y in pts)
-                stat_str = f"peak: {best_val*100:.1f}%"
-            else:
-                best_val = pts[-1][1]
-                stat_str = f"{best_val:.3f}"
-
-            dash_style = 'border-style:dashed;' if s.get("dash") else ''
-            badges.append(
-                f'<button class="legend-badge" data-series-id="{sid}" data-chart="{chart_id}" data-group="{g_key}">'
-                f'<span class="swatch" style="background:{col};{dash_style}"></span>'
-                f'<span class="name">{escape(lbl)}</span>'
-                f'<span class="val">{stat_str}</span>'
-                f'</button>'
-            )
-
-        legend_sections.append(
-            f'<div class="legend-group group-{g_key}">'
-            f'<div class="legend-group-header">{group_titles.get(g_key, g_key)}</div>'
-            f'<div class="legend-items">{"".join(badges)}</div>'
-            f'</div>'
-        )
-
-    return f"""
-    <div class="chart-wrapper" data-chart="{chart_id}">
-      <div class="chart-header">
-        <h3 class="chart-title">{escape(title)}</h3>
-      </div>
-      {controls_html}
-      <div class="chart-svg-container" style="position:relative;">
-        {"".join(svg_parts)}
-        <div id="tooltip-{chart_id}" class="chart-tooltip" style="display:none;"></div>
-      </div>
-      <div class="grouped-legend">
-        {"".join(legend_sections)}
-      </div>
-    </div>
-    """
 
 
 @dataclass
@@ -613,9 +452,9 @@ def main() -> None:
             })
 
     # Render Charts
-    chart_val_loss = line_chart(series_data, "validation_loss", "Validation Contrastive Retrieval Loss Across Epochs", "Validation Loss (Lower = Better)", "{:.3f}", 1)
-    chart_r1 = line_chart(series_data, "mean_r@1", "Validation Mean Recall@1 Retrieval Rate Across Epochs", "Mean Recall@1 (Higher = Better)", "{:.1%}", 2)
-    chart_train_loss = line_chart(series_data, "train_loss", "Total Training Loss Across Epochs", "Train Loss", "{:.3f}", 3)
+    chart_val_loss = line_chart(series_data, "validation_loss", "Validation Contrastive Retrieval Loss Across Epochs", "Validation Loss (Lower = Better)", "{:.3f}", 1, groups=CHART_GROUPS, final_stat_fmt="{:.3f}", sanitize_id=True)
+    chart_r1 = line_chart(series_data, "mean_r@1", "Validation Mean Recall@1 Retrieval Rate Across Epochs", "Mean Recall@1 (Higher = Better)", "{:.1%}", 2, groups=CHART_GROUPS, final_stat_fmt="{:.3f}", sanitize_id=True)
+    chart_train_loss = line_chart(series_data, "train_loss", "Total Training Loss Across Epochs", "Train Loss", "{:.3f}", 3, groups=CHART_GROUPS, final_stat_fmt="{:.3f}", sanitize_id=True)
 
     # Multi-task loss breakdown chart (for declip runs that log loss_mv, loss_nn, loss_img_ss)
     declip_run_path = CK / "declip-v1/declip-frozen-seed2026/metrics.jsonl"
@@ -625,7 +464,7 @@ def main() -> None:
         {"id": "loss_nn", "metric_key": "train_loss_nn", "label": "Nearest-Neighbour Loss (L_NN)", "group": "declip", "color": "#0ea5e9", "stroke_width": 2.6, "rows": declip_rows},
         {"id": "loss_img_ss", "metric_key": "train_loss_img_ss", "label": "Image SimCLR Loss (L_I)", "group": "declip", "color": "#f59e0b", "stroke_width": 2.4, "dash": "4,3", "rows": declip_rows},
     ]
-    chart_loss_decomp = line_chart(declip_decomp_series, "train_loss_mv", "DeCLIP Multi-Task Training Loss Decomposition (L_MV vs L_NN vs L_I)", "Loss Value", "{:.3f}", 4)
+    chart_loss_decomp = line_chart(declip_decomp_series, "train_loss_mv", "DeCLIP Multi-Task Training Loss Decomposition (L_MV vs L_NN vs L_I)", "Loss Value", "{:.3f}", 4, groups=CHART_GROUPS, final_stat_fmt="{:.3f}", sanitize_id=True)
 
     card_master_table = build_master_table_card(probe_results)
     card_pathology_table = build_pathology_table_card(probe_results)

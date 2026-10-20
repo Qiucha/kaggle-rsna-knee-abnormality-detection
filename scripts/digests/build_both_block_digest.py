@@ -16,6 +16,14 @@ from experiment_tools.digest_charts import line_chart  # noqa: E402
 CK = ROOT / "checkpoints/contrastive"
 DIGEST_DIR = ROOT / "digest"
 
+# (series group, filter-pill label, pill dot colour, legend heading) for experiment_tools.digest_charts.line_chart
+CHART_GROUPS = [
+    ("both_lora", "LoRA Series", "#047857", "⚡ Both-Tower LoRA (Emerald Hue)"),
+    ("both_ft", "Both Full FT", "#2563eb", "🔄 Both-Tower Full FT (Blue Hue)"),
+    ("img_ft", "Image-Only", "#64748b", "🖼️ Image-Only Full FT (Slate Hue)"),
+    ("holdout", "Holdout", "#ea580c", "🛡️ Generalizability Holdout (Amber/Coral Hue)"),
+]
+
 
 def get_run_stat(rel_path: str) -> tuple[str, str]:
     mfile = CK / rel_path / "metrics.jsonl"
@@ -1201,10 +1209,10 @@ def build_digest() -> None:
     card_overfitting = build_overfitting_card()
 
     # Build interactive charts
-    chart_train_loss = line_chart(loaded_series, "train_loss", "1. Training Loss Curves (InfoNCE Loss)", "Train Loss", "{:.3f}", 1)
-    chart_val_loss = line_chart(loaded_series, "validation_loss", "2. Validation Loss Curves", "Validation Loss", "{:.3f}", 2)
-    chart_r1 = line_chart(loaded_series, "mean_r@1", "3. Validation Retrieval Mean Recall@1 (Selection Metric)", "Mean R@1", "{:.3f}", 3)
-    chart_temp = line_chart(loaded_series, "inverse_temperature", "4. Inverse Temperature Scale (exp(logit_scale))", "Inv Temp", "{:.1f}", 4)
+    chart_train_loss = line_chart(loaded_series, "train_loss", "1. Training Loss Curves (InfoNCE Loss)", "Train Loss", "{:.3f}", 1, groups=CHART_GROUPS)
+    chart_val_loss = line_chart(loaded_series, "validation_loss", "2. Validation Loss Curves", "Validation Loss", "{:.3f}", 2, groups=CHART_GROUPS)
+    chart_r1 = line_chart(loaded_series, "mean_r@1", "3. Validation Retrieval Mean Recall@1 (Selection Metric)", "Mean R@1", "{:.3f}", 3, groups=CHART_GROUPS)
+    chart_temp = line_chart(loaded_series, "inverse_temperature", "4. Inverse Temperature Scale (exp(logit_scale))", "Inv Temp", "{:.1f}", 4, groups=CHART_GROUPS)
 
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 

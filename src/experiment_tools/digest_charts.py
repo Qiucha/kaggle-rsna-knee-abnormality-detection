@@ -16,16 +16,27 @@ def line_chart(
     ylabel: str,
     yfmt: str = "{:.3f}",
     chart_idx: int = 1,
+    *,
+    groups: list[tuple[str, str, str, str]],
+    final_stat_fmt: str = "{:.1f}",
+    sanitize_id: bool = False,
 ) -> str:
-    """Generate an interactive SVG line chart with hover effects, tooltip, and grouped legend."""
-    chart_id = f"chart-{key}-{chart_idx}"
-    
+    """Generate an interactive SVG line chart with hover effects, tooltip, and grouped legend.
+
+    ``groups`` lists (series group, filter-pill label, pill dot colour, legend heading) in display order; a series is
+    drawn in the legend only when its ``group`` is listed. A series may set ``metric_key`` to plot a different row field
+    than ``key``. The legend shows min for loss, peak for r@1, and the last value (``final_stat_fmt``) otherwise.
+    ``sanitize_id`` replaces ``@`` in the chart's element id.
+    """
+    chart_id = f"chart-{key.replace('@', '_') if sanitize_id else key}-{chart_idx}"
+
     # Filter series that have data for this metric
     active_series = []
     for s in series_list:
-        valid_pts = [(r["epoch"], r[key]) for r in s["rows"] if key in r and r[key] is not None]
+        mkey = s.get("metric_key", key)
+        valid_pts = [(r["epoch"], r[mkey]) for r in s["rows"] if mkey in r and r[mkey] is not None]
         if valid_pts:
-            active_series.append({**s, "pts": valid_pts})
+            active_series.append({**s, "pts": valid_pts, "metric_key": mkey})
 
     if not active_series:
         return f'<p class="muted">No data available yet for {escape(title)}.</p>'
@@ -97,38 +108,29 @@ def line_chart(
     svg_parts.append("</svg>")
 
     # Render controls bar above the chart
+    pills = "".join(
+        f'\n        <button class="pill-btn" data-group="{g}" data-chart="{chart_id}">'
+        f'<i class="dot" style="background:{dot};"></i> {pill}</button>'
+        for g, pill, dot, _ in groups
+    )
     controls_html = f"""
     <div class="chart-controls-bar">
       <div class="filter-pills" data-chart="{chart_id}">
         <span class="filter-label">Filter:</span>
-        <button class="pill-btn active" data-group="all" data-chart="{chart_id}">Show All</button>
-        <button class="pill-btn" data-group="both_lora" data-chart="{chart_id}"><i class="dot" style="background:#047857;"></i> LoRA Series</button>
-        <button class="pill-btn" data-group="both_ft" data-chart="{chart_id}"><i class="dot" style="background:#2563eb;"></i> Both Full FT</button>
-        <button class="pill-btn" data-group="img_ft" data-chart="{chart_id}"><i class="dot" style="background:#64748b;"></i> Image-Only</button>
-        <button class="pill-btn" data-group="holdout" data-chart="{chart_id}"><i class="dot" style="background:#ea580c;"></i> Holdout</button>
+        <button class="pill-btn active" data-group="all" data-chart="{chart_id}">Show All</button>{pills}
       </div>
       <div class="chart-hint">Hover line/legend to highlight &bull; Click legend to isolate</div>
     </div>
     """
 
     # Render grouped legend
-    groups_dict: dict[str, list[dict]] = {
-        "both_lora": [],
-        "both_ft": [],
-        "img_ft": [],
-        "holdout": [],
-    }
+    groups_dict: dict[str, list[dict]] = {g: [] for g, *_ in groups}
     for s in active_series:
         g = s["group"]
         if g in groups_dict:
             groups_dict[g].append(s)
 
-    group_titles = {
-        "both_lora": "⚡ Both-Tower LoRA (Emerald Hue)",
-        "both_ft": "🔄 Both-Tower Full FT (Blue Hue)",
-        "img_ft": "🖼️ Image-Only Full FT (Slate Hue)",
-        "holdout": "🛡️ Generalizability Holdout (Amber/Coral Hue)",
-    }
+    group_titles = {g: title_ for g, _, _, title_ in groups}
 
     legend_sections = []
     for g_key, g_items in groups_dict.items():
@@ -141,15 +143,15 @@ def line_chart(
             lbl = s["label"]
             # get best or final stat for this key
             pts = s["pts"]
-            if "loss" in key:
+            if "loss" in s["metric_key"]:
                 best_val = min(y for _, y in pts)
                 stat_str = f"min: {best_val:.3f}"
-            elif "r@1" in key:
+            elif "r@1" in s["metric_key"]:
                 best_val = max(y for _, y in pts)
                 stat_str = f"peak: {best_val*100:.1f}%"
             else:
                 best_val = pts[-1][1]
-                stat_str = f"{best_val:.1f}"
+                stat_str = final_stat_fmt.format(best_val)
 
             dash_style = 'border-style:dashed;' if s.get("dash") else ''
             badges.append(
