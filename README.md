@@ -173,27 +173,32 @@ detail is in the [pipeline code guide](src/contrastive_learning/README.md).
 | `experiments.py` | Matrix execution, immutable validation selection, checkpoint rescoring |
 | `artifacts.py` | Atomic artifact writes and SHA-256 content hashes |
 
+### Shared script support — `src/experiment_tools/` and `src/digest_site/`
+
+Scripts never import each other. What more than one script needs lives in a
+package under `src/`:
+
+| Package | Holds |
+| --- | --- |
+| `experiment_tools/` | `gold_probe.py` (the gold-58 probe contract: population, features, out-of-fold AUROC, bootstraps), `cohort_audit.py` (cohort sampling for the audits), `curves.py` (metrics.jsonl reader and SVG line chart), `lm_heads.py` (reload and verify a finished LM head), `joint_loss.py` and `text_hubs.py` (snapshots the digest site exports) |
+| `digest_site/` | The research-digest site builder: catalog, data export, page renderers |
+
 ### Scripts — `scripts/`
 
 Every script is run from the repository root, so relative paths in matrices and
-configurations resolve consistently.
+configurations resolve consistently. They are grouped by what they do; the
+[script index](scripts/README.md) lists every file.
 
-| Script | What it does |
+| Folder | What lives there |
 | --- | --- |
-| `build_contrastive_manifest.py` | Freeze a cohort: pair reports with DICOM series, resolve the text policy, assign study-grouped train/validation/test splits, and write the manifest with checksums. Run once per cohort version. |
-| `train_contrastive.py` | Train one run. The single training entry point; every flag is listed by `--help`. |
-| `run_measured_training.py` | Wrap `train_contrastive.py` unchanged and additionally record elapsed time and peak CUDA memory to a telemetry file. Requires CUDA. |
-| `run_contrastive_matrix.py` | Run a frozen experiment matrix, or (`--dry-run`) print the exact command for each experiment without executing it. |
-| `finalize_contrastive_matrix.py` | Verify every run's best epoch against its own history, write the immutable `validation-selection.json`, and optionally spend the locked test split. |
-| `evaluate_contrastive.py` | Score one saved checkpoint on a split; write its metrics report and per-query rankings. |
-| `rescore_contrastive_checkpoints.py` | Re-evaluate every saved `best.pt` under current metric definitions and summarize which checkpoints actually moved. |
-| `build_project_digest.py` | Rebuild `digest/project-state.html` from local experiment artifacts. Takes no arguments. |
-| `evaluate_downstream_probe.py` | Score representations on the downstream label-extraction task before and after contrastive learning: cross-validated per-label logistic probes over the gold cohort, pooled out-of-fold AUROC, paired bootstrap intervals. Read-only; never loads the locked test split. |
-| `analyze_plane_pooling.py` | Decompose why the image tower's learned plane attention reads labels worse than averaging the same three planes: per-plane probes, the attention weights, and the pooling with and without its plane-embedding term. Reuses the downstream probe's contract by import, not by copy. |
-| `extract_setting_features.py` | Per-window features for up to six series per study (each plane's selected series and its opposite fat-suppression counterpart), read through a windowed rung's evaluation path and encoded by both the rung's adapted backbone and its pretrained starting point. Fsynced shards; a rerun resumes. |
-| `train_setting_heads.py` | Fit heads on those features (selected planes only, plus the counterparts, slot mean, per-label slot attention) over several seeds, after a gate that the rung's own head reproduces its saved predictions. Paired deltas against the selected-planes arm with study-bootstrap intervals. |
-| `translate_reports_claude.py` | Prepare, run, and merge report translations used by the `translated_english` cohorts. Only `run --execute` calls out to Claude; everything else is offline. |
-| `templates/` | HTML template used by `build_project_digest.py`. |
+| `scripts/data/` | Build and maintain cohorts, caches and report translations |
+| `scripts/training/` | Train contrastive runs, fine-tuning rungs and LM heads, and the matrix runners |
+| `scripts/evaluation/` | Score checkpoints, run the gold-58 downstream probe, extract frozen features |
+| `scripts/analysis/` | Read-only paired comparisons and follow-up analyses of finished runs |
+| `scripts/audits/` | Read-only data and preprocessing audits |
+| `scripts/digests/` | Write `digest/` reports and build the digest site |
+| `scripts/submission/` | Export Kaggle bundles and run them as the kernel does |
+| `scripts/archive/` | Provenance only; not runnable from a fresh clone |
 
 One-off audit scripts for completed experiments have been removed; their outputs
 remain in `digest/` (for example `digest/full-projection-v1-data-audit.json`,
