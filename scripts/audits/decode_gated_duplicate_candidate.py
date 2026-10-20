@@ -16,46 +16,19 @@ Output: digest/gated-duplicate-resolution.json
 
 from __future__ import annotations
 
-import hashlib
 import json
 import sys
 import time
 from pathlib import Path
 
-import numpy as np
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from contrastive_learning.manifest import read_manifest_rows
-from contrastive_learning.preprocessing import _decode_pixels, ordered_slice_paths
+from experiment_tools.dicom_series import plane_digest
 
 ROOT = Path(__file__).resolve().parents[2]
 COHORT = ROOT / "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl"
 SCREEN = ROOT / "digest/acquisition-duplicate-screen.json"
 OUT = ROOT / "digest/gated-duplicate-resolution.json"
-
-
-def plane_digest(directory: str) -> dict:
-    """Ordered decoded-pixel hash for one series, plus shape facts for the record."""
-    digest = hashlib.sha256()
-    paths = ordered_slice_paths(Path(directory))
-    shapes, dtypes = set(), set()
-    for path in paths:
-        pixels = _decode_pixels(path)
-        if pixels is None:
-            digest.update(b"<undecodable>")
-            continue
-        array = np.ascontiguousarray(pixels)
-        shapes.add(tuple(array.shape))
-        dtypes.add(str(array.dtype))
-        digest.update(str(array.shape).encode())
-        digest.update(str(array.dtype).encode())
-        digest.update(array.tobytes())
-    return {
-        "ordered_decoded_pixel_sha256": digest.hexdigest(),
-        "slices": len(paths),
-        "slice_shapes": sorted(str(s) for s in shapes),
-        "dtypes": sorted(dtypes),
-    }
 
 
 def main() -> None:
