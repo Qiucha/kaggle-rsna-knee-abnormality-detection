@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Compare the four pinned tower-size arms on identical gold OOF folds."""
+"""Compare the four pinned tower-size arms on identical gold OOF folds.
+
+Reads: each arm's run directory (``config.json``, ``metrics.jsonl``, ``best.pt``), its cached gold
+features under ``digest/*.npz``, the probe config and the gold labels. The run directories are pinned in
+``experiment_tools.paired_tower_size``.
+Writes: ``digest/tower-size-factorial-v1.json``.
+Run: ``.venv/bin/python scripts/analysis/compare_tower_size_factorial.py``
+"""
 
 from __future__ import annotations
 
@@ -21,6 +28,7 @@ from experiment_tools.gold_probe import (
     resolve_population,
     score_arm,
 )
+from experiment_tools.paired_tower_size import ARM_RUNS
 
 ROOT = Path(__file__).resolve().parents[2]
 PROBE = ROOT / "configs/downstream/gold-probe-size-matched-holdout-v1.json"
@@ -45,32 +53,28 @@ ALLOWED_DIFFERENCES = INACTIVE_NEW_DEFAULTS | {
 
 ARMS = {
     "small_image_base_text": {
-        "run": ROOT
-        / "checkpoints/contrastive/both-lora-holdout-v1/holdout-both-lora-depth6-r64-seed2026",
+        "run": ROOT / ARM_RUNS["small_image_base_text"],
         "features": ROOT / "digest/lora-holdout-features.npz",
         "key": "unexposed_lora_6blk_r64/holdout-both-lora-depth6-r64-seed2026|uniform_mean_768",
         "image": "facebook/dinov2-small",
         "text": "intfloat/multilingual-e5-base",
     },
     "small_image_small_text": {
-        "run": ROOT
-        / "checkpoints/contrastive/tower-size-factorial-v1/dinov2-small-e5-small-depth6-r64-seed2026",
+        "run": ROOT / ARM_RUNS["small_image_small_text"],
         "features": ROOT / "digest/tower-size-text-small-features.npz",
         "key": "text_small/dinov2-small-e5-small-depth6-r64-seed2026|uniform_mean_768",
         "image": "facebook/dinov2-small",
         "text": "intfloat/multilingual-e5-small",
     },
     "base_image_base_text": {
-        "run": ROOT
-        / "checkpoints/contrastive/tower-size-factorial-v1/dinov2-base-e5-base-depth6-r64-seed2026",
+        "run": ROOT / ARM_RUNS["base_image_base_text"],
         "features": ROOT / "digest/tower-size-image-base-features.npz",
         "key": "image_base/dinov2-base-e5-base-depth6-r64-seed2026|uniform_mean_1536",
         "image": "facebook/dinov2-base",
         "text": "intfloat/multilingual-e5-base",
     },
     "base_image_small_text": {
-        "run": ROOT
-        / "checkpoints/contrastive/size-matched-holdout-v1/dinov2-base-e5-small-depth6-r64-seed2026",
+        "run": ROOT / ARM_RUNS["base_image_small_text"],
         "features": ROOT / "digest/size-matched-holdout-features.npz",
         "key": "size_matched_lora_6blk_r64/dinov2-base-e5-small-depth6-r64-seed2026|uniform_mean_1536",
         "image": "facebook/dinov2-base",

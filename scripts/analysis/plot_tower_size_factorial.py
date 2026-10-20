@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
-"""Render the four-arm 20-epoch training and validation curves."""
+"""Render the four-arm 20-epoch training and validation curves.
+
+Reads: ``metrics.jsonl`` of the four pinned runs (``experiment_tools.paired_tower_size``).
+Writes: ``digest/tower-size-factorial-curves.svg``.
+Run: ``.venv/bin/python scripts/analysis/plot_tower_size_factorial.py``
+"""
 
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -11,33 +17,16 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from experiment_tools.paired_tower_size import ARM_RUNS  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / "digest/tower-size-factorial-curves.svg"
-RUNS = [
-    (
-        "DINOv2-small + E5-base",
-        "checkpoints/contrastive/both-lora-holdout-v1/holdout-both-lora-depth6-r64-seed2026",
-        "#3366a0",
-        "-",
-    ),
-    (
-        "DINOv2-small + E5-small",
-        "checkpoints/contrastive/tower-size-factorial-v1/dinov2-small-e5-small-depth6-r64-seed2026",
-        "#3366a0",
-        "--",
-    ),
-    (
-        "DINOv2-base + E5-base",
-        "checkpoints/contrastive/tower-size-factorial-v1/dinov2-base-e5-base-depth6-r64-seed2026",
-        "#d06431",
-        "-",
-    ),
-    (
-        "DINOv2-base + E5-small",
-        "checkpoints/contrastive/size-matched-holdout-v1/dinov2-base-e5-small-depth6-r64-seed2026",
-        "#d06431",
-        "--",
-    ),
+RUNS = [  # label, arm, colour, line style
+    ("DINOv2-small + E5-base", "small_image_base_text", "#3366a0", "-"),
+    ("DINOv2-small + E5-small", "small_image_small_text", "#3366a0", "--"),
+    ("DINOv2-base + E5-base", "base_image_base_text", "#d06431", "-"),
+    ("DINOv2-base + E5-small", "base_image_small_text", "#d06431", "--"),
 ]
 
 
@@ -48,10 +37,10 @@ def main() -> None:
         ("validation_loss", "Validation loss", 1.0),
         ("mean_r@1", "Validation mean Recall@1 (%)", 100.0),
     ]
-    for label, directory, color, style in RUNS:
+    for label, arm, color, style in RUNS:
         rows = [
             json.loads(line)
-            for line in (ROOT / directory / "metrics.jsonl").read_text().splitlines()
+            for line in (ROOT / ARM_RUNS[arm] / "metrics.jsonl").read_text().splitlines()
         ]
         if [row["epoch"] for row in rows] != list(range(1, 21)):
             raise ValueError(f"Incomplete history for {label}")
