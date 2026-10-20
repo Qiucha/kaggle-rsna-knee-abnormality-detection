@@ -1,0 +1,44 @@
+{
+  "checkpoint": "checkpoints/contrastive/next-model-pairs-v1/dinov2-registers-small-e5-base-512-seed2026/best.pt",
+  "cohort_manifest": "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
+  "manifest_sha256": "d104337696a19d52d12480c1cfaae30c937916102e36a67e3124755fa20123f5",
+  "lm_labels_csv": "data/lm_label/lm_labels_kaggle.csv",
+  "gold_labels_csv": "data/gold_label.csv",
+  "feature": "uniform_mean_cls_patch",
+  "label_policy": "YES=1, NO=0, UNK masked; ignore lookup scores and confidence",
+  "selection": "minimum validation macro masked BCE; gold never used for epoch selection",
+  "seeds": [
+    2026,
+    2027,
+    2028
+  ],
+  "arms": {
+    "linear": [],
+    "mlp": [
+      256
+    ]
+  },
+  "training": {
+    "dropout": 0.2,
+    "learning_rate": 0.001,
+    "weight_decay": 0.01,
+    "batch_size": 128,
+    "max_epochs": 100,
+    "patience": 12,
+    "min_delta": 1e-05
+  },
+  "gold_reference_probe": {
+    "folds": 8,
+    "seed": 2026,
+    "c": 1.0
+  },
+  "bootstrap": {
+    "resamples": 2000,
+    "seed": 2029
+  },
+  "gold_splits": [
+    "excluded",
+    "test"
+  ],
+  "expected_gold_studies": 58
+}

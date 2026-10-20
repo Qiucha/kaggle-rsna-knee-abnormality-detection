@@ -1,0 +1,73 @@
+{
+  "amp": true,
+  "batch_size": 1,
+  "cohort_manifest": "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
+  "crop_mm": 130.0,
+  "divergence_stop": {
+    "epochs": 3,
+    "margin": 0.02
+  },
+  "dropout": 0.2,
+  "epochs": 50,
+  "expected_gold_studies": 58,
+  "gold_labels_csv": "data/gold_label.csv",
+  "gold_splits": [
+    "excluded",
+    "test"
+  ],
+  "grad_accumulation": 16,
+  "grad_clip_norm": 1.0,
+  "head_hidden": [
+    256
+  ],
+  "image_cache_dir": "checkpoints/contrastive/full-multilingual-v1/image-cache",
+  "image_model": "Snarcy/OmniRad-base",
+  "image_model_base": "facebook/dinov2-base",
+  "image_model_base_revision": "f9e44c814b77203eaa57a6bdbbd535f21ede1415",
+  "image_model_format": "timm_dinov2",
+  "image_model_revision": "3e42381bcf0e6981a8b438e335c807c70b857e9a",
+  "image_size": 336,
+  "image_unfreeze_last": 9,
+  "label_noise": {
+    "labels": [
+      "Lateral Meniscus",
+      "Lateral OA"
+    ],
+    "sigma": 0.1
+  },
+  "lm_labels_csv": "data/lm_label/lm_labels_kaggle.csv",
+  "lr_backbone": 2e-05,
+  "lr_head": 0.001,
+  "manifest_sha256": "d104337696a19d52d12480c1cfaae30c937916102e36a67e3124755fa20123f5",
+  "min_delta": 1e-05,
+  "name": "r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep50",
+  "num_workers": 4,
+  "oversample": {
+    "copies": 1,
+    "labels": [
+      "Lateral Meniscus",
+      "Lateral OA",
+      "Synovitis"
+    ],
+    "mask_other_labels": true
+  },
+  "patience": 50,
+  "pooling": "mean",
+  "resume_from": {
+    "lr_scale": 0.5,
+    "run": "checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30"
+  },
+  "save_last": true,
+  "seed": 2026,
+  "slice_band": [
+    0.2,
+    0.8
+  ],
+  "slices_per_plane": 3,
+  "targets": "soft",
+  "train_slice_sampling": "random",
+  "warmup_fraction": 0.1,
+  "weight_decay": 0.02,
+  "window_cache_dir": "checkpoints/finetune/window-cache-k8-336",
+  "windows_per_plane": 8
+}

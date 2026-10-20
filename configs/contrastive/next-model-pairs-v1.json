@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "experiment_version": "next-model-pairs-v1",
+  "requires_cuda": true,
+  "output_root": "checkpoints/contrastive/next-model-pairs-v1",
+  "manifest_sha256": "d104337696a19d52d12480c1cfaae30c937916102e36a67e3124755fa20123f5",
+  "selection_policy": "mean_r@1 descending, validation_loss ascending, earliest epoch",
+  "base_args": [
+    "--cohort-manifest", "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
+    "--text-model", "multilingual-e5",
+    "--text-model-revision", "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "--text-pooling", "mean",
+    "--text-prefix", "query: ",
+    "--image-model", "facebook/dinov2-small",
+    "--image-model-revision", "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+    "--max-text-length", "512",
+    "--report-view", "full",
+    "--epochs", "20",
+    "--batch-size", "32",
+    "--num-workers", "4",
+    "--image-cache-dir", "checkpoints/contrastive/full-multilingual-v1/image-cache",
+    "--image-memory-cache-size", "16",
+    "--trainable-checkpoints",
+    "--local-files-only",
+    "--lr-image", "1e-4",
+    "--lr-text", "1e-4",
+    "--lr-projection", "1e-3",
+    "--image-unfreeze-last", "6",
+    "--text-unfreeze-last", "6",
+    "--lora-rank", "64",
+    "--lora-alpha", "128",
+    "--seed", "2026",
+    "--use-lora"
+  ],
+  "experiments": [
+    {
+      "name": "dinov2-registers-small-e5-base-512-seed2026",
+      "purpose": "Register-trained DINOv2 image tower; exclude register tokens from patch pooling",
+      "args": [
+        "--image-model", "facebook/dinov2-with-registers-small",
+        "--image-model-revision", "0d9846e56b43a21fa46d7f3f5070f0506a5795a9"
+      ]
+    },
+    {
+      "name": "dinov2-small-bge-m3-512-seed2026",
+      "purpose": "BGE-M3 text swap at the reference 512-token cap",
+      "args": [
+        "--text-model", "bge-m3",
+        "--text-model-revision", "5617a9f61b028005a4858fdac845db406aefb181",
+        "--text-prefix", ""
+      ]
+    },
+    {
+      "name": "dinov2-small-bge-m3-1024-seed2026",
+      "purpose": "BGE-M3 context-length test after the 512-token encoder swap",
+      "args": [
+        "--text-model", "bge-m3",
+        "--text-model-revision", "5617a9f61b028005a4858fdac845db406aefb181",
+        "--text-prefix", "",
+        "--max-text-length", "1024"
+      ]
+    },
+    {
+      "name": "dinov2-small-e5-large-512-seed2026",
+      "purpose": "Larger multilingual E5 text tower at the reference context length",
+      "args": [
+        "--text-model", "multilingual-e5-large",
+        "--text-model-revision", "3d7cfbdacd47fdda877c5cd8a79fbcc4f2a574f3"
+      ]
+    },
+    {
+      "name": "rad-dino-e5-base-512-seed2026",
+      "purpose": "RAD-DINO medical-image pretraining at the reference 224-pixel preprocessing",
+      "args": [
+        "--image-model", "microsoft/rad-dino",
+        "--image-model-revision", "110cbc18d5133582e320b43d53bf5c44e410c936"
+      ]
+    }
+  ]
+}

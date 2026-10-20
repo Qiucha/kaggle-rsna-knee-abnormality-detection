@@ -1,0 +1,13 @@
+# Inference only; scikit-learn is used during local bundle fitting, never at inference.
+# Validated locally with torch 2.13.0, transformers 5.16.1, pydicom 3.0.2.
+numpy
+pandas
+torch
+transformers==5.16.1
+pydicom==3.0.2
+# DICOM codecs, vendored offline in the bundle (codecs/wheels, cp312 manylinux) and
+# installed by the notebook with --no-index --no-deps; see kaggle/codecs/README.md.
+# pylibjpeg==2.1.0
+# pylibjpeg-libjpeg==2.4.0
+# pylibjpeg-openjpeg==2.6.0
+# pylibjpeg-rle==2.2.0

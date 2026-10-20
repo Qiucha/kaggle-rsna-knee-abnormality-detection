@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "requires_cuda": true,
+  "output_root": "checkpoints/contrastive/both-block-depth-v1",
+  "base_args": [
+    "--cohort-manifest",
+    "data/processed/contrastive-cohort.jsonl",
+    "--text-model",
+    "multilingual-e5",
+    "--text-model-revision",
+    "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "--text-pooling",
+    "mean",
+    "--text-prefix",
+    "query: ",
+    "--image-model",
+    "facebook/dinov2-small",
+    "--image-model-revision",
+    "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+    "--max-text-length",
+    "512",
+    "--report-view",
+    "full",
+    "--epochs",
+    "20",
+    "--batch-size",
+    "32",
+    "--num-workers",
+    "4",
+    "--image-cache-dir",
+    "checkpoints/contrastive/full-multilingual-v1/image-cache",
+    "--image-memory-cache-size",
+    "16",
+    "--trainable-checkpoints",
+    "--local-files-only",
+    "--lr-image",
+    "1e-5",
+    "--lr-text",
+    "2e-5",
+    "--lr-projection",
+    "1e-3",
+    "--seed",
+    "2026"
+  ],
+  "experiments": [
+    {
+      "name": "both-unfreeze2-seed2026",
+      "purpose": "Unfreeze the last 2 transformer blocks in both image and text towers",
+      "args": [
+        "--image-unfreeze-last",
+        "2",
+        "--text-unfreeze-last",
+        "2"
+      ]
+    },
+    {
+      "name": "both-unfreeze4-seed2026",
+      "purpose": "Unfreeze the last 4 transformer blocks in both image and text towers",
+      "args": [
+        "--image-unfreeze-last",
+        "4",
+        "--text-unfreeze-last",
+        "4"
+      ]
+    },
+    {
+      "name": "both-unfreeze6-seed2026",
+      "purpose": "Unfreeze the last 6 transformer blocks in both image and text towers",
+      "args": [
+        "--image-unfreeze-last",
+        "6",
+        "--text-unfreeze-last",
+        "6",
+        "--batch-size",
+        "32"
+      ]
+    },
+    {
+      "name": "both-unfreeze8-seed2026",
+      "purpose": "Unfreeze the last 8 transformer blocks in both image and text towers",
+      "args": [
+        "--image-unfreeze-last",
+        "8",
+        "--text-unfreeze-last",
+        "8",
+        "--batch-size",
+        "16"
+      ]
+    }
+  ],
+  "experiment_version": "both-block-depth-v1",
+  "manifest_sha256": "54bd803e23acf3299daeb815d651a34249c736689e20d790f862fc71c0520b63",
+  "selection_policy": "mean_r@1 descending, validation_loss ascending, earliest epoch"
+}

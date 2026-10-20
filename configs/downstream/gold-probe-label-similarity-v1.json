@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "probe_version": "gold-probe-label-similarity-v1",
+  "purpose": "Score the two label-similarity-v1 arms on the same 56 unexposed gold studies, to see whether mixing LM label agreement into the contrastive target changes what the image encoder represents. Exploratory: ONE seed per arm, so this sizes an effect and decides whether a three-seed replication is worth running. It is not a result.",
+  "cohort_manifest": "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
+  "manifest_sha256": "d104337696a19d52d12480c1cfaae30c937916102e36a67e3124755fa20123f5",
+  "gold_labels_csv": "data/gold_label.csv",
+  "population": "the 56 gold studies, parked in split 'excluded' by the holdout cohort so that neither arm's contrastive training nor its checkpoint selection could see them",
+  "estimand": "Paired difference in macro out-of-fold AUROC, lambda03 minus lambda00, over the same 56 studies, the same folds and the same study resamples. Both arms are single-seed, so the interval reflects study sampling ONLY and carries no seed-to-seed variance; the three-seed runs elsewhere in this project put that at roughly +/-0.01 macro AUROC, which is the yardstick any difference here has to clear before it means anything.",
+  "labels": [
+    "ACL",
+    "MCL",
+    "Medial Meniscus",
+    "Lateral Meniscus",
+    "Medial OA",
+    "Lateral OA",
+    "PF OA",
+    "Effusion",
+    "Synovitis",
+    "Baker's",
+    "Contusion",
+    "Fracture"
+  ],
+  "probe": {
+    "estimator": "sklearn.linear_model.LogisticRegression",
+    "penalty": "l2",
+    "C": 1.0,
+    "solver": "lbfgs",
+    "max_iter": 5000,
+    "class_weight": null,
+    "standardize": "StandardScaler fitted inside each training fold",
+    "folds": 8,
+    "fold": "StratifiedKFold(shuffle=True), stratification computed inside the per-label fold loop",
+    "fold_seed": 2026,
+    "predictions": "exactly one held-out decision_function score per study per label",
+    "tuning": "none; every hyperparameter is fixed here before the first fit, and is copied unchanged from gold-probe-unexposed-v2 so the numbers sit on the same scale as the existing probe record"
+  },
+  "metrics": {
+    "primary": "pooled out-of-fold AUROC per label, macro-averaged over the 12 labels",
+    "secondary": "pooled out-of-fold average precision (AUPRC)",
+    "tie_policy": "midrank, as in gold-probe-unexposed-v2",
+    "rare_labels": "MCL has 8 positives over 56 cases: pooled-OOF only, fold-level AUROC declared uninformative in advance"
+  },
+  "bootstrap": {
+    "resamples": 5000,
+    "seed": 2029,
+    "unit": "study",
+    "limitation": "resampling studies is not resampling patients, and with one seed per arm it does not cover training stochasticity either"
+  },
+  "arms": {
+    "before_cl": {
+      "name": "dinov2-unadapted",
+      "image_model": "facebook/dinov2-small",
+      "image_model_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+      "pooling": "uniform mean over the three planes",
+      "features": [
+        "uniform_mean_768"
+      ]
+    },
+    "lambda00": {
+      "name": "plain contrastive target, retrained under the current code state",
+      "note": "label_similarity_weight 0.0. Bit-exact reproduction of the unmodified loss, verified by test_zero_weight_reproduces_the_unmodified_loss. Retrained rather than reusing gold-holdout-v1/holdout-unfreeze4-seed2026 so that both arms share one code state; that existing run is the external check on this one.",
+      "checkpoints": [
+        "checkpoints/contrastive/label-similarity-v1/lambda00-seed2026/best.pt"
+      ],
+      "features": [
+        "uniform_mean_768"
+      ]
+    },
+    "lambda03": {
+      "name": "30% of the contrastive target taken from LM label agreement",
+      "note": "label_similarity_weight 0.3 over data/lm_label/lm_labels_kaggle.csv. Identical to lambda00 in every other argument, including seed.",
+      "checkpoints": [
+        "checkpoints/contrastive/label-similarity-v1/lambda03-seed2026/best.pt"
+      ],
+      "features": [
+        "uniform_mean_768"
+      ]
+    }
+  },
+  "comparisons": {
+    "primary": "lambda03/uniform_mean_768 versus lambda00/uniform_mean_768, paired over the same 56 studies, via scripts/compare_downstream_arms.py.",
+    "reference": "before_cl/uniform_mean_768 (unadapted DINOv2, 0.6438) is the floor both arms are read against. An arm that fails to clear it has not learned anything the backbone did not already have.",
+    "pre_registered_reading": "A difference inside +/-0.01 macro AUROC is a null at this sample size and should be reported as one. A difference beyond that is a lead worth a three-seed replication, not a finding."
+  },
+  "known_confound": "The LM labels are extracted FROM the reports and cover exactly the 12 findings this probe scores. The 56 probe studies are held out of training, so this is not label leakage in the usual sense; but the training target has been shaped toward the probe's label space, which is a weaker form of the same thing. A gain here is evidence that the encoder was steered toward these 12 axes, not that it became a better knee-MRI encoder in general. Retrieval on the 433-study validation split is the counterweight: it is scored on the unmodified hard diagonal for both arms.",
+  "reference": {
+    "lm_label_extraction": "data/lm_label/*.csv scored against the same gold labels on the same 56 studies, as the text-side label-extraction ceiling"
+  },
+  "scope": "Read-only over the two label-similarity-v1 run directories. No training here, no locked-test evaluation, no writes into any run directory.",
+  "population_splits": [
+    "excluded"
+  ]
+}

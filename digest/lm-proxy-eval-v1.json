@@ -1,0 +1,59 @@
+{
+  "validation_studies": 426,
+  "test_studies": 432,
+  "heads": {
+    "first submission (gold logistic)": {
+      "public": 0.717,
+      "lm_validation_macro_auroc": 0.6541471858569692,
+      "lm_validation_labels": 12,
+      "lm_test_macro_auroc": 0.684424330835402,
+      "lm_test_labels": 12
+    },
+    "E5-base LM-MLP": {
+      "public": 0.788,
+      "lm_validation_macro_auroc": 0.8219472884186342,
+      "lm_validation_labels": 12,
+      "lm_test_macro_auroc": 0.8335950492697521,
+      "lm_test_labels": 12
+    },
+    "E5-small LM-MLP": {
+      "public": 0.774,
+      "lm_validation_macro_auroc": 0.8131307807168032,
+      "lm_validation_labels": 12,
+      "lm_test_macro_auroc": 0.8275164157389083,
+      "lm_test_labels": 12
+    }
+  },
+  "pairs": {
+    "validation: first submission (gold logistic) - E5-base LM-MLP": [
+      -0.167800102561665,
+      -0.1931697568957717,
+      -0.14227786798101175
+    ],
+    "validation: first submission (gold logistic) - E5-small LM-MLP": [
+      -0.15898359485983404,
+      -0.18531139791025322,
+      -0.1338756379237344
+    ],
+    "validation: E5-base LM-MLP - E5-small LM-MLP": [
+      0.008816507701830956,
+      0.0019493951513774004,
+      0.015552949382022133
+    ],
+    "test: first submission (gold logistic) - E5-base LM-MLP": [
+      -0.14917071843435015,
+      -0.16900863927235424,
+      -0.12826548882723388
+    ],
+    "test: first submission (gold logistic) - E5-small LM-MLP": [
+      -0.14309208490350633,
+      -0.16276671344291124,
+      -0.12252148141920056
+    ],
+    "test: E5-base LM-MLP - E5-small LM-MLP": [
+      0.006078633530843813,
+      -0.001823614369154422,
+      0.014203546394352706
+    ]
+  }
+}

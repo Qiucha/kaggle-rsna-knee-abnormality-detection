@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "requires_cuda": true,
+  "output_root": "checkpoints/contrastive/claude-translated-dfd07db-text-block-v1",
+  "base_args": [
+    "--cohort-manifest",
+    "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
+    "--text-model",
+    "multilingual-e5",
+    "--text-model-revision",
+    "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "--text-pooling",
+    "mean",
+    "--text-prefix",
+    "query: ",
+    "--image-model",
+    "facebook/dinov2-small",
+    "--image-model-revision",
+    "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+    "--max-text-length",
+    "512",
+    "--image-unfreeze-last",
+    "0",
+    "--text-unfreeze-last",
+    "0",
+    "--epochs",
+    "20",
+    "--batch-size",
+    "32",
+    "--num-workers",
+    "4",
+    "--image-cache-dir",
+    "checkpoints/contrastive/full-multilingual-v1/image-cache",
+    "--image-memory-cache-size",
+    "16",
+    "--trainable-checkpoints",
+    "--local-files-only",
+    "--report-view",
+    "full",
+    "--lr-image",
+    "1e-5",
+    "--lr-text",
+    "2e-5"
+  ],
+  "experiments": [
+    {
+      "name": "text-block-seed2026",
+      "purpose": "Final text block and final normalization adaptation; frozen DINOv2, matched full report",
+      "args": [
+        "--text-unfreeze-last",
+        "1",
+        "--seed",
+        "2026"
+      ]
+    },
+    {
+      "name": "text-block-seed2027",
+      "purpose": "Same arm, second matched seed; budgeted up front rather than triggered by a positive first seed",
+      "args": [
+        "--text-unfreeze-last",
+        "1",
+        "--seed",
+        "2027"
+      ]
+    },
+    {
+      "name": "text-block-seed2028",
+      "purpose": "Same arm, third matched seed; budgeted up front rather than triggered by a positive first seed",
+      "args": [
+        "--text-unfreeze-last",
+        "1",
+        "--seed",
+        "2028"
+      ]
+    }
+  ],
+  "experiment_version": "claude-translated-dfd07db-text-block-v1",
+  "manifest_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+  "selection_policy": "mean_r@1 descending, validation_loss ascending, earliest epoch",
+  "baseline_output": "checkpoints/contrastive/claude-translated-dfd07db-q2-v1/00-full-seed2026",
+  "baseline_checkpoint_sha256": "792aed1588acdda11ecd22238230b8c99cdaaa279c3cdbdc69877b7a3fc063c2",
+  "matched_baselines": {
+    "2026": {
+      "output": "checkpoints/contrastive/claude-translated-dfd07db-q2-v1/00-full-seed2026",
+      "checkpoint_sha256": "792aed1588acdda11ecd22238230b8c99cdaaa279c3cdbdc69877b7a3fc063c2",
+      "mean_r@1_pp": 10.6576
+    },
+    "2027": {
+      "output": "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/full-seed2027",
+      "checkpoint_sha256": "82e193d4848bebe6b35dfc8f85520476cefeb4fb8c2a658fceb5daab9f119d3a",
+      "mean_r@1_pp": 8.9569
+    },
+    "2028": {
+      "output": "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/full-seed2028",
+      "checkpoint_sha256": "321d279d4b4059eda5466c9b2daa9b3d18cc441937a2e10cc75b08fd9f2315ca",
+      "mean_r@1_pp": 8.8435
+    }
+  },
+  "repeat_seeds": [],
+  "repeat_rule": "None. All three matched seeds are frozen here up front, so no positive-gain trigger decides whether more run. Two single-seed screens have now returned intervals spanning zero; a conditional third seed cannot fix that.",
+  "maximum_new_full_runs": 3
+}

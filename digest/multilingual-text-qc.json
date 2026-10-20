@@ -1,0 +1,145 @@
+{
+  "audited_languages": {
+    "bg": {
+      "content_tokens": 1205,
+      "count": 3,
+      "reports_over_256": 3,
+      "reports_over_512": 1,
+      "tokens_max": 646,
+      "tokens_p50": 307.0,
+      "tokens_p90": 578.2,
+      "tokens_p99": 639.22,
+      "unknown_token_fraction": 0.0,
+      "unknown_tokens": 0
+    },
+    "de": {
+      "content_tokens": 438,
+      "count": 2,
+      "reports_over_256": 0,
+      "reports_over_512": 0,
+      "tokens_max": 252,
+      "tokens_p50": 221.0,
+      "tokens_p90": 245.8,
+      "tokens_p99": 251.38,
+      "unknown_token_fraction": 0.0,
+      "unknown_tokens": 0
+    },
+    "el": {
+      "content_tokens": 1412,
+      "count": 3,
+      "reports_over_256": 3,
+      "reports_over_512": 1,
+      "tokens_max": 663,
+      "tokens_p50": 401.0,
+      "tokens_p90": 610.6,
+      "tokens_p99": 657.76,
+      "unknown_token_fraction": 0.0,
+      "unknown_tokens": 0
+    },
+    "en": {
+      "content_tokens": 11558,
+      "count": 28,
+      "reports_over_256": 20,
+      "reports_over_512": 9,
+      "tokens_max": 988,
+      "tokens_p50": 386.5,
+      "tokens_p90": 750.2,
+      "tokens_p99": 947.23,
+      "unknown_token_fraction": 0.0,
+      "unknown_tokens": 0
+    },
+    "es": {
+      "content_tokens": 2575,
+      "count": 10,
+      "reports_over_256": 6,
+      "reports_over_512": 0,
+      "tokens_max": 431,
+      "tokens_p50": 325.0,
+      "tokens_p90": 394.09999999999997,
+      "tokens_p99": 427.31,
+      "unknown_token_fraction": 0.0,
+      "unknown_tokens": 0
+    },
+    "hr": {
+      "content_tokens": 1750,
+      "count": 4,
+      "reports_over_256": 4,
+      "reports_over_512": 0,
+      "tokens_max": 508,
+      "tokens_p50": 435.5,
+      "tokens_p90": 500.8,
+      "tokens_p99": 507.28,
+      "unknown_token_fraction": 0.0,
+      "unknown_tokens": 0
+    },
+    "nl": {
+      "content_tokens": 696,
+      "count": 2,
+      "reports_over_256": 2,
+      "reports_over_512": 0,
+      "tokens_max": 368,
+      "tokens_p50": 350.0,
+      "tokens_p90": 364.4,
+      "tokens_p99": 367.64,
+      "unknown_token_fraction": 0.0,
+      "unknown_tokens": 0
+    },
+    "tr": {
+      "content_tokens": 1450,
+      "count": 6,
+      "reports_over_256": 1,
+      "reports_over_512": 0,
+      "tokens_max": 357,
+      "tokens_p50": 237.0,
+      "tokens_p90": 306.5,
+      "tokens_p99": 351.95000000000005,
+      "unknown_token_fraction": 0.0,
+      "unknown_tokens": 0
+    }
+  },
+  "full_cohort": {
+    "content_tokens": 1372400,
+    "count": 4407,
+    "reports_over_256": 2453,
+    "reports_over_512": 625,
+    "tokens_max": 1241,
+    "tokens_p50": 285.0,
+    "tokens_p90": 600.0,
+    "tokens_p99": 843.9399999999996,
+    "unknown_token_fraction": 0.0,
+    "unknown_tokens": 0
+  },
+  "language_audit_sha256": "f111d544a9afea18c4db8dce0911c88003128284458a129a00458101c523890a",
+  "limitations": [
+    "Only 58 studies have audited source-language labels.",
+    "Tokenizer coverage does not establish medical semantic quality.",
+    "The selected multilingual encoder is not specifically pretrained on radiology reports."
+  ],
+  "model": "intfloat/multilingual-e5-base",
+  "prefix": "query: ",
+  "report_views": {
+    "findings_impression": {
+      "count": 4407,
+      "reports_over_256": 2105,
+      "reports_over_512": 468,
+      "reports_with_extracted_sections": 1784,
+      "tokens_max": 1241,
+      "tokens_p50": 249.0,
+      "tokens_p90": 520.0,
+      "tokens_p99": 757.0
+    },
+    "impression": {
+      "count": 4407,
+      "reports_over_256": 1358,
+      "reports_over_512": 154,
+      "reports_with_extracted_sections": 1455,
+      "tokens_max": 1241,
+      "tokens_p50": 162.0,
+      "tokens_p90": 411.0,
+      "tokens_p99": 661.9399999999996
+    }
+  },
+  "reports_sha256": "8ca2203c0e9d61c080c7a314c7cdb51c1b03a1d9eb4770819f7f34af53ef4e33",
+  "revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+  "schema_version": 1
+}

@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "probe_version": "gold-probe-tower-size-image-base-v1",
+  "purpose": "Score the image-base single-tower swap on the fixed 56-study gold holdout and eight-fold logistic probe.",
+  "cohort_manifest": "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
+  "manifest_sha256": "d104337696a19d52d12480c1cfaae30c937916102e36a67e3124755fa20123f5",
+  "gold_labels_csv": "data/gold_label.csv",
+  "population": "the 56 gold studies, parked in split 'excluded' by the holdout cohort so that neither contrastive training nor checkpoint selection could see them; the 2 locked-test gold studies are counted only",
+  "estimand": "Gold-only label readout from the 56 studies excluded from encoder training and selection; not a new held-out patient test.",
+  "labels": [
+    "ACL",
+    "MCL",
+    "Medial Meniscus",
+    "Lateral Meniscus",
+    "Medial OA",
+    "Lateral OA",
+    "PF OA",
+    "Effusion",
+    "Synovitis",
+    "Baker's",
+    "Contusion",
+    "Fracture"
+  ],
+  "probe": {
+    "estimator": "sklearn.linear_model.LogisticRegression",
+    "penalty": "l2",
+    "C": 1.0,
+    "solver": "lbfgs",
+    "max_iter": 5000,
+    "class_weight": null,
+    "standardize": "StandardScaler fitted inside each training fold",
+    "folds": 8,
+    "fold": "StratifiedKFold(shuffle=True), stratification computed inside the per-label fold loop",
+    "fold_seed": 2026,
+    "predictions": "exactly one held-out decision_function score per study per label",
+    "tuning": "none; every hyperparameter is fixed here before the first fit"
+  },
+  "metrics": {
+    "primary": "pooled out-of-fold AUROC per label, macro-averaged over the 12 labels",
+    "secondary": "pooled out-of-fold average precision (AUPRC)",
+    "tie_policy": "midrank. Every reported point estimate comes from sklearn.metrics.roc_auc_score.",
+    "environment_note": "sklearn 1.8 deprecates penalty=l2",
+    "rare_labels": "MCL has 8 positives over 56 cases: pooled-OOF only, fold-level AUROC declared uninformative in advance"
+  },
+  "bootstrap": {
+    "resamples": 5000,
+    "seed": 2029,
+    "unit": "study",
+    "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable"
+  },
+  "population_splits": [
+    "excluded"
+  ],
+  "arms": {
+    "before_cl": {
+      "name": "dinov2-unadapted",
+      "image_model": "facebook/dinov2-base",
+      "image_model_revision": "f9e44c814b77203eaa57a6bdbbd535f21ede1415",
+      "pooling": "uniform mean over the three planes",
+      "features": [
+        "uniform_mean_1536"
+      ]
+    },
+    "image_base": {
+      "name": "dinov2-base-e5-base-depth6-r64-seed2026",
+      "checkpoints": [
+        "checkpoints/contrastive/tower-size-factorial-v1/dinov2-base-e5-base-depth6-r64-seed2026/best.pt"
+      ],
+      "features": [
+        "uniform_mean_1536",
+        "plane_attention_1536",
+        "projection_256"
+      ]
+    }
+  }
+}

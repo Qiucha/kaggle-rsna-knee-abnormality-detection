@@ -1,0 +1,7 @@
+{
+  "title": "RSNA Knee A30 Deep-3 Ensemble Bundle",
+  "subtitle": "Private offline bundle: 3-member OmniRad-base rank ensemble, u9",
+  "description": "Inference-only bundle for the RSNA Knee Abnormality Detection competition: a per-label rank-average ensemble of three fine-tuned K=8 multi-slice OmniRad-base members at 336 px on soft LM label values, each with its last 9 blocks trained: A30 (lateral-label oversampling and label noise, 30 epochs), u9-b1, and the A30 recipe started from a contrastive image-report checkpoint. Offline inference code and vendored DICOM codec wheels. Contains no competition images, reports, labels, or study identifiers.",
+  "id": "kyunhsuan/rsna-knee-a30-deep3-bundle",
+  "licenses": [{"name": "other"}]
+}

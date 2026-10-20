@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "requires_cuda": true,
+  "experiment_version": "label-similarity-v1",
+  "purpose": "First look at whether LM-extracted finding labels are a useful proxy target for contrastive training. Two arms differing in one field only: the fraction of the contrastive target taken from label agreement. The zero-weight arm is a bit-exact reproduction of plain CLIP-style training, retrained here rather than reused so both arms share one code state.",
+  "output_root": "checkpoints/contrastive/label-similarity-v1",
+  "shared_args": [
+    "--cohort-manifest", "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
+    "--text-model", "multilingual-e5",
+    "--text-model-revision", "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "--text-pooling", "mean",
+    "--text-prefix", "query: ",
+    "--image-model", "facebook/dinov2-small",
+    "--image-model-revision", "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+    "--max-text-length", "512",
+    "--report-view", "full",
+    "--image-unfreeze-last", "4",
+    "--text-unfreeze-last", "0",
+    "--lr-image", "1e-5",
+    "--epochs", "20",
+    "--batch-size", "32",
+    "--num-workers", "4",
+    "--image-cache-dir", "checkpoints/contrastive/full-multilingual-v1/image-cache",
+    "--image-memory-cache-size", "16",
+    "--trainable-checkpoints",
+    "--local-files-only",
+    "--seed", "2026"
+  ],
+  "arms": [
+    {
+      "name": "lambda00-seed2026",
+      "label_similarity_weight": 0.0,
+      "extra_args": []
+    },
+    {
+      "name": "lambda03-seed2026",
+      "label_similarity_weight": 0.3,
+      "extra_args": [
+        "--lm-label-csv", "data/lm_label/lm_labels_kaggle.csv",
+        "--label-similarity-weight", "0.3"
+      ]
+    }
+  ],
+  "label_source": {
+    "path": "data/lm_label/lm_labels_kaggle.csv",
+    "studies": 4406,
+    "findings": 12,
+    "coverage": "100% of the train, validation and test splits of this cohort",
+    "target_rule": "Pair similarity is the mean agreement over findings BOTH studies report a YES/NO verdict for, rescaled to [0,1]; UNK is treated as unobserved, never as agreement. Diagonal forced to 1.0, rows normalized, mixed as (1-w)*I + w*rownorm(S)."
+  },
+  "cohort_rationale": "gold-holdout-v1 is the only cohort that places all 56 gold-probe studies outside train and validation. Every other cohort puts 48 of them in train, which would let the LM labels of the probe population feed the training target for the studies the probe scores.",
+  "selection_policy": "mean_r@1 descending, validation_loss ascending, earliest epoch",
+  "locked_test": "never evaluated by this experiment",
+  "known_confound": "The labels are LM-extracted FROM the reports, so label agreement is a compressed function of the text side rather than independent supervision. A gain here means the compression is a better training target than the raw text, not that outside information was added. The 12 findings are also exactly the 12 the downstream gold probe scores, so probe gains must be read with that in mind even on held-out studies.",
+  "downstream_check": "configs/downstream/gold-probe-label-similarity-v1.json"
+}

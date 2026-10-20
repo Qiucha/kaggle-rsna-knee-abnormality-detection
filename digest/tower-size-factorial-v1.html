@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image and text tower size comparison</title>
+<style>
+:root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #183047; background: #f5f7fa; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+header { background: linear-gradient(125deg, #122e4f, #236181); color: white; padding: 3rem max(1.5rem, calc((100vw - 1040px) / 2)); }
+header p { max-width: 720px; color: #d6e9f0; line-height: 1.6; }
+main { max-width: 1100px; margin: -1.3rem auto 3rem; padding: 2.2rem; border-radius: 16px; background: white; box-shadow: 0 12px 38px #17325014; }
+h1 { font-size: clamp(2rem, 4vw, 3rem); line-height: 1.1; margin: 0; }
+main > h1 { display: none; }
+h2 { color: #173d60; margin: 2.1rem 0 .8rem; border-bottom: 1px solid #dce6ed; padding-bottom: .5rem; }
+h3 { color: #275574; }
+p, li { line-height: 1.65; }
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.1rem 0 1.5rem; }
+th, td { padding: .78rem .9rem; border-bottom: 1px solid #dce6ed; text-align: left; white-space: nowrap; }
+th { background: #eaf2f6; color: #214661; }
+tr:nth-child(even) td { background: #f8fafc; }
+a { color: #086a9c; }
+strong { color: #163d5e; }
+code { background: #eaf2f6; border-radius: 4px; padding: .1em .28em; }
+img { max-width: 100%; height: auto; }
+blockquote { border-left: 4px solid #3a91af; margin: 1.2rem 0; padding: .1rem 1rem; background: #f0f8fa; }
+@media (max-width: 620px) { main { margin: 0; padding: 1.2rem; border-radius: 0; } header { padding: 2rem 1.2rem; } }
+</style>
+</head>
+<body>
+<header><h1>Image and text tower size</h1><p>Four pinned model combinations, the original 56-case gold-only probe, and the 58-case LM-head follow-up.</p></header>
+<main><h1 id="image-and-text-tower-size-comparison">Image and text tower size comparison</h1>
+<h2 id="question">Question</h2>
+<p>Does moving from the selected DINOv2-small + multilingual-e5-base pair to closer-sized towers improve gold-label readout? Does the larger text tower specifically cause overfitting when paired with the smaller image tower?</p>
+<p>The completed two-tower swap cannot isolate either tower. This note was created to record that result and the two missing single-tower arms before either new run began.</p>
+<p>The original contrastive and gold-only probe results below use 56 gold cases. A later LM-supervised-head follow-up uses all 58 and is recorded at the end of this page; its AUROC is a separate evaluation protocol.</p>
+<h2 id="frozen-comparison">Frozen comparison</h2>
+<table>
+<thead>
+<tr>
+<th>Image tower</th>
+<th>Text tower</th>
+<th>Role</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DINOv2-small</td>
+<td>multilingual-e5-base</td>
+<td>Selected reference</td>
+<td>Complete</td>
+</tr>
+<tr>
+<td>DINOv2-base</td>
+<td>multilingual-e5-small</td>
+<td>Two-tower swap</td>
+<td>Complete</td>
+</tr>
+<tr>
+<td>DINOv2-small</td>
+<td>multilingual-e5-small</td>
+<td>Text-only swap</td>
+<td>Complete</td>
+</tr>
+<tr>
+<td>DINOv2-base</td>
+<td>multilingual-e5-base</td>
+<td>Image-only swap</td>
+<td>Complete</td>
+</tr>
+</tbody>
+</table>
+<p>Every arm uses the same gold-excluded cohort (3,478 training and 433 validation image–report pairs), report view, preprocessing, E5 mean pooling and <code>query:</code> prefix, 512-token limit, seed 2026, 20 epochs, batch size 32, six LoRA blocks in each tower, rank 64, alpha 128, learning rates, and validation Recall@1 checkpoint rule. The two new arms use the pinned model revisions already used by the completed arms. The primary downstream readout is the existing 56-study, 12-label, eight-fold out-of-fold logistic probe using uniform mean CLS+patch image features. The two locked gold test studies remain unused. Each arm also reports loss curves, retrieval recall, and the learned plane-attention and projection readouts as secondary checks.</p>
+<p>The single-tower contrasts are: text-only swap versus the selected reference; image-only swap versus the selected reference. The 2×2 grid also allows the interaction to be examined, but one seed and 56 repeatedly examined gold studies limit causal and statistical generality. Backbone width changes the image feature dimension (768 versus 1,536), so the fixed logistic probe is a matched protocol, not an equal-dimensional classifier.</p>
+<p>Pinned backbone parameter counts are approximately 22.1M (DINOv2-small), 86.6M (DINOv2-base), 117.7M (E5-small), and 278.0M (E5-base), excluding projection heads and LoRA adapters. The text-to-image count ratios are about 12.6:1 (small/base), 5.3:1 (small/small), 3.2:1 (base/base), and 1.36:1 (base/small). “Matched” here means closer in backbone parameter count, not equal capacity or architecture. Changing backbone width also changes the number of trainable LoRA and projection parameters under the same rank and projection settings; the experiment compares these concrete model choices, not parameter count in isolation.</p>
+<h2 id="recorded-result-before-the-new-runs">Recorded result before the new runs</h2>
+<p>The completed DINOv2-base + E5-small run finished all 20 epochs and selected epoch 18. Validation mean Recall@1 rose from <strong>13.34%</strong> for the reference (epoch 17) to <strong>14.67%</strong>. On the same 56 gold studies, macro AUROC fell from <strong>0.75936</strong> to <strong>0.69687</strong>: difference <strong>−0.06249</strong>, paired 95% study-bootstrap interval <strong>[−0.10563, −0.01909]</strong>. The reference's validation loss bottomed at 3.4458 in epoch 6 and finished at 4.0539; the two-tower swap bottomed at 3.4157 in epoch 8 and finished at 4.0974. Both training losses fell to roughly 0.1. Closer parameter counts did not improve the gold readout in this two-tower comparison, while retrieval improved. That result alone does not identify which tower caused the change or prove text-specific overfitting.</p>
+<p>Sources: <a href="size-matched-holdout-v1.html">HTML digest</a>, <a href="size-matched-holdout-v1.json">numeric comparison</a>, <a href="../configs/contrastive/size-matched-holdout-v1.json">training matrix</a>, and <a href="size-matched-holdout-probe.json">gold probe</a>.</p>
+<h2 id="four-arm-result">Four-arm result</h2>
+<p>Both new runs completed all 20 epochs at the frozen batch size of 32, without activation checkpointing or another memory accommodation. The listed checkpoint in each arm was selected by validation mean bidirectional Recall@1, before the gold-label probe. Gold AUROC and AUPRC use the same 56 excluded studies, 12 labels, eight folds, and uniform mean CLS+patch image features in every arm. Recall is measured on the separate 433-pair contrastive validation split.</p>
+<table>
+<thead>
+<tr>
+<th>Image / text</th>
+<th style="text-align: right;">Text:image backbone size</th>
+<th style="text-align: right;">Selected epoch</th>
+<th style="text-align: right;">Validation mean R@1</th>
+<th style="text-align: right;">Validation loss minimum → final</th>
+<th style="text-align: right;">Gold macro AUROC</th>
+<th style="text-align: right;">Gold macro AUPRC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DINOv2-small / E5-base (reference)</strong></td>
+<td style="text-align: right;">12.6:1</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">13.34%</td>
+<td style="text-align: right;">3.446 (epoch 6) → 4.054</td>
+<td style="text-align: right;"><strong>0.7594</strong></td>
+<td style="text-align: right;"><strong>0.6342</strong></td>
+</tr>
+<tr>
+<td>DINOv2-small / E5-small (text only)</td>
+<td style="text-align: right;">5.3:1</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;"><strong>15.47%</strong></td>
+<td style="text-align: right;">3.441 (epoch 6) → 4.119</td>
+<td style="text-align: right;">0.7382</td>
+<td style="text-align: right;">0.5928</td>
+</tr>
+<tr>
+<td>DINOv2-base / E5-base (image only)</td>
+<td style="text-align: right;">3.2:1</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">14.26%</td>
+<td style="text-align: right;">3.434 (epoch 5) → 4.295</td>
+<td style="text-align: right;">0.6999</td>
+<td style="text-align: right;">0.5697</td>
+</tr>
+<tr>
+<td>DINOv2-base / E5-small (both towers)</td>
+<td style="text-align: right;">1.36:1</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">14.67%</td>
+<td style="text-align: right;">3.416 (epoch 8) → 4.097</td>
+<td style="text-align: right;">0.6969</td>
+<td style="text-align: right;">0.5708</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Training loss, validation loss, and validation mean Recall@1 over all 20 epochs for the four tower pairs" src="tower-size-factorial-curves.svg" /></p>
+<p>Each arm's training loss continued to fall (final range 0.119–0.135), while validation loss reached its minimum in epochs 5–8 and ended higher. That is evidence of overfitting to the contrastive training pairs across <strong>all</strong> four combinations. The image-only arm had the largest loss rebound, 3.434 → 4.295. Retrieval recall could still rise after validation loss began increasing, so the two metrics describe different behavior.</p>
+<h2 id="paired-gold-label-contrasts">Paired gold-label contrasts</h2>
+<p>Positive differences favor the model named first. Intervals are 95% paired study-bootstrap intervals from 5,000 resamples of the fixed out-of-fold predictions. They are descriptive for these studies; they do not account for repeated model exploration or unknown patient overlap.</p>
+<table>
+<thead>
+<tr>
+<th>Comparison</th>
+<th style="text-align: right;">Macro AUROC difference</th>
+<th style="text-align: right;">Paired 95% interval</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E5-small minus E5-base, DINOv2-small fixed</td>
+<td style="text-align: right;">−0.0212</td>
+<td style="text-align: right;">[−0.0480, +0.0073]</td>
+</tr>
+<tr>
+<td>DINOv2-base minus DINOv2-small, E5-base fixed</td>
+<td style="text-align: right;"><strong>−0.0595</strong></td>
+<td style="text-align: right;"><strong>[−0.1017, −0.0167]</strong></td>
+</tr>
+<tr>
+<td>E5-small minus E5-base, DINOv2-base fixed</td>
+<td style="text-align: right;">−0.0030</td>
+<td style="text-align: right;">[−0.0283, +0.0228]</td>
+</tr>
+<tr>
+<td>DINOv2-base minus DINOv2-small, E5-small fixed</td>
+<td style="text-align: right;">−0.0413</td>
+<td style="text-align: right;">[−0.0869, +0.0033]</td>
+</tr>
+<tr>
+<td>Both-tower swap minus reference</td>
+<td style="text-align: right;">−0.0625</td>
+<td style="text-align: right;">[−0.1056, −0.0191]</td>
+</tr>
+</tbody>
+</table>
+<p>The text-size effect differs by +0.0182 AUROC between the two image backbones (95% interval [−0.0207, +0.0548]); the interval spans zero. This grid does not establish a reliable image-by-text size interaction.</p>
+<p>The secondary readouts give the same broad ranking. Macro AUROC from learned plane attention / the 256-dimensional contrastive projection is 0.7510 / 0.7062 for the reference, 0.7370 / 0.7017 for text only, 0.7057 / 0.6936 for image only, and 0.7019 / 0.6975 for both towers. These were checked after the uniform-mean primary readout and did not select checkpoints or alter the primary conclusion.</p>
+<p>Per-label AUROC from the primary uniform-mean probe is shown below. Individual labels have substantially more uncertainty than the macro average, especially MCL with eight positives.</p>
+<table>
+<thead>
+<tr>
+<th>Gold label</th>
+<th style="text-align: right;">Small / base</th>
+<th style="text-align: right;">Small / small</th>
+<th style="text-align: right;">Base / base</th>
+<th style="text-align: right;">Base / small</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ACL</td>
+<td style="text-align: right;">0.740</td>
+<td style="text-align: right;">0.718</td>
+<td style="text-align: right;">0.694</td>
+<td style="text-align: right;">0.630</td>
+</tr>
+<tr>
+<td>MCL</td>
+<td style="text-align: right;">0.701</td>
+<td style="text-align: right;">0.734</td>
+<td style="text-align: right;">0.417</td>
+<td style="text-align: right;">0.453</td>
+</tr>
+<tr>
+<td>Medial Meniscus</td>
+<td style="text-align: right;">0.737</td>
+<td style="text-align: right;">0.641</td>
+<td style="text-align: right;">0.694</td>
+<td style="text-align: right;">0.715</td>
+</tr>
+<tr>
+<td>Lateral Meniscus</td>
+<td style="text-align: right;">0.686</td>
+<td style="text-align: right;">0.671</td>
+<td style="text-align: right;">0.674</td>
+<td style="text-align: right;">0.647</td>
+</tr>
+<tr>
+<td>Medial OA</td>
+<td style="text-align: right;">0.942</td>
+<td style="text-align: right;">0.973</td>
+<td style="text-align: right;">0.925</td>
+<td style="text-align: right;">0.867</td>
+</tr>
+<tr>
+<td>Lateral OA</td>
+<td style="text-align: right;">0.828</td>
+<td style="text-align: right;">0.731</td>
+<td style="text-align: right;">0.778</td>
+<td style="text-align: right;">0.828</td>
+</tr>
+<tr>
+<td>PF OA</td>
+<td style="text-align: right;">0.664</td>
+<td style="text-align: right;">0.646</td>
+<td style="text-align: right;">0.553</td>
+<td style="text-align: right;">0.588</td>
+</tr>
+<tr>
+<td>Effusion</td>
+<td style="text-align: right;">0.905</td>
+<td style="text-align: right;">0.892</td>
+<td style="text-align: right;">0.856</td>
+<td style="text-align: right;">0.830</td>
+</tr>
+<tr>
+<td>Synovitis</td>
+<td style="text-align: right;">0.595</td>
+<td style="text-align: right;">0.588</td>
+<td style="text-align: right;">0.631</td>
+<td style="text-align: right;">0.638</td>
+</tr>
+<tr>
+<td>Baker's</td>
+<td style="text-align: right;">0.771</td>
+<td style="text-align: right;">0.773</td>
+<td style="text-align: right;">0.784</td>
+<td style="text-align: right;">0.799</td>
+</tr>
+<tr>
+<td>Contusion</td>
+<td style="text-align: right;">0.872</td>
+<td style="text-align: right;">0.825</td>
+<td style="text-align: right;">0.752</td>
+<td style="text-align: right;">0.805</td>
+</tr>
+<tr>
+<td>Fracture</td>
+<td style="text-align: right;">0.671</td>
+<td style="text-align: right;">0.665</td>
+<td style="text-align: right;">0.641</td>
+<td style="text-align: right;">0.561</td>
+</tr>
+</tbody>
+</table>
+<h2 id="answers">Answers</h2>
+<p><strong>Is matching tower parameter counts necessary here? No.</strong> The most size-imbalanced pair, DINOv2-small + E5-base (12.6:1 text:image backbone parameters), has the highest observed gold macro AUROC, 0.7594. Making both towers closer in size improved validation retrieval from 13.34% to 14.67% mean R@1 but lowered gold AUROC to 0.6969. Changing only the image tower accounts for most of that gold drop (−0.0595), while shrinking only the text tower gives a smaller, uncertain difference (−0.0212). The text-only small/small pair achieved the best retrieval, 15.47%, so the preferred model depends on whether retrieval or pathology-label readout is the objective. Under the stated gold-label objective, keep the selected small-image/base-text pair.</p>
+<p><strong>Is the larger text tower overfitting the smaller image tower? The data do not support that specific claim.</strong> With DINOv2-small fixed, E5-base has higher observed gold AUROC than E5-small (0.7594 versus 0.7382), although the paired interval for the difference includes zero. Its validation-loss rebound is slightly smaller (3.446 → 4.054 versus 3.441 → 4.119). All four pairs show train–validation divergence, but the larger text tower does not uniquely worsen it when the image tower is small. The largest rebound occurs with DINOv2-base + E5-base. The joint loss curves cannot assign an overfitting mechanism to one tower, and the single seed plus 56 repeatedly examined gold studies limit stronger claims.</p>
+<h2 id="reproduction-and-limits">Reproduction and limits</h2>
+<p><a href="../configs/contrastive/tower-size-factorial-v1.json">Training matrix</a>, <a href="../configs/downstream/gold-probe-tower-size-text-small-v1.json">text-only probe protocol</a>, <a href="../configs/downstream/gold-probe-tower-size-image-base-v1.json">image-only probe protocol</a>, <a href="tower-size-factorial-v1.json">machine-readable four-arm result</a>, <a href="tower-size-text-small-probe.json">text-only full probe</a>, and <a href="tower-size-image-base-probe.json">image-only full probe</a> preserve the settings and per-label scores. The <a href="tower-size-factorial-v1.html">HTML digest</a> presents this record as a page.</p>
+<p>The probe uses just 56 gold studies, with only eight MCL positives. The study bootstrap does not resolve patient identity, repeated gold-set examination, seed sensitivity, or architecture and pretraining differences between the four pinned backbones. DINOv2-small and DINOv2-base also yield different feature widths (768 versus 1,536), even with the same logistic probe protocol. The two gold test studies were never used for training, checkpoint selection, or this original 56-case analysis. They were subsequently scored in the 58-case LM-head follow-up below. No new independent patient test was run.</p>
+<h2 id="follow-up-lm-supervised-heads-on-all-58-gold-cases">Follow-up: LM-supervised heads on all 58 gold cases</h2>
+<p>Each of these four frozen, gold-holdout image encoders was reused to train the same three-seed, 12-label MLP head on <code>data/lm_label/lm_labels_kaggle.csv</code>. All 58 gold studies were excluded from head training and validation; 3,438 LM-labeled studies trained the heads and 426 selected their epochs. The two former gold test cases were included in scoring, so they are no longer an untouched future test. This is a different supervised readout from the 56-case gold-only logistic probe above, and the two AUROC columns should not be compared as a paired change.</p>
+<table>
+<thead>
+<tr>
+<th>Image / text</th>
+<th style="text-align: right;">58-case LM-head macro AUROC</th>
+<th>Selected LM-head epochs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DINOv2-small / E5-base</strong></td>
+<td style="text-align: right;"><strong>0.7659</strong></td>
+<td>3, 2, 2</td>
+</tr>
+<tr>
+<td>DINOv2-small / E5-small</td>
+<td style="text-align: right;">0.7541</td>
+<td>2, 2, 2</td>
+</tr>
+<tr>
+<td>DINOv2-base / E5-base</td>
+<td style="text-align: right;">0.7504</td>
+<td>2, 2, 2</td>
+</tr>
+<tr>
+<td>DINOv2-base / E5-small</td>
+<td style="text-align: right;">0.7605</td>
+<td>1, 2, 2</td>
+</tr>
+</tbody>
+</table>
+<p>The size-mismatched pairs have the higher point estimate within each image size. E5-base minus E5-small with DINOv2-small fixed is <strong>+0.0119</strong> macro AUROC, paired 95% interval <strong>[−0.0079, +0.0324]</strong>. All four one-tower paired intervals include zero. The follow-up therefore does not establish a reliable population advantage for either tower size, but it provides no evidence that E5-base uniquely overfits DINOv2-small or that tower sizes must match. The LM heads themselves show rising validation loss after their early selected epochs.</p>
+<p>The matched LM-supervised <strong>linear controls</strong> scored 0.7336, 0.7312, 0.7330, and 0.7362 respectively in the table order above. Their late validation-loss rise was much smaller than the MLPs', but their selected gold AUROC was lower in every pairing. The <a href="lm-head-tower-size-58-v1.md#linear-control-less-late-overfitting-lower-gold-auroc">full follow-up</a> includes the per-arm MLP-minus-linear intervals and both sets of loss curves.</p>
+<p>See the <a href="lm-head-tower-size-58-v1.md">58-case Markdown report</a>, <a href="lm-head-tower-size-58-v1.html">HTML digest with head-loss curves</a>, and <a href="lm-head-tower-size-58-v1.json">machine-readable paired comparisons</a>.</p></main>
+</body>
+</html>

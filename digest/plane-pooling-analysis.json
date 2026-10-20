@@ -1,0 +1,2432 @@
+{
+  "comparisons_against_uniform_mean_same_checkpoint": {
+    "image-block-seed2026/attention_no_embeddings_768": {
+      "fraction_of_replicates_favouring_right": 0.103,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.048114431632182986,
+        0.009940821312974971
+      ],
+      "macro_auroc_difference_mean": -0.01863722382412825,
+      "macro_auroc_this_arm": 0.6501143611396115,
+      "macro_auroc_uniform_mean": 0.6686916651512368,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2026/attention_pooled_768": {
+      "fraction_of_replicates_favouring_right": 0.1024,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.04786516858590085,
+        0.009860238615579478
+      ],
+      "macro_auroc_difference_mean": -0.018455075112860063,
+      "macro_auroc_this_arm": 0.6502973000914752,
+      "macro_auroc_uniform_mean": 0.6686916651512368,
+      "per_label_auroc_difference": {
+        "ACL": {
+          "ci95": [
+            -0.08250355618776672,
+            0.08036890645586292
+          ],
+          "difference": 0.0013175230566534468
+        },
+        "Baker's": {
+          "ci95": [
+            -0.10204661410018552,
+            0.06956928423543329
+          ],
+          "difference": -0.015151515151515138
+        },
+        "Contusion": {
+          "ci95": [
+            -0.13798110404812702,
+            0.053676932746700066
+          ],
+          "difference": -0.0369843527738265
+        },
+        "Effusion": {
+          "ci95": [
+            -0.10473548482169175,
+            0.027099626947553173
+          ],
+          "difference": -0.03952569169960474
+        },
+        "Fracture": {
+          "ci95": [
+            -0.09293244949494943,
+            0.04626365697794258
+          ],
+          "difference": -0.019607843137254943
+        },
+        "Lateral Meniscus": {
+          "ci95": [
+            -0.19271717100301658,
+            -0.01470373237014102
+          ],
+          "difference": -0.10427807486631008
+        },
+        "Lateral OA": {
+          "ci95": [
+            -0.07766058188265633,
+            0.18913978324248937
+          ],
+          "difference": 0.054545454545454564
+        },
+        "MCL": {
+          "ci95": [
+            -0.3098137254901961,
+            0.009269109535067052
+          ],
+          "difference": -0.14583333333333326
+        },
+        "Medial Meniscus": {
+          "ci95": [
+            -0.06819005270092231,
+            0.08940454015416528
+          ],
+          "difference": 0.011538461538461608
+        },
+        "Medial OA": {
+          "ci95": [
+            -0.05910165484633567,
+            0.08618082299244043
+          ],
+          "difference": 0.008503401360544283
+        },
+        "PF OA": {
+          "ci95": [
+            0.0226244343891403,
+            0.17381385082442047
+          ],
+          "difference": 0.09166666666666667
+        },
+        "Synovitis": {
+          "ci95": [
+            -0.11230168486760779,
+            0.06258583849101082
+          ],
+          "difference": -0.02692307692307694
+        }
+      },
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2026/concat_planes_2304": {
+      "fraction_of_replicates_favouring_right": 0.5274,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.025879210106131596,
+        0.028303510434223855
+      ],
+      "macro_auroc_difference_mean": 0.0010356921978110691,
+      "macro_auroc_this_arm": 0.6696619670005671,
+      "macro_auroc_uniform_mean": 0.6686916651512368,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2026/plane_axial_768": {
+      "fraction_of_replicates_favouring_right": 0.0514,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.10116182853547315,
+        0.009922664045176879
+      ],
+      "macro_auroc_difference_mean": -0.04609884957308693,
+      "macro_auroc_this_arm": 0.6226000130486109,
+      "macro_auroc_uniform_mean": 0.6686916651512368,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2026/plane_coronal_768": {
+      "fraction_of_replicates_favouring_right": 0.0266,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.08787582779113587,
+        0.0006935827158546764
+      ],
+      "macro_auroc_difference_mean": -0.043895380594252166,
+      "macro_auroc_this_arm": 0.6248267082558793,
+      "macro_auroc_uniform_mean": 0.6686916651512368,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2026/plane_sagittal_768": {
+      "fraction_of_replicates_favouring_right": 0.0182,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.10103447103720566,
+        -0.004462711999652841
+      ],
+      "macro_auroc_difference_mean": -0.05302437752527453,
+      "macro_auroc_this_arm": 0.6155003019709593,
+      "macro_auroc_uniform_mean": 0.6686916651512368,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2027/attention_no_embeddings_768": {
+      "fraction_of_replicates_favouring_right": 0.058,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.050118780457706014,
+        0.005255925352607166
+      ],
+      "macro_auroc_difference_mean": -0.022264067200913614,
+      "macro_auroc_this_arm": 0.6481879524775113,
+      "macro_auroc_uniform_mean": 0.6706172967590954,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2027/attention_pooled_768": {
+      "fraction_of_replicates_favouring_right": 0.0626,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.049025574401470214,
+        0.005679437469803492
+      ],
+      "macro_auroc_difference_mean": -0.021389472824899242,
+      "macro_auroc_this_arm": 0.6490880089300869,
+      "macro_auroc_uniform_mean": 0.6706172967590954,
+      "per_label_auroc_difference": {
+        "ACL": {
+          "ci95": [
+            -0.10408638010540187,
+            0.08435374149659863
+          ],
+          "difference": -0.010540184453227908
+        },
+        "Baker's": {
+          "ci95": [
+            -0.08780487804878045,
+            0.0390625
+          ],
+          "difference": -0.024621212121212044
+        },
+        "Contusion": {
+          "ci95": [
+            -0.12357808265582652,
+            0.029882753566964
+          ],
+          "difference": -0.042674253200568946
+        },
+        "Effusion": {
+          "ci95": [
+            -0.11664355144618295,
+            0.006806264172335556
+          ],
+          "difference": -0.05401844532279321
+        },
+        "Fracture": {
+          "ci95": [
+            -0.09530599884423904,
+            0.029873875726054988
+          ],
+          "difference": -0.0301659125188537
+        },
+        "Lateral Meniscus": {
+          "ci95": [
+            -0.1652799479166667,
+            -0.016665070242656524
+          ],
+          "difference": -0.09090909090909094
+        },
+        "Lateral OA": {
+          "ci95": [
+            -0.1018545751633987,
+            0.14846393623737336
+          ],
+          "difference": 0.026262626262626432
+        },
+        "MCL": {
+          "ci95": [
+            -0.20875649638737484,
+            0.08854166666666663
+          ],
+          "difference": -0.04166666666666663
+        },
+        "Medial Meniscus": {
+          "ci95": [
+            -0.09617918313570484,
+            0.05882352941176461
+          ],
+          "difference": -0.01666666666666672
+        },
+        "Medial OA": {
+          "ci95": [
+            -0.06956521739130439,
+            0.108843537414966
+          ],
+          "difference": 0.011904761904761862
+        },
+        "PF OA": {
+          "ci95": [
+            0.0130205157520325,
+            0.15934977178719156
+          ],
+          "difference": 0.07499999999999996
+        },
+        "Synovitis": {
+          "ci95": [
+            -0.14048531289910599,
+            0.020436192160330106
+          ],
+          "difference": -0.06025641025641032
+        }
+      },
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2027/concat_planes_2304": {
+      "fraction_of_replicates_favouring_right": 0.4852,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.028961027976018,
+        0.026237598721194813
+      ],
+      "macro_auroc_difference_mean": -0.0006858724739081008,
+      "macro_auroc_this_arm": 0.6698519169643883,
+      "macro_auroc_uniform_mean": 0.6706172967590954,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2027/plane_axial_768": {
+      "fraction_of_replicates_favouring_right": 0.0366,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.10282691403442448,
+        0.004073233766657903
+      ],
+      "macro_auroc_difference_mean": -0.04921494000250407,
+      "macro_auroc_this_arm": 0.6213981209479816,
+      "macro_auroc_uniform_mean": 0.6706172967590954,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2027/plane_coronal_768": {
+      "fraction_of_replicates_favouring_right": 0.0192,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.09024384194310657,
+        -0.0025586877139124344
+      ],
+      "macro_auroc_difference_mean": -0.04680268443793631,
+      "macro_auroc_this_arm": 0.6238738763123924,
+      "macro_auroc_uniform_mean": 0.6706172967590954,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2027/plane_sagittal_768": {
+      "fraction_of_replicates_favouring_right": 0.0204,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.0989614065285575,
+        -0.0022456520598204723
+      ],
+      "macro_auroc_difference_mean": -0.05086416441365998,
+      "macro_auroc_this_arm": 0.6196676620450775,
+      "macro_auroc_uniform_mean": 0.6706172967590954,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2028/attention_no_embeddings_768": {
+      "fraction_of_replicates_favouring_right": 0.05,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.04562930418174985,
+        0.0046766333351048565
+      ],
+      "macro_auroc_difference_mean": -0.021459893562376615,
+      "macro_auroc_this_arm": 0.6493840998192911,
+      "macro_auroc_uniform_mean": 0.6709356394262644,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2028/attention_pooled_768": {
+      "fraction_of_replicates_favouring_right": 0.0542,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.04426487242574601,
+        0.005473889918270278
+      ],
+      "macro_auroc_difference_mean": -0.020504153317514505,
+      "macro_auroc_this_arm": 0.6503531772749415,
+      "macro_auroc_uniform_mean": 0.6709356394262644,
+      "per_label_auroc_difference": {
+        "ACL": {
+          "ci95": [
+            -0.09834650383141769,
+            0.09224598930481276
+          ],
+          "difference": -0.0013175230566534468
+        },
+        "Baker's": {
+          "ci95": [
+            -0.11111111111111116,
+            0.050099835564951685
+          ],
+          "difference": -0.030303030303030276
+        },
+        "Contusion": {
+          "ci95": [
+            -0.11806543385490753,
+            0.032521119156504116
+          ],
+          "difference": -0.0369843527738265
+        },
+        "Effusion": {
+          "ci95": [
+            -0.125,
+            0.016042780748663055
+          ],
+          "difference": -0.05138339920948609
+        },
+        "Fracture": {
+          "ci95": [
+            -0.09843868371212122,
+            0.02683363148479423
+          ],
+          "difference": -0.03167420814479638
+        },
+        "Lateral Meniscus": {
+          "ci95": [
+            -0.15416666666666667,
+            -0.0013599530721379346
+          ],
+          "difference": -0.07754010695187163
+        },
+        "Lateral OA": {
+          "ci95": [
+            -0.09666666666666668,
+            0.13695652173913042
+          ],
+          "difference": 0.02020202020202022
+        },
+        "MCL": {
+          "ci95": [
+            -0.18658892128279891,
+            0.06510416666666674
+          ],
+          "difference": -0.05729166666666674
+        },
+        "Medial Meniscus": {
+          "ci95": [
+            -0.10473548482169175,
+            0.06257982120051087
+          ],
+          "difference": -0.019230769230769162
+        },
+        "Medial OA": {
+          "ci95": [
+            -0.07198863636363641,
+            0.09659116319726782
+          ],
+          "difference": 0.006802721088435382
+        },
+        "PF OA": {
+          "ci95": [
+            0.0014601608187134914,
+            0.17212205626679306
+          ],
+          "difference": 0.07916666666666661
+        },
+        "Synovitis": {
+          "ci95": [
+            -0.1282051282051282,
+            0.036469141139657324
+          ],
+          "difference": -0.04743589743589749
+        }
+      },
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2028/concat_planes_2304": {
+      "fraction_of_replicates_favouring_right": 0.3964,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.030207177437390795,
+        0.023851190889789833
+      ],
+      "macro_auroc_difference_mean": -0.0034895951109267316,
+      "macro_auroc_this_arm": 0.6673032241493436,
+      "macro_auroc_uniform_mean": 0.6709356394262644,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2028/plane_axial_768": {
+      "fraction_of_replicates_favouring_right": 0.0298,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.10647143021686963,
+        0.0024376292420046335
+      ],
+      "macro_auroc_difference_mean": -0.052435476133625855,
+      "macro_auroc_this_arm": 0.6185161345653213,
+      "macro_auroc_uniform_mean": 0.6709356394262644,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2028/plane_coronal_768": {
+      "fraction_of_replicates_favouring_right": 0.018,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.09068689837302067,
+        -0.003153874822246429
+      ],
+      "macro_auroc_difference_mean": -0.047008505063376456,
+      "macro_auroc_this_arm": 0.6239373184274575,
+      "macro_auroc_uniform_mean": 0.6709356394262644,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    },
+    "image-block-seed2028/plane_sagittal_768": {
+      "fraction_of_replicates_favouring_right": 0.0186,
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "macro_auroc_difference_ci95": [
+        -0.09912826333147395,
+        -0.0036686210504665267
+      ],
+      "macro_auroc_difference_mean": -0.051981457858881336,
+      "macro_auroc_this_arm": 0.6187165650170638,
+      "macro_auroc_uniform_mean": 0.6709356394262644,
+      "resamples": 5000,
+      "single_class_label_replicates_dropped": 1,
+      "unit": "study"
+    }
+  },
+  "config": {
+    "bootstrap": {
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+      "resamples": 5000,
+      "seed": 2029,
+      "unit": "study"
+    },
+    "checkpoints": [
+      "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2026/best.pt",
+      "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2027/best.pt",
+      "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2028/best.pt"
+    ],
+    "cohort_manifest": "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
+    "comparison": "Every feature set is paired against uniform_mean_768 OF THE SAME CHECKPOINT, on the same studies and folds. The primary question is a within-checkpoint pooling difference, so the before-CL arm is not the comparator here.",
+    "derived_from": {
+      "config": "configs/downstream/gold-probe-v1.json",
+      "config_sha256_at_derivation": "1c4267387340a2cade7c4ade1de38ca398a4e41e998017221c81913031b6c576",
+      "policy": "The probe and bootstrap blocks below are copied by value from that config, unchanged, so every number here sits on the same folds, seeds and resamples and is directly comparable to its table. That config is frozen and is NOT edited to add these arms."
+    },
+    "estimand": "Readout quality of a frozen representation on a cohort it was trained on. Explicitly NOT generalisation: 56 of 58 gold cases were exposed to contrastive training or checkpoint selection.",
+    "feature_sets": {
+      "attention_no_embeddings_768": "sum_p w_p f_p -- the same learned weights without the additive plane-embedding term, isolating re-weighting from the nuisance vector the embeddings contribute",
+      "attention_pooled_768": "sum_p w_p (f_p + e_p) -- exactly what ImageTower.forward feeds the projection head",
+      "concat_planes_2304": "all three planes concatenated; an upper bound on plane INFORMATION, not on achievable probe score -- 2304 features over 56 cases at fixed C may score below uniform mean purely from dimensionality",
+      "plane_axial_768": "one plane alone",
+      "plane_coronal_768": "one plane alone",
+      "plane_sagittal_768": "one plane alone, to measure where each label's signal actually lives",
+      "uniform_mean_768": "mean over the three plane vectors; the reference arm every comparison here is paired against"
+    },
+    "gold_labels_csv": "data/cleaned.csv",
+    "labels": [
+      "ACL",
+      "MCL",
+      "Medial Meniscus",
+      "Lateral Meniscus",
+      "Medial OA",
+      "Lateral OA",
+      "PF OA",
+      "Effusion",
+      "Synovitis",
+      "Baker's",
+      "Contusion",
+      "Fracture"
+    ],
+    "manifest_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+    "metrics": {
+      "environment_note": "sklearn 1.8 deprecates the explicit penalty=l2 argument pinned above and removes it in 1.10. The fitted model is unchanged, since l2 is the default; a rerun on 1.10 must translate it to l1_ratio=0 rather than silently dropping it.",
+      "primary": "pooled out-of-fold AUROC per label, macro-averaged over the 12 labels",
+      "rare_labels": "MCL has 8 positives over 56 cases: pooled-OOF only, fold-level AUROC declared uninformative in advance",
+      "secondary": "pooled out-of-fold average precision (AUPRC)",
+      "tie_policy": "midrank. Every reported point estimate comes from sklearn.metrics.roc_auc_score. The bootstrap replicates use an equivalent rank-sum implementation (scipy.stats.rankdata) for speed, and the script asserts the two agree to 1e-9 on every label's real scores before building any interval. Section 6 of the EDA notebook's argsort AUROC is reported alongside the LM reference for comparison only, never used as a result."
+    },
+    "population": "gold studies whose cohort split is train or validation; locked-test gold studies are counted only",
+    "probe": {
+      "C": 1.0,
+      "class_weight": null,
+      "estimator": "sklearn.linear_model.LogisticRegression",
+      "fold": "StratifiedKFold(shuffle=True), stratification computed inside the per-label fold loop",
+      "fold_seed": 2026,
+      "folds": 8,
+      "max_iter": 5000,
+      "penalty": "l2",
+      "predictions": "exactly one held-out decision_function score per study per label",
+      "solver": "lbfgs",
+      "standardize": "StandardScaler fitted inside each training fold",
+      "tuning": "none; every hyperparameter is fixed here before the first fit"
+    },
+    "probe_version": "gold-probe-planes-v1",
+    "purpose": "Why does the contrastive model's learned plane pooling read pathology labels worse than a trivial average of the same three planes?",
+    "schema_version": 1,
+    "scope": "Read-only over existing checkpoints and the cached image tensors. No training, no locked-test study loaded.",
+    "unadapted_backbone": {
+      "image_model": "facebook/dinov2-small",
+      "image_model_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056"
+    }
+  },
+  "config_sha256": "448b5d9a9e4c0ab9db33101843c6e6d2602854917dfb26440093a527ac0d92dd",
+  "plane_attention_weights": {
+    "image-block-seed2026": {
+      "argmax_plane_counts": [
+        6,
+        2,
+        48
+      ],
+      "max_weight": [
+        0.44593048095703125,
+        0.47950279712677,
+        0.7568192481994629
+      ],
+      "mean_entropy": 0.9977945685386658,
+      "mean_largest_weight": 0.519934356212616,
+      "mean_weight": [
+        0.2556114196777344,
+        0.23613758385181427,
+        0.5082509517669678
+      ],
+      "min_weight": [
+        0.1317538321018219,
+        0.1076875627040863,
+        0.2408861666917801
+      ],
+      "plane_order": [
+        "Sagittal",
+        "Coronal",
+        "Axial"
+      ],
+      "sd_weight_across_studies": [
+        0.07671526074409485,
+        0.06982515752315521,
+        0.11939828097820282
+      ],
+      "uniform_entropy": 1.0986122886681098,
+      "uniform_weight": 0.3333333333333333
+    },
+    "image-block-seed2027": {
+      "argmax_plane_counts": [
+        7,
+        3,
+        46
+      ],
+      "max_weight": [
+        0.4730270206928253,
+        0.5077801942825317,
+        0.6706846952438354
+      ],
+      "mean_entropy": 1.0282117128372192,
+      "mean_largest_weight": 0.4854733645915985,
+      "mean_weight": [
+        0.26409125328063965,
+        0.2698450982570648,
+        0.46606355905532837
+      ],
+      "min_weight": [
+        0.152021586894989,
+        0.1564478725194931,
+        0.2469748556613922
+      ],
+      "plane_order": [
+        "Sagittal",
+        "Coronal",
+        "Axial"
+      ],
+      "sd_weight_across_studies": [
+        0.07695633172988892,
+        0.07652656733989716,
+        0.10346690565347672
+      ],
+      "uniform_entropy": 1.0986122886681098,
+      "uniform_weight": 0.3333333333333333
+    },
+    "image-block-seed2028": {
+      "argmax_plane_counts": [
+        5,
+        4,
+        47
+      ],
+      "max_weight": [
+        0.4442993104457855,
+        0.49562594294548035,
+        0.667131781578064
+      ],
+      "mean_entropy": 1.0174800157546997,
+      "mean_largest_weight": 0.4985752999782562,
+      "mean_weight": [
+        0.2555820047855377,
+        0.2605055272579193,
+        0.48391249775886536
+      ],
+      "min_weight": [
+        0.09955369681119919,
+        0.12900231778621674,
+        0.2380533516407013
+      ],
+      "plane_order": [
+        "Sagittal",
+        "Coronal",
+        "Axial"
+      ],
+      "sd_weight_across_studies": [
+        0.0743166133761406,
+        0.0773102417588234,
+        0.10198737680912018
+      ],
+      "uniform_entropy": 1.0986122886681098,
+      "uniform_weight": 0.3333333333333333
+    }
+  },
+  "population": {
+    "gold_studies": 58,
+    "manifest_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+    "population_size": 56,
+    "split_counts": {
+      "absent": 0,
+      "test": 2,
+      "train": 48,
+      "validation": 8
+    }
+  },
+  "probe_version": "gold-probe-planes-v1",
+  "provenance": {
+    "image-block-seed2026": {
+      "checkpoint": "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2026/best.pt",
+      "checkpoint_sha256": "e828102d9a6919a2e9338e6a004ed99216f00c192e846d17c4ba5e1e2140f15f",
+      "image_unfreeze_last": 1,
+      "seed": 2026
+    },
+    "image-block-seed2027": {
+      "checkpoint": "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2027/best.pt",
+      "checkpoint_sha256": "1282a2b994a72df9e67b590717d83ed429a8053b0772a853112b6e29fdf45014",
+      "image_unfreeze_last": 1,
+      "seed": 2027
+    },
+    "image-block-seed2028": {
+      "checkpoint": "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2028/best.pt",
+      "checkpoint_sha256": "1dccd9c37b3f7ad8b74fc54747933a7ea522c7b2c5ddc82d8c440a91dfa5ac91",
+      "image_unfreeze_last": 1,
+      "seed": 2028
+    }
+  },
+  "results": {
+    "image-block-seed2026/attention_no_embeddings_768": {
+      "macro_auprc": 0.5101645141462363,
+      "macro_auroc": 0.6501143611396115,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.42772324293075725,
+          "auroc": 0.5546772068511199,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.37044852110641585,
+          "auroc": 0.6742424242424243,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.7157599505847836,
+          "auroc": 0.7795163584637268,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8024918230927045,
+          "auroc": 0.7575757575757576,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.3699775314811471,
+          "auroc": 0.5052790346907994,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.464307367642218,
+          "auroc": 0.4959893048128342,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.28357665154134093,
+          "auroc": 0.6363636363636364,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.1971122071657447,
+          "auroc": 0.5989583333333334,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.7315467941719503,
+          "auroc": 0.7948717948717949,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.6603838736451518,
+          "auroc": 0.8231292517006803,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.6277735051618987,
+          "auroc": 0.6666666666666667,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.47087270123072383,
+          "auroc": 0.514102564102564,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2026/attention_pooled_768": {
+      "macro_auprc": 0.5095242158626582,
+      "macro_auroc": 0.6502973000914752,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.4239936881615049,
+          "auroc": 0.5533596837944664,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.37044852110641585,
+          "auroc": 0.6742424242424243,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.7096817264833036,
+          "auroc": 0.7795163584637268,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8017281378532127,
+          "auroc": 0.7562582345191041,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.3702076073824754,
+          "auroc": 0.5052790346907994,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.46426563050519876,
+          "auroc": 0.49598930481283426,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.28357665154134093,
+          "auroc": 0.6363636363636364,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.19797427613126195,
+          "auroc": 0.6015625,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.7315467941719503,
+          "auroc": 0.7948717948717949,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.6633127644997393,
+          "auroc": 0.826530612244898,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.6278142924169716,
+          "auroc": 0.6680555555555555,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.4697405000985227,
+          "auroc": 0.5115384615384615,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2026/concat_planes_2304": {
+      "macro_auprc": 0.5412910986988413,
+      "macro_auroc": 0.6696619670005671,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.40546652603126204,
+          "auroc": 0.5230566534914362,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.3633313078437192,
+          "auroc": 0.6988636363636364,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.693504730424235,
+          "auroc": 0.7652916073968705,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8665282892383991,
+          "auroc": 0.8142292490118577,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.3933733224641467,
+          "auroc": 0.5761689291101055,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.5293297543422295,
+          "auroc": 0.5762032085561497,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.2910330705416452,
+          "auroc": 0.6444444444444444,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.2881386459880108,
+          "auroc": 0.5989583333333334,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.8204890675420062,
+          "auroc": 0.8307692307692308,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.7598980384694671,
+          "auroc": 0.8231292517006803,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.5983813728624149,
+          "auroc": 0.6694444444444445,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.4860190586385603,
+          "auroc": 0.5153846153846153,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2026/plane_axial_768": {
+      "macro_auprc": 0.4903690090253125,
+      "macro_auroc": 0.6226000130486109,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.37515212422858446,
+          "auroc": 0.4413702239789196,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.3050940463121373,
+          "auroc": 0.481060606060606,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.5377005342180301,
+          "auroc": 0.6486486486486487,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.7345791867649043,
+          "auroc": 0.6996047430830039,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.41586278599576765,
+          "auroc": 0.5987933634992458,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.43275190657713447,
+          "auroc": 0.5093582887700535,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.36647071720385505,
+          "auroc": 0.6868686868686869,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.1526531951164304,
+          "auroc": 0.48958333333333337,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.7541362223240061,
+          "auroc": 0.8038461538461539,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.6962146863856347,
+          "auroc": 0.8554421768707482,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.6397550564398391,
+          "auroc": 0.7361111111111112,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.4740576467374259,
+          "auroc": 0.5205128205128206,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2026/plane_coronal_768": {
+      "macro_auprc": 0.5119809413255703,
+      "macro_auroc": 0.6248267082558793,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.4222707295597328,
+          "auroc": 0.5362318840579711,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.3536601238643967,
+          "auroc": 0.5795454545454545,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.7727676737585452,
+          "auroc": 0.8065433854907538,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8397368230847939,
+          "auroc": 0.7101449275362319,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.35791570726577826,
+          "auroc": 0.583710407239819,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.4215574659545188,
+          "auroc": 0.5387700534759359,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.43029547726006445,
+          "auroc": 0.6121212121212121,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.32289435591107324,
+          "auroc": 0.59375,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.621003098236393,
+          "auroc": 0.6807692307692308,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.6343969980694111,
+          "auroc": 0.7857142857142857,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.44242734402664574,
+          "auroc": 0.5347222222222222,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.5248454989154889,
+          "auroc": 0.5358974358974359,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2026/plane_sagittal_768": {
+      "macro_auprc": 0.5009630436960163,
+      "macro_auroc": 0.6155003019709593,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.47412972188045405,
+          "auroc": 0.5019762845849802,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.5847122401592215,
+          "auroc": 0.8636363636363636,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.4950035971562513,
+          "auroc": 0.6671408250355619,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8627280916198075,
+          "auroc": 0.8010540184453229,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.34444410013943116,
+          "auroc": 0.5082956259426847,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.5340514827740764,
+          "auroc": 0.5815508021390374,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.17547784081630605,
+          "auroc": 0.3474747474747475,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.1337726845259823,
+          "auroc": 0.4322916666666667,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.7453595426728687,
+          "auroc": 0.7653846153846153,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.5820368944487032,
+          "auroc": 0.7295918367346939,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.5033137973973842,
+          "auroc": 0.6055555555555556,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.5765265307617093,
+          "auroc": 0.5820512820512821,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2026/uniform_mean_768": {
+      "macro_auprc": 0.5632813837879481,
+      "macro_auroc": 0.6686916651512368,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.4151146649671813,
+          "auroc": 0.552042160737813,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.377365138160228,
+          "auroc": 0.6893939393939394,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.7820879079881851,
+          "auroc": 0.8165007112375533,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.858366016788003,
+          "auroc": 0.7957839262187089,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.38113824532509655,
+          "auroc": 0.5248868778280543,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.614467321037176,
+          "auroc": 0.6002673796791443,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.29057144578534955,
+          "auroc": 0.5818181818181818,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.40714947089947084,
+          "auroc": 0.7473958333333333,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.7402993489282668,
+          "auroc": 0.7833333333333333,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.753004589972675,
+          "auroc": 0.8180272108843537,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.5800592060134351,
+          "auroc": 0.5763888888888888,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.5597532495903108,
+          "auroc": 0.5384615384615384,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2027/attention_no_embeddings_768": {
+      "macro_auprc": 0.5202507410451643,
+      "macro_auroc": 0.6481879524775113,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.45218308413465236,
+          "auroc": 0.5559947299077734,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.35350165863323757,
+          "auroc": 0.6666666666666667,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.7011490207988953,
+          "auroc": 0.7766714082503556,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8041835034768174,
+          "auroc": 0.7536231884057971,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.3827243166724327,
+          "auroc": 0.5143288084464555,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.48178740262796355,
+          "auroc": 0.5187165775401069,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.25090081562413574,
+          "auroc": 0.5898989898989899,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.3326290762826607,
+          "auroc": 0.6953125,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.6792955723283662,
+          "auroc": 0.7564102564102564,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.7049320660583434,
+          "auroc": 0.8350340136054422,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.6203810573974171,
+          "auroc": 0.6361111111111111,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.4793413185070511,
+          "auroc": 0.47948717948717945,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2027/attention_pooled_768": {
+      "macro_auprc": 0.5207191673117101,
+      "macro_auroc": 0.6490880089300869,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.45267270418948985,
+          "auroc": 0.5573122529644269,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.35350165863323757,
+          "auroc": 0.6666666666666667,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.6906227050094216,
+          "auroc": 0.7752489331436699,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.7985254188713644,
+          "auroc": 0.7509881422924901,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.3827243166724327,
+          "auroc": 0.5143288084464555,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.48178740262796355,
+          "auroc": 0.5187165775401069,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.2517399764632966,
+          "auroc": 0.591919191919192,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.334546998624011,
+          "auroc": 0.7005208333333334,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.692116085148879,
+          "auroc": 0.7576923076923077,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.7022534946297719,
+          "auroc": 0.8333333333333333,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.6256427502084243,
+          "auroc": 0.6402777777777777,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.48249649666222927,
+          "auroc": 0.48205128205128206,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2027/concat_planes_2304": {
+      "macro_auprc": 0.5431804868961361,
+      "macro_auroc": 0.6698519169643883,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.40488447146200146,
+          "auroc": 0.5217391304347826,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.3749640578098025,
+          "auroc": 0.696969696969697,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.706278301882017,
+          "auroc": 0.7809388335704126,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8668619272237527,
+          "auroc": 0.8168642951251647,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.39553509760113514,
+          "auroc": 0.5701357466063348,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.5305907649041699,
+          "auroc": 0.5695187165775402,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.2966212731886713,
+          "auroc": 0.6525252525252525,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.28746443812233285,
+          "auroc": 0.5989583333333333,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.803019592825483,
+          "auroc": 0.8192307692307693,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.7581146059551376,
+          "auroc": 0.8299319727891157,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.6121597172547985,
+          "auroc": 0.675,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.48167159452433106,
+          "auroc": 0.5064102564102564,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2027/plane_axial_768": {
+      "macro_auprc": 0.48789006179062894,
+      "macro_auroc": 0.6213981209479816,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.3880446604106261,
+          "auroc": 0.45191040843214764,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.30417918365222285,
+          "auroc": 0.4791666666666667,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.5416586700675465,
+          "auroc": 0.6486486486486487,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.7278895723940253,
+          "auroc": 0.7048748353096179,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.42227067856124034,
+          "auroc": 0.607843137254902,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.42638926267894156,
+          "auroc": 0.5040106951871658,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.35687135750560695,
+          "auroc": 0.6808080808080809,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.15140517377359483,
+          "auroc": 0.484375,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.7500980443287093,
+          "auroc": 0.8,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.6756830412955517,
+          "auroc": 0.8435374149659864,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.6366658024051972,
+          "auroc": 0.7374999999999999,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.4735252944142843,
+          "auroc": 0.514102564102564,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2027/plane_coronal_768": {
+      "macro_auprc": 0.5098251188032065,
+      "macro_auroc": 0.6238738763123924,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.4233824646648648,
+          "auroc": 0.541501976284585,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.3505128040332726,
+          "auroc": 0.5748106060606061,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.7690480964240094,
+          "auroc": 0.8108108108108109,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8303421983023724,
+          "auroc": 0.7061923583662715,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.3526400363465717,
+          "auroc": 0.579185520361991,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.41269427249467044,
+          "auroc": 0.5374331550802138,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.4215608956946526,
+          "auroc": 0.6,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.3250524608370353,
+          "auroc": 0.5989583333333333,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.6181879643465984,
+          "auroc": 0.676923076923077,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.6429379175641634,
+          "auroc": 0.7942176870748299,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.4399683468318119,
+          "auroc": 0.5305555555555554,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.5315739680984537,
+          "auroc": 0.5358974358974358,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2027/plane_sagittal_768": {
+      "macro_auprc": 0.4998537126997744,
+      "macro_auroc": 0.6196676620450775,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.4735565398348503,
+          "auroc": 0.5006587615283267,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.6088844233345512,
+          "auroc": 0.8731060606060606,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.49497791318424644,
+          "auroc": 0.6671408250355619,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8611226598085229,
+          "auroc": 0.8050065876152833,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.3244852379153459,
+          "auroc": 0.5143288084464555,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.532042919829175,
+          "auroc": 0.5802139037433155,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.17832120312971536,
+          "auroc": 0.3616161616161616,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.1395227332727333,
+          "auroc": 0.45572916666666663,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.7358860825919659,
+          "auroc": 0.7602564102564102,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.5721563374513685,
+          "auroc": 0.727891156462585,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.5014541942465329,
+          "auroc": 0.6041666666666666,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.5758343077982857,
+          "auroc": 0.5858974358974359,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2027/uniform_mean_768": {
+      "macro_auprc": 0.5608353921340511,
+      "macro_auroc": 0.6706172967590954,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.42443534773506914,
+          "auroc": 0.5678524374176548,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.37078112859362855,
+          "auroc": 0.6912878787878788,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.7754406551284925,
+          "auroc": 0.8179231863442389,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8661286705914136,
+          "auroc": 0.8050065876152833,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.3899380536812157,
+          "auroc": 0.5444947209653092,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.6196168996356144,
+          "auroc": 0.6096256684491979,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.27283658669444105,
+          "auroc": 0.5656565656565655,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.40432338394294914,
+          "auroc": 0.7421875,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.7249929443280838,
+          "auroc": 0.7743589743589744,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.7431822250431273,
+          "auroc": 0.8214285714285714,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.5812328689620143,
+          "auroc": 0.5652777777777778,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.5571159412725633,
+          "auroc": 0.5423076923076924,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2028/attention_no_embeddings_768": {
+      "macro_auprc": 0.5143004883018141,
+      "macro_auroc": 0.6493840998192911,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.4256790706609286,
+          "auroc": 0.5480895915678524,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.35940934128893043,
+          "auroc": 0.6666666666666667,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.7378635024062501,
+          "auroc": 0.7908961593172119,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.7857158972044229,
+          "auroc": 0.7444005270092228,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.37347724048281983,
+          "auroc": 0.502262443438914,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.47519899659020154,
+          "auroc": 0.5187165775401069,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.25258611622247984,
+          "auroc": 0.6080808080808081,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.26214607030396503,
+          "auroc": 0.6875,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.6939973174896967,
+          "auroc": 0.7666666666666667,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.707842012566362,
+          "auroc": 0.826530612244898,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.6166192977900697,
+          "auroc": 0.6430555555555555,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.48107099661564245,
+          "auroc": 0.4897435897435897,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2028/attention_pooled_768": {
+      "macro_auprc": 0.5152059868181388,
+      "macro_auroc": 0.6503531772749415,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.428505120110324,
+          "auroc": 0.5533596837944664,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.36005036692995607,
+          "auroc": 0.6685606060606061,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.7374993013829604,
+          "auroc": 0.7908961593172119,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.7857158972044229,
+          "auroc": 0.7444005270092228,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.3721796626281485,
+          "auroc": 0.5007541478129713,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.4780746923230401,
+          "auroc": 0.5187165775401069,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.2546522319249592,
+          "auroc": 0.6101010101010101,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.26214607030396503,
+          "auroc": 0.6875,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.6960179932908604,
+          "auroc": 0.767948717948718,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.707842012566362,
+          "auroc": 0.826530612244898,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.6182737095547756,
+          "auroc": 0.6444444444444444,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.48151478359789096,
+          "auroc": 0.49102564102564106,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2028/concat_planes_2304": {
+      "macro_auprc": 0.5416985251970426,
+      "macro_auroc": 0.6673032241493436,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.39991862360806807,
+          "auroc": 0.5111989459815547,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.37406908912343695,
+          "auroc": 0.6931818181818182,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.694492142481112,
+          "auroc": 0.7795163584637269,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8586367971016777,
+          "auroc": 0.8063241106719368,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.39621734759134364,
+          "auroc": 0.5716440422322775,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.5320811421188214,
+          "auroc": 0.5695187165775402,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.3039336577737832,
+          "auroc": 0.6646464646464647,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.28267628530786426,
+          "auroc": 0.5833333333333334,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.814342367145886,
+          "auroc": 0.8243589743589743,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.7535268094478621,
+          "auroc": 0.8197278911564626,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.6085251492888168,
+          "auroc": 0.6777777777777778,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.48196289137583986,
+          "auroc": 0.5064102564102564,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2028/plane_axial_768": {
+      "macro_auprc": 0.4875900098771225,
+      "macro_auroc": 0.6185161345653213,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.377774323015521,
+          "auroc": 0.4413702239789196,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.27749005482703615,
+          "auroc": 0.4602272727272727,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.5626984468542272,
+          "auroc": 0.6529160739687055,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.7129948544944074,
+          "auroc": 0.6824769433465085,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.4201931261512104,
+          "auroc": 0.6168929110105581,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.43459554612836676,
+          "auroc": 0.5147058823529412,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.3622899298447888,
+          "auroc": 0.6868686868686869,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.1478050171256693,
+          "auroc": 0.4765625,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.7504494186975637,
+          "auroc": 0.7987179487179488,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.7057276349741348,
+          "auroc": 0.8537414965986394,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.626411060699534,
+          "auroc": 0.7236111111111111,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.47265070571301,
+          "auroc": 0.514102564102564,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2028/plane_coronal_768": {
+      "macro_auprc": 0.5096963434765055,
+      "macro_auroc": 0.6239373184274575,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.42178331243292827,
+          "auroc": 0.5388669301712781,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.3391193960841213,
+          "auroc": 0.5738636363636364,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.7691560837896145,
+          "auroc": 0.8093883357041252,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.836259581461602,
+          "auroc": 0.7140974967061924,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.344379014146816,
+          "auroc": 0.5595776772247361,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.4170206174487129,
+          "auroc": 0.5401069518716578,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.42998141821363006,
+          "auroc": 0.6141414141414141,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.32345741897413627,
+          "auroc": 0.5963541666666666,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.6199662821798272,
+          "auroc": 0.6756410256410257,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.6375708616780045,
+          "auroc": 0.7840136054421769,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.4450878984670373,
+          "auroc": 0.5388888888888889,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.5325742368416357,
+          "auroc": 0.5423076923076923,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2028/plane_sagittal_768": {
+      "macro_auprc": 0.5009233201204102,
+      "macro_auroc": 0.6187165650170638,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.46200965598782623,
+          "auroc": 0.4888010540184453,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.5675628222303414,
+          "auroc": 0.8503787878787878,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.5046164008922306,
+          "auroc": 0.6657183499288762,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8605236637234922,
+          "auroc": 0.8010540184453229,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.34484128149222487,
+          "auroc": 0.5067873303167421,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.53721520143045,
+          "auroc": 0.588235294117647,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.17865168872537562,
+          "auroc": 0.3616161616161616,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.13728900070525654,
+          "auroc": 0.453125,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.7463181187344644,
+          "auroc": 0.7705128205128204,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.5666473278274521,
+          "auroc": 0.7261904761904763,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.5256628447458941,
+          "auroc": 0.625,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.5797418349499149,
+          "auroc": 0.5871794871794872,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    },
+    "image-block-seed2028/uniform_mean_768": {
+      "macro_auprc": 0.5640053616884579,
+      "macro_auroc": 0.6709356394262644,
+      "per_label": {
+        "ACL": {
+          "auprc": 0.41738435707912225,
+          "auroc": 0.5546772068511199,
+          "negatives": 33,
+          "positives": 23
+        },
+        "Baker's": {
+          "auprc": 0.38317941196230665,
+          "auroc": 0.6988636363636364,
+          "negatives": 44,
+          "positives": 12
+        },
+        "Contusion": {
+          "auprc": 0.7913786892124928,
+          "auroc": 0.8278805120910384,
+          "negatives": 37,
+          "positives": 19
+        },
+        "Effusion": {
+          "auprc": 0.8581531699303697,
+          "auroc": 0.7957839262187089,
+          "negatives": 23,
+          "positives": 33
+        },
+        "Fracture": {
+          "auprc": 0.3850226364242129,
+          "auroc": 0.5324283559577677,
+          "negatives": 39,
+          "positives": 17
+        },
+        "Lateral Meniscus": {
+          "auprc": 0.6120886434849077,
+          "auroc": 0.5962566844919786,
+          "negatives": 34,
+          "positives": 22
+        },
+        "Lateral OA": {
+          "auprc": 0.2935432148065838,
+          "auroc": 0.5898989898989899,
+          "negatives": 45,
+          "positives": 11
+        },
+        "MCL": {
+          "auprc": 0.39608431317190906,
+          "auroc": 0.7447916666666667,
+          "negatives": 48,
+          "positives": 8
+        },
+        "Medial Meniscus": {
+          "auprc": 0.7402368383394404,
+          "auroc": 0.7871794871794872,
+          "negatives": 30,
+          "positives": 26
+        },
+        "Medial OA": {
+          "auprc": 0.7527867287265784,
+          "auroc": 0.8197278911564626,
+          "negatives": 42,
+          "positives": 14
+        },
+        "PF OA": {
+          "auprc": 0.5740516537347637,
+          "auroc": 0.5652777777777778,
+          "negatives": 36,
+          "positives": 20
+        },
+        "Synovitis": {
+          "auprc": 0.5641546833888068,
+          "auroc": 0.5384615384615385,
+          "negatives": 30,
+          "positives": 26
+        }
+      }
+    }
+  },
+  "schema_version": 1,
+  "study_uids": [
+    "study-7fbb2a5a8b0ff546",
+    "study-d0813d9eca8145d4",
+    "study-cca0a43fc967c76a",
+    "study-272de5042e60aaa8",
+    "study-4c7e2b92fbb2d4eb",
+    "study-5ffc80b393a2931f",
+    "study-03c02ad767162c8f",
+    "study-80be32efbd79adf2",
+    "study-e3cd8ba7c4c33857",
+    "study-2901d9ea1a478fb2",
+    "study-f0d3a423cbc768e2",
+    "study-726f60971f4c11da",
+    "study-916279b0b2496d0d",
+    "study-3f7449f6a4a3e22c",
+    "study-554d123984b6110b",
+    "study-a5ea720fb283ecd2",
+    "study-9d3ddff3ed1faa40",
+    "study-f31708002735adf9",
+    "study-bee8dca223213d9e",
+    "study-b635be46ef2ffd43",
+    "study-e53bf44fb3ecee17",
+    "study-f3fa73618ce46869",
+    "study-d555b23f5e2a8a48",
+    "study-143f3e9df2ed34fe",
+    "study-d4fef01b42c9844e",
+    "study-96a14a2a3ca707a0",
+    "study-9753f49e97f282bb",
+    "study-472cd34a74d5cc26",
+    "study-fe9e6c99f87b84f8",
+    "study-6fbfb26274ca6694",
+    "study-ef85bac5388f1cbf",
+    "study-10386a034080af52",
+    "study-5331dc8b90331eac",
+    "study-7e361b918a7ab423",
+    "study-3205200df8c482bc",
+    "study-715eceeb06e2af50",
+    "study-4e6a7f6f1773a05e",
+    "study-8d4c4862e9a8345e",
+    "study-56b51a810d7c6a0e",
+    "study-1e4b81f1477e3932",
+    "study-c6de5ee2f987884b",
+    "study-f1edab986aa2d68c",
+    "study-af004b83e27a15fb",
+    "study-df0e3ddcdd10d681",
+    "study-7e474a63863eb905",
+    "study-fb4a16f220ca8505",
+    "study-5c97601043577052",
+    "study-ce58c42bfe08ca3b",
+    "study-66b5496d2175a621",
+    "study-70b7097ec699fd1f",
+    "study-a6f448aa5d1794d2",
+    "study-6f823188d3ab272d",
+    "study-07b92def36d27b2f",
+    "study-551006b1e03d09db",
+    "study-67d6014d792c8ee8",
+    "study-098a599ad6910a6f"
+  ]
+}

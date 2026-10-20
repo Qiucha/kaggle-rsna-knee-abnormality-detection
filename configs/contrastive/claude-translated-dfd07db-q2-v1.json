@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "requires_cuda": true,
+  "output_root": "checkpoints/contrastive/claude-translated-dfd07db-q2-v1",
+  "base_args": [
+    "--cohort-manifest",
+    "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
+    "--text-model",
+    "multilingual-e5",
+    "--text-model-revision",
+    "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "--text-pooling",
+    "mean",
+    "--text-prefix",
+    "query: ",
+    "--image-model",
+    "facebook/dinov2-small",
+    "--image-model-revision",
+    "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+    "--max-text-length",
+    "512",
+    "--image-unfreeze-last",
+    "0",
+    "--text-unfreeze-last",
+    "0",
+    "--epochs",
+    "20",
+    "--batch-size",
+    "32",
+    "--num-workers",
+    "4",
+    "--image-cache-dir",
+    "checkpoints/contrastive/full-multilingual-v1/image-cache",
+    "--image-memory-cache-size",
+    "16",
+    "--trainable-checkpoints",
+    "--local-files-only"
+  ],
+  "experiments": [
+    {
+      "name": "00-full-seed2026",
+      "purpose": "Matched baseline excluding both confirmed duplicate-image/report conflicts",
+      "args": [
+        "--seed",
+        "2026"
+      ]
+    },
+    {
+      "name": "01-impression-first-seed2026",
+      "purpose": "Change only report ordering, keeping all words and 512-token limit",
+      "args": [
+        "--seed",
+        "2026",
+        "--report-view",
+        "impression_first"
+      ]
+    }
+  ],
+  "experiment_version": "claude-translated-dfd07db-q2-v1",
+  "manifest_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+  "selection_policy": "mean_r@1 descending, validation_loss ascending, earliest epoch"
+}

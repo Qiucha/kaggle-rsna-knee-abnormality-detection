@@ -1,0 +1,80 @@
+{
+  "old_commit": "9bec1bd2becef05cc898f30c34e0ad5bd2f99ba5",
+  "new_commit": "dfd07db857fceb55ac20269a7dc693fd5a390e53",
+  "new_csv_sha256": "b89ffc63ff53df85cc710ccdd0a049f97a277f5f193f05f3dc121d80271e1dda",
+  "rows": 4407,
+  "changed_rows": [
+    {
+      "uid": "study-82bb4f1b2989196f",
+      "index": 814,
+      "split": "validation",
+      "language": "de",
+      "fields": [
+        "LLM Translation"
+      ],
+      "effective_text_changed": true,
+      "model_input_changed": true,
+      "old_input_tokens": 308,
+      "new_input_tokens": 302
+    },
+    {
+      "uid": "study-a370df035fc867d1",
+      "index": 1607,
+      "split": "train",
+      "language": "hr",
+      "fields": [
+        "LLM Translation"
+      ],
+      "effective_text_changed": true,
+      "model_input_changed": true,
+      "old_input_tokens": 496,
+      "new_input_tokens": 497
+    },
+    {
+      "uid": "study-d61161b241a06f68",
+      "index": 2236,
+      "split": "train",
+      "language": "hr",
+      "fields": [
+        "LLM Translation"
+      ],
+      "effective_text_changed": true,
+      "model_input_changed": true,
+      "old_input_tokens": 397,
+      "new_input_tokens": 398
+    },
+    {
+      "uid": "study-752ce25523bef138",
+      "index": 3159,
+      "split": "train",
+      "language": "hr",
+      "fields": [
+        "LLM Translation"
+      ],
+      "effective_text_changed": true,
+      "model_input_changed": true,
+      "old_input_tokens": 508,
+      "new_input_tokens": 508
+    },
+    {
+      "uid": "study-125b720fbbd2c983",
+      "index": 4011,
+      "split": "train",
+      "language": "tr",
+      "fields": [
+        "LLM Translation"
+      ],
+      "effective_text_changed": true,
+      "model_input_changed": true,
+      "old_input_tokens": 424,
+      "new_input_tokens": 418
+    }
+  ],
+  "completed_baseline": {
+    "epochs": 20,
+    "best_epoch": 16,
+    "mean_validation_r_at_1": 0.09750567004084587,
+    "reload_max_metric_delta": 0.0
+  },
+  "decision": "Keep completed baseline pinned to 9bec1bd; no restart needed to retain the first baseline. To claim training on the updated corpus, use a separate fresh run, not resume or overwrite."
+}

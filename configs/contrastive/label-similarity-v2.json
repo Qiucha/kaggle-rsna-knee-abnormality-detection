@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "requires_cuda": true,
+  "experiment_version": "label-similarity-v2",
+  "purpose": "The two cheap follow-ups named in the label-similarity-v1 digest, run because v1 returned a null and both hypotheses for why are testable in one run each. Probe 1 lowers the mixing weight, on the theory that 0.3 distorted the embedding geometry more than the label signal was worth. Probe 2 keeps the weight and restricts the target to the findings the reports actually comment on, on the theory that masking noise from mostly-UNK findings diluted it.",
+  "output_root": "checkpoints/contrastive/label-similarity-v2",
+  "baseline": "checkpoints/contrastive/label-similarity-v1/lambda00-seed2026, already trained; not retrained here because every argument except the two label settings is identical and the v1 run is only hours old under the same code state.",
+  "shared_args": [
+    "--cohort-manifest", "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
+    "--text-model", "multilingual-e5",
+    "--text-model-revision", "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "--text-pooling", "mean",
+    "--text-prefix", "query: ",
+    "--image-model", "facebook/dinov2-small",
+    "--image-model-revision", "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+    "--max-text-length", "512",
+    "--report-view", "full",
+    "--image-unfreeze-last", "4",
+    "--text-unfreeze-last", "0",
+    "--lr-image", "1e-5",
+    "--epochs", "20",
+    "--batch-size", "32",
+    "--num-workers", "4",
+    "--image-cache-dir", "checkpoints/contrastive/full-multilingual-v1/image-cache",
+    "--image-memory-cache-size", "16",
+    "--trainable-checkpoints",
+    "--local-files-only",
+    "--seed", "2026",
+    "--lm-label-csv", "data/lm_label/lm_labels_kaggle.csv"
+  ],
+  "arms": [
+    {
+      "name": "lambda01-seed2026",
+      "label_similarity_weight": 0.1,
+      "label_findings": "all 12",
+      "train_loss_entropy_floor": 0.6172,
+      "extra_args": ["--label-similarity-weight", "0.1"]
+    },
+    {
+      "name": "lambda03-lowunk-seed2026",
+      "label_similarity_weight": 0.3,
+      "label_findings": ["Medial Meniscus", "ACL", "MCL", "Effusion"],
+      "train_loss_entropy_floor": 1.4828,
+      "extra_args": [
+        "--label-similarity-weight", "0.3",
+        "--label-findings", "Medial Meniscus", "ACL", "MCL", "Effusion"
+      ]
+    }
+  ],
+  "finding_selection_rule": {
+    "rule": "UNK rate <= 10% over the 4,406 labelled studies, applied before any run.",
+    "measured_unk_rates": {
+      "Medial Meniscus": 0.057, "ACL": 0.081, "MCL": 0.098, "Effusion": 0.099,
+      "Lateral Meniscus": 0.100, "PF OA": 0.185, "Contusion": 0.208, "Medial OA": 0.255,
+      "Lateral OA": 0.331, "Baker's": 0.459, "Fracture": 0.564, "Synovitis": 0.842
+    },
+    "note": "The v1 digest named 'Effusion, Medial Meniscus, ACL and PF OA' off-hand. PF OA is 18.5% UNK and does not survive the stated rule; MCL at 9.8% does. Lateral Meniscus misses by 0.03pp. The rule is what selected the set, not the earlier list."
+  },
+  "pre_registered_hazard": "Restricting to 4 binary findings admits at most 16 distinct clinical profiles, so the target gets COARSER even though co-observation gets denser. Measured before launch at batch 32: 7 distinct off-diagonal values (vs 46 for all 12), 16.4% of pairs exactly 1.0 (vs 6.0%), and 92.6% of rows carrying a perfect-agreement rival (vs 68.6%). Probe 2 is therefore expected to behave closer to label smoothing than to a semantic similarity target. It is run anyway because that prediction is worth confirming and costs one run.",
+  "selection_policy": "mean_r@1 descending, validation_loss ascending, earliest epoch",
+  "locked_test": "never evaluated by this experiment",
+  "noise_floor": "Single seed per arm. Two runs of one config at one seed differ by 0.0237 in selected mean_r@1 and ~0.0087 per epoch (median), measured in label-similarity-v1. Nothing smaller than that is resolvable here.",
+  "known_confound": "Unchanged from v1: the labels are extracted FROM the reports, so label agreement is a lossy compression of the text side rather than independent supervision, and the 12 findings are exactly those the downstream probe scores.",
+  "downstream_check": "configs/downstream/gold-probe-label-similarity-v2.json"
+}

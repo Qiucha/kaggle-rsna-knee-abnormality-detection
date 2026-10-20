@@ -1,0 +1,38 @@
+{
+  "manifest_sha256": "7479e2194d1ab3f3c219dc8137ce5e0a9cb40d8658f20b27e56d57866749a21c",
+  "studies": 3967,
+  "text": {
+    "train": {
+      "studies": 3526,
+      "over_512": 464,
+      "max_tokens": 1241,
+      "impression_heading_beyond_cutoff": 300
+    },
+    "validation": {
+      "studies": 441,
+      "over_512": 67,
+      "max_tokens": 1032,
+      "impression_heading_beyond_cutoff": 43
+    }
+  },
+  "exact_cached_tensor_duplicate_groups": [
+    [
+      "study-b65cfd4f5265d33b",
+      "study-7bbbc0e80da5e8ac"
+    ]
+  ],
+  "near_duplicate_candidates": [
+    {
+      "a": "study-b65cfd4f5265d33b",
+      "b": "study-7bbbc0e80da5e8ac",
+      "cosine_16x16": 1.0,
+      "cross_split": false
+    }
+  ],
+  "limitations": [
+    "Cached preprocessed tensors, not full-volume decoded DICOM hashes.",
+    "16x16 pooled cosine >= 0.98 is a screening heuristic; lower scores do not rule out duplicates.",
+    "Unique cache file per study and finite shape checked; cache not regenerated from DICOM.",
+    "No test pixel, report example, label, or performance inspection."
+  ]
+}

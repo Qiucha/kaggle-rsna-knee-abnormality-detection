@@ -1,0 +1,176 @@
+from dataclasses import replace
+from pathlib import Path
+
+import pytest
+import torch
+
+from contrastive_learning import data, inputs, training
+from contrastive_learning.config import TrainConfig
+from contrastive_learning.data import DataSummary, StudyRecord
+import numpy as np
+from contrastive_learning.preprocessing import _centre_to_extent, _slice_indices, slice_group_indices
+
+
+def records(count=7):
+    return [StudyRecord(
+        str(i), f"Findings: finding {i}.\nImpression: result {i}.",
+        {plane: Path(str(i)) for plane in ("Sagittal", "Coronal", "Axial")},
+        None, split=("train" if i % 2 == 0 else "validation"),
+    ) for i in range(count)]
+
+
+def test_fixed_cohort_limit_and_text_policy(monkeypatch, tmp_path):
+    monkeypatch.setattr(inputs, "read_cohort_manifest", lambda *_, **__: (
+        records(), {"text_policy": "multilingual_raw"}))
+    config = TrainConfig(cohort_manifest=tmp_path / "cohort.jsonl", max_studies=3)
+    with pytest.raises(ValueError, match="multilingual_raw"):
+        inputs.load_cohort(config, for_training=True)
+    config = replace(config, allow_text_policy_mismatch=True)
+    train_cohort = inputs.load_cohort(config, for_training=True)
+    saved_cohort = inputs.load_cohort(config)
+    assert train_cohort.split("validation") == saved_cohort.split("validation")
+    assert [r.study_uid for r in saved_cohort.split("validation")] == ["1"]
+    assert train_cohort.summary["selected"] == 3
+    assert train_cohort.summary["train"] == 2
+    assert saved_cohort.split("test") == []
+
+
+@pytest.mark.parametrize("fold_count,fold_index", [(None, None), (3, 1)])
+def test_legacy_splits_match_training_and_evaluation(monkeypatch, fold_count, fold_index):
+    pixel_checks = []
+
+    def index(*args, **kwargs):
+        pixel_checks.append(kwargs["validate_pixels"])
+        return records(), DataSummary(
+            report_rows=7,
+            studies_scanned=7,
+            paired_studies=7,
+            missing_plane=0,
+            decode_failed=0,
+        )
+
+    monkeypatch.setattr(inputs, "build_study_records", index)
+    config = TrainConfig(data_root=Path("/mount"), fold_count=fold_count, fold_index=fold_index)
+    train_cohort = inputs.load_cohort(config, for_training=True)
+    saved_cohort = inputs.load_cohort(config)
+    assert pixel_checks == [True, False]
+    for split in ("train", "validation"):
+        assert train_cohort.split(split) == saved_cohort.split(split)
+    train_ids = {r.study_uid for r in train_cohort.split("train")}
+    validation_ids = {r.study_uid for r in train_cohort.split("validation")}
+    assert train_ids.isdisjoint(validation_ids)
+    assert train_ids | validation_ids == {str(i) for i in range(7)}
+    with pytest.raises(ValueError, match="Legacy checkpoints"):
+        saved_cohort.split("test")
+
+
+def test_prepare_only_does_not_require_a_trainable_split(monkeypatch, tmp_path):
+    monkeypatch.setattr(inputs, "build_study_records", lambda *a, **kw: (
+        records(1), DataSummary(
+            report_rows=1,
+            studies_scanned=1,
+            paired_studies=1,
+            missing_plane=0,
+            decode_failed=0,
+        )))
+    output = tmp_path / "run"
+    result = training.run_training(
+        TrainConfig(data_root=Path("/mount"), prepare_only=True, output_dir=output)
+    )
+    assert result["selected"] == 1
+    assert not output.exists()
+
+
+def test_loaders_preserve_pairing_report_view_and_resume_order(monkeypatch):
+    monkeypatch.setattr(data, "read_slot", lambda path, **kw: torch.full((3, 2, 2), float(path.name)))
+    seen_texts = []
+
+    def tokenizer(texts, **kwargs):
+        seen_texts.extend(texts)
+        ids = torch.tensor([[int(text.split()[-1].rstrip("."))] for text in texts])
+        return {"input_ids": ids, "attention_mask": torch.ones_like(ids)}
+
+    config = TrainConfig(batch_size=3, num_workers=0, image_size=2,
+                         report_view="impression", text_prefix="query: ")
+    cohort = records()
+    batches = list(inputs.make_loader(cohort, tokenizer, config))
+    assert [len(batch["study_uid"]) for batch in batches] == [3, 3, 1]
+    assert [uid for batch in batches for uid in batch["study_uid"]] == [str(i) for i in range(7)]
+    assert seen_texts == [f"query: result {i}." for i in range(7)]
+    for batch in batches:
+        assert torch.equal(batch["images"][:, 0, 0, 0, 0], batch["input_ids"][:, 0].float())
+
+    generator = torch.Generator().manual_seed(2026)
+    loader = inputs.make_loader(cohort, tokenizer, config, training=True, generator=generator)
+    list(loader)
+    saved_state = generator.get_state()
+    expected = [batch["study_uid"] for batch in loader]
+    restored = torch.Generator().set_state(saved_state)
+    resumed = inputs.make_loader(cohort, tokenizer, config, training=True, generator=restored)
+    assert [batch["study_uid"] for batch in resumed] == expected
+    assert sum(map(len, expected)) == 6
+
+
+def test_slice_groups_are_contiguous_and_tile_the_band():
+    # Each group must be a coherent local stack: the current sampler's three channels
+    # straddle a median 62.7mm, which is wider than the joint.
+    groups = slice_group_indices(30, (0.20, 0.80), group_size=3, groups=5)
+    assert groups.shape == (5, 3)
+    for group in groups:
+        assert list(group) == list(range(group[0], group[0] + 3))
+    starts = [int(g[0]) for g in groups]
+    assert starts == sorted(starts)
+    assert starts[0] >= int(0.20 * 29)
+    # Tiling covers more of the volume than the three fixed depths do.
+    assert len(set(groups.ravel().tolist())) > len(set(_slice_indices(30, (0.20, 0.80), 3).tolist()))
+
+
+def test_slice_groups_stay_inside_short_series():
+    for n in (4, 7, 16):
+        groups = slice_group_indices(n, (0.20, 0.80), group_size=3, groups=5)
+        assert groups.shape == (5, 3)
+        assert groups.min() >= 0 and groups.max() <= n - 1
+
+
+def test_degenerate_series_collapses_to_the_middle_slice():
+    groups = slice_group_indices(2, (0.20, 0.80), group_size=3, groups=4)
+    assert groups.shape == (4, 3)
+    assert set(groups.ravel().tolist()) == {1}
+
+
+def test_slice_groups_reject_nonsense_shapes():
+    for kwargs in ({"group_size": 0, "groups": 3}, {"group_size": 3, "groups": 0}):
+        with pytest.raises(ValueError, match=">= 1"):
+            slice_group_indices(30, (0.20, 0.80), **kwargs)
+
+
+def test_centre_to_extent_crops_and_pads_to_exactly_the_requested_size():
+    # A fixed physical box must be exact for every series, or two series land at
+    # different millimetres per pixel. Larger than the image must pad, not skip.
+    volume = torch.arange(2 * 40 * 40, dtype=torch.float32).reshape(2, 40, 40).numpy()
+    for wanted in (10, 20, 39, 40, 60):
+        out = _centre_to_extent(volume, wanted)
+        assert out.shape == (2, 2 * (wanted // 2), 2 * (wanted // 2))
+
+
+def test_centre_to_extent_keeps_the_centre_and_pads_with_zeros():
+    volume = np.ones((1, 10, 10), dtype=np.float32)
+    padded = _centre_to_extent(volume, 20)
+    assert padded.shape == (1, 20, 20)
+    assert padded.sum() == 100.0                       # no signal invented
+    assert padded[0, 5:15, 5:15].sum() == 100.0        # original sits centred
+    assert padded[0, 0, 0] == 0.0                      # and the margin is air
+
+
+def test_crop_mm_is_settable_from_the_command_line():
+    # The re-baseline changes this constant, so it must be reachable without editing code.
+    import sys
+    from contrastive_learning import cli
+    argv = ['train', '--data-root', '/tmp', '--crop-mm', '150', '--output-dir', '/tmp/out']
+    saved, sys.argv = sys.argv, argv
+    try:
+        config = cli.config_from_args(argv[1:])
+    finally:
+        sys.argv = saved
+    assert config.crop_mm == 150.0
+    assert config.image_kwargs['crop_mm'] == 150.0

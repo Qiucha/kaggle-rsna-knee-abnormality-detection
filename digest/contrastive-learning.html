@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Novo Contrastive Learning — Project Digest</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #09111f;
+      --surface: #101b2d;
+      --surface-2: #16243a;
+      --line: #2a3d59;
+      --text: #e8eef8;
+      --muted: #9db0c9;
+      --green: #51d88a;
+      --green-bg: #123425;
+      --amber: #ffc857;
+      --amber-bg: #3b2d10;
+      --red: #ff7b7b;
+      --red-bg: #3e1d26;
+      --blue: #72b7ff;
+      --blue-bg: #132e4d;
+      --purple: #b9a4ff;
+      --radius: 16px;
+      --shadow: 0 18px 55px rgba(0, 0, 0, .28);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(63, 124, 190, .20), transparent 35rem),
+        radial-gradient(circle at 100% 15%, rgba(91, 70, 160, .16), transparent 32rem),
+        var(--bg);
+      color: var(--text);
+      font: 16px/1.62 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: var(--blue); }
+    code, pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+    code { color: #cae3ff; }
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 80px;
+    }
+    header {
+      padding: 38px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(19, 46, 77, .94), rgba(16, 27, 45, .94));
+      box-shadow: var(--shadow);
+    }
+    h1, h2, h3 { line-height: 1.18; margin-top: 0; }
+    h1 { margin-bottom: 12px; font-size: clamp(2rem, 5vw, 3.7rem); letter-spacing: -.045em; }
+    h2 { margin: 0 0 18px; font-size: clamp(1.45rem, 3vw, 2rem); letter-spacing: -.025em; }
+    h3 { margin-bottom: 8px; font-size: 1.06rem; }
+    p { margin: 0 0 14px; }
+    .eyebrow { color: var(--blue); font-size: .79rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    .lede { max-width: 850px; color: #cbd8e9; font-size: 1.13rem; }
+    .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .badge, .state {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(9, 17, 31, .55);
+      font-size: .82rem;
+      font-weight: 700;
+    }
+    .state::before { width: 8px; height: 8px; border-radius: 50%; content: ""; background: currentColor; }
+    .done { color: var(--green); background: var(--green-bg); border-color: #296d49; }
+    .active { color: var(--amber); background: var(--amber-bg); border-color: #6c5220; }
+    .blocked { color: var(--red); background: var(--red-bg); border-color: #76404b; }
+    .ready { color: var(--blue); background: var(--blue-bg); border-color: #285783; }
+    nav { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 0; }
+    nav a { padding: 7px 11px; border-radius: 9px; color: #cfe4ff; background: rgba(9, 17, 31, .5); text-decoration: none; }
+    nav a:hover { background: rgba(114, 183, 255, .15); }
+    section {
+      margin-top: 24px;
+      padding: 30px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(16, 27, 45, .93);
+      box-shadow: var(--shadow);
+    }
+    .callout { border-left: 4px solid var(--amber); padding: 15px 17px; border-radius: 9px; background: var(--amber-bg); }
+    .callout strong { color: var(--amber); }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+    .stat { grid-column: span 3; padding: 18px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); }
+    .stat b { display: block; font-size: 1.7rem; line-height: 1; margin-bottom: 8px; color: #fff; }
+    .stat span { color: var(--muted); font-size: .88rem; }
+    .flow { display: grid; gap: 10px; }
+    .flow-row { display: grid; grid-template-columns: 1fr 42px 1fr 42px 1fr; align-items: stretch; gap: 8px; }
+    .flow-row.two { grid-template-columns: 1fr 42px 1fr; max-width: 760px; margin: 0 auto; }
+    .node { min-height: 124px; padding: 16px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); }
+    .node small { display: block; color: var(--muted); }
+    .node.done-node { border-top: 3px solid var(--green); }
+    .node.active-node { border-top: 3px solid var(--amber); }
+    .node.ready-node { border-top: 3px solid var(--blue); }
+    .node.blocked-node { border-top: 3px solid var(--red); }
+    .arrow { display: grid; place-items: center; color: var(--muted); font-size: 1.45rem; }
+    .down { text-align: center; height: 34px; color: var(--muted); font-size: 1.5rem; }
+    .join { margin: 0 auto; width: min(720px, 100%); }
+    .timeline { position: relative; margin-left: 7px; }
+    .timeline::before { position: absolute; top: 8px; bottom: 8px; left: 12px; width: 2px; content: ""; background: var(--line); }
+    .step { position: relative; display: grid; grid-template-columns: 26px 1fr; gap: 14px; margin: 0 0 18px; }
+    .step:last-child { margin-bottom: 0; }
+    .dot { z-index: 1; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: var(--surface-2); border: 2px solid var(--line); font-size: .7rem; font-weight: 900; }
+    .step.done-step .dot { color: #062313; background: var(--green); border-color: var(--green); }
+    .step.active-step .dot { color: #2c2100; background: var(--amber); border-color: var(--amber); }
+    .step.ready-step .dot { color: #081a2e; background: var(--blue); border-color: var(--blue); }
+    .step.blocked-step .dot { color: #321016; background: var(--red); border-color: var(--red); }
+    .step-body { padding: 1px 0 4px; }
+    .step-body p { color: var(--muted); margin: 5px 0 0; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: #bdd1ea; font-size: .79rem; letter-spacing: .07em; text-transform: uppercase; }
+    td { color: #d4dfed; }
+    ul { margin: 8px 0 0; padding-left: 20px; }
+    li + li { margin-top: 6px; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    pre { overflow-x: auto; margin: 12px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 10px; color: #d8ebff; background: #07101d; font-size: .86rem; }
+    .muted { color: var(--muted); }
+    .warn { color: var(--amber); }
+    footer { margin-top: 22px; color: var(--muted); text-align: center; font-size: .85rem; }
+    @media (max-width: 850px) {
+      .stat { grid-column: span 6; }
+      .flow-row, .flow-row.two { grid-template-columns: 1fr; max-width: none; }
+      .flow-row .arrow { height: 28px; transform: rotate(90deg); }
+      .split { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 520px) {
+      .shell { width: min(100% - 20px, 1180px); padding-top: 16px; }
+      header, section { padding: 21px; }
+      .stat { grid-column: span 12; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="eyebrow">Novo project &middot; engineering and research digest</div>
+      <h1>Contrastive learning pipeline</h1>
+      <p class="lede">A paired knee-MRI/report pipeline that trains, checkpoints, resumes and evaluates on the full 4,407-study cohort. The levers have now been measured against gold pathology labels: <strong>depth of image-tower adaptation is the only one with a replicated effect</strong>. Report language, schedule length and text-tower adaptation are all null. The later four-tower LM-head comparison scored all 58 gold cases, including two from the original test split; the full test cohort has not been evaluated.</p>
+      <div class="meta">
+        <span class="state done">Core pipeline verified</span>
+        <span class="state done">Full-cohort pixel QC complete</span>
+        <span class="state done">Trained on an RTX&nbsp;3070</span>
+        <span class="state ready">Nothing queued</span>
+        <span class="state blocked">Clinical validation not started</span>
+        <span class="badge">Updated 2026-09-13 &middot; Asia/Taipei</span>
+        <span class="badge">Local changes only &middot; no commit or push</span>
+      </div>
+      <nav aria-label="Page sections">
+        <a href="#summary">Summary</a>
+        <a href="#flow">Pipeline flow</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#findings">What moves the number</a>
+        <a href="#evidence">Evidence</a>
+        <a href="#risks">Open risks</a>
+        <a href="README.md">All documents &#8599;</a>
+        <a href="#open">What is open</a>
+      </nav>
+    </header>
+
+    <section id="summary">
+      <h2>Current state at a glance</h2>
+      <div class="grid">
+        <div class="stat"><b>4,407</b><span>full-cohort study/report rows</span></div>
+        <div class="stat"><b>4,407 / 4,407</b><span>passing three-plane pixel QC</span></div>
+        <div class="stat"><b>63</b><span>unit tests passing (1 skipped)</span></div>
+        <div class="stat"><b>15</b><span>runs in the depth / language / schedule / control matrix</span></div>
+        <div class="stat"><b>0.6438 &rarr; 0.7106</b><span>macro AUROC, unadapted DINOv2 to 4-block adaptation, pooled over 3 seeds &mdash; on <em>exposed</em> studies (0.7105 is seed 2026)</span></div>
+        <div class="stat"><b>0.6938</b><span>the same 4-block level on studies the encoder never saw &mdash; the project's generalisation estimate</span></div>
+        <div class="stat"><b>Depth</b><span>the only lever clearing the 0.0038 seed noise floor</span></div>
+        <div class="stat"><b>56 of 58</b><span>gold studies exposed in the older four-block experiment</span></div>
+        <div class="stat"><b>2</b><span>gold cases from the former test split scored in the 58-case LM-head study</span></div>
+      </div>
+      <div class="callout" style="margin-top:18px">
+        <strong>Bottom line.</strong> The software trains, and something real is being learned: adapting four of DINOv2's twelve blocks beats one at three seeds with every interval excluding zero, and a shuffled-pairing control loses to the true pairing. The older four-block label numbers below are <strong>development statistics</strong>: 56 of the 58 gold studies were training pairs or sat in the selection split, and their reports state the findings. <strong>That question now has an answer.</strong> A held-out replication retrained the encoder with the gold studies excluded and re-probed on studies it had never seen: the pooled exposed level of <strong>0.7106</strong> is inflated by <strong>&minus;0.0168</strong> of macro AUROC (&minus;0.0163 by the data-size-matched route), leaving a generalisation estimate of <strong>0.6938</strong>. The three levels subtract exactly: 0.6438 unadapted, 0.6938 unexposed, 0.7106 exposed, and 4-block adaptation still beats unadapted DINOv2 by <strong>+0.0500</strong> with all three seed intervals excluding zero. A data-size control put the confound at &minus;0.0005. So about a quarter of the headline gain was exposure and three quarters is real. <strong>Quote 0.6938 beside 0.7105, never instead of it</strong> &mdash; they are different numbers about different things. See <a href="gold-holdout-v1.md">the held-out write-up</a>.
+      </div>
+      <div class="callout" style="margin-top:18px">
+        <strong>New 58-case LM-head comparison.</strong> Four gold-holdout tower checkpoints were fitted with the same three-seed, 12-label head trained on LM verdicts. Macro AUROC was <strong>0.7659</strong> for DINOv2-small/E5-base, <strong>0.7541</strong> for small/small, <strong>0.7504</strong> for base/base and <strong>0.7605</strong> for base/small. All 58 gold cases were excluded from head fitting and selection. Both size-mismatched pairings lead the matched pairing with the same image size, but all four paired size intervals include zero. Linear controls scored 0.7312–0.7362, below every early-stopped MLP; they showed far less late validation-loss rebound. See the <a href="lm-head-tower-size-58-v1.html">full settings matrix, loss curves and per-label AUROC</a> or <a href="lm-head-tower-size-58-v1.md">Markdown record</a>. The older 56-case gold-only OOF AUROC and newer 58-case LM-head AUROC use different supervision and cannot be read as a paired gain.
+      </div>
+    </section>
+
+    <section id="flow">
+      <h2>End-to-end pipeline flow</h2>
+      <p class="muted">Green nodes are complete and verified, amber is measured but compromised in what it can support, blue is ready but not executed, and red is not started.</p>
+      <div class="flow" role="img" aria-label="Flow chart of MRI and report inputs joining in contrastive training, evaluation, and downstream validation">
+        <div class="flow-row">
+          <div class="node done-node">
+            <span class="state done">Complete</span>
+            <h3>DICOM studies</h3>
+            <small>Select the largest fluid-sensitive sagittal, coronal, and axial series for each study.</small>
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="node done-node">
+            <span class="state done">Complete</span>
+            <h3>Manifest + pixel QC</h3>
+            <small>Patient grouping, immutable splits (3,526 / 441 / 440), series fingerprints, laterality, decode/finite/range checks. All 4,407 rows pass.</small>
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="node done-node">
+            <span class="state done">Implemented</span>
+            <h3>Lazy image dataset</h3>
+            <small>Three slices &times; three planes, 130&nbsp;mm crop, normalization, left-knee orientation, bounded disk/LRU cache.</small>
+          </div>
+        </div>
+        <div class="down">&darr;</div>
+        <div class="flow-row">
+          <div class="node done-node">
+            <span class="state done">Complete</span>
+            <h3>Raw multilingual reports</h3>
+            <small>Source text and hashes are preserved; a translated-English cohort exists as a separate policy and measured null.</small>
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="node done-node">
+            <span class="state done">Implemented</span>
+            <h3>Text policy + report view</h3>
+            <small>Full report, impression/conclusion, or findings + impression with deterministic fallback.</small>
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="node done-node">
+            <span class="state done">Verified on the full cohort</span>
+            <h3>Tokenizer + collator</h3>
+            <small>Pinned multilingual E5, required <code>query: </code> prefix, masked padding, maximum 512 tokens &mdash; an architectural ceiling, not a setting.</small>
+          </div>
+        </div>
+        <div class="down">&darr;</div>
+        <div class="flow-row">
+          <div class="node done-node">
+            <span class="state done">Trained</span>
+            <h3>DINOv2 image tower</h3>
+            <small><code>dinov2-small</code>, hidden width 384. Nine 2D slices &rarr; shared backbone &rarr; CLS + mean patch features &rarr; learned plane attention. The last 1&ndash;8 blocks are the adaptation lever.</small>
+          </div>
+          <div class="arrow">&searr;</div>
+          <div class="node done-node">
+            <span class="state done">Trained</span>
+            <h3>Shared embedding space</h3>
+            <small>Normalized 256-dimensional projections trained with learned-temperature symmetric InfoNCE, batch 32.</small>
+          </div>
+          <div class="arrow">&nwarr;</div>
+          <div class="node done-node">
+            <span class="state done">Trained, then frozen</span>
+            <h3>Multilingual E5 text tower</h3>
+            <small>Masked mean pooling &rarr; projection &rarr; normalized report embedding. Adapting its final block measured null, so it is held frozen in current arms.</small>
+          </div>
+        </div>
+        <div class="down">&darr;</div>
+        <div class="flow-row">
+          <div class="node done-node">
+            <span class="state done">Run</span>
+            <h3>Full-cohort training</h3>
+            <small>Fifteen runs across report language, adaptation depth, schedule length, and a shuffled-pairing control. Validation-only selection throughout.</small>
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="node done-node">
+            <span class="state done">Run</span>
+            <h3>Retrieval evaluation</h3>
+            <small>Tie-aware R@1/5/10, mean/median rank, random baselines, bootstrap CI, per-query JSONL. R@1 rises with depth: 0.1111 &rarr; 0.1190 &rarr; 0.1383.</small>
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="node ready-node">
+            <span class="state ready">Full-cohort test still open</span>
+            <h3>Independent test evaluation</h3>
+            <small>Two gold-labeled cases from the original test split were scored in the later LM-head study. The other 438 test studies remain unscored; a new independent evaluation is needed for strong pathology claims.</small>
+          </div>
+        </div>
+        <div class="down">&darr;</div>
+        <div class="flow-row two">
+          <div class="node active-node">
+            <span class="state active">Measured, but exposure-limited</span>
+            <h3>Downstream label probe</h3>
+            <small>Cross-validated logistic probes over 56 gold studies &times; 12 labels, every hyperparameter fixed in advance. Cross-validation controls probe overfitting, not representation exposure &mdash; so this is a development statistic, not a generalisation estimate.</small>
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="node blocked-node">
+            <span class="state blocked">Not started</span>
+            <h3>Clinical validation</h3>
+            <small>External cohort, subgroup and failure analysis, calibration, and expert review. Neither retrieval nor an exposed-case probe establishes diagnostic value.</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="findings">
+      <h2>What moves the number, and what does not</h2>
+      <p class="muted">Pooled out-of-fold macro AUROC over 56 gold studies &times; 12 labels, <code>uniform_mean_768</code> features &mdash; CLS &oplus; patch-mean, 2 &times; 384, <em>not</em> a base-model hidden width. Unadapted DINOv2-small reads these labels at <strong>0.6438</strong>. Full detail and every interval: <a href="image-block-variants-v1.md">the variants write-up</a> and <a href="image-block-variants-curves.html">the curves page</a>.</p>
+      <table>
+        <thead><tr><th>Lever</th><th>Result</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Image-tower adaptation depth</strong>, 1 &rarr; 4 blocks, 3 seeds</td><td>+0.0413 / +0.0356 / +0.0455</td><td><strong>Real.</strong> All three intervals exclude zero. The ladder reads 0.6695 (1) &rarr; 0.6838 (2) &rarr; 0.7105 (4) &rarr; 0.7164 (8).</td></tr>
+          <tr><td>Depth 4 &rarr; 8 blocks</td><td>+0.0062</td><td><strong>Plateau.</strong> Spans zero; 4 of 12 blocks is at or near the useful optimum.</td></tr>
+          <tr><td>Contrastive objective vs shuffled pairings, 3 seeds</td><td>+0.0311 / +0.0538 / +0.0502</td><td><strong>Contributes, partially.</strong> Same sign at all three seeds, two intervals exclude zero &mdash; but the control still recovers about a third of the total gain with no correct pairing at all.</td></tr>
+          <tr><td>Report language (original vs translated English), 3 seeds</td><td>&minus;0.0010 / +0.0028 / &minus;0.0019</td><td><strong>Null.</strong> Every interval spans zero and the sign flips.</td></tr>
+          <tr><td>Schedule, 20 &rarr; 40 epochs</td><td>+0.0031</td><td><strong>Null.</strong> Inside the 0.0038 seed spread.</td></tr>
+          <tr><td>Learned plane attention at readout</td><td>&minus;0.0185 vs a uniform mean</td><td><strong>Costs, not helps.</strong> Plane concatenation is +0.0010, so nothing is lost by not pooling.</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="margin-top:16px"><strong>Measured on a different scale, so not in the table above.</strong> Adapting the <em>text</em> tower's final block was also null, but that matrix was scored on <strong>mean validation Recall@1</strong> over 441 candidates on the quarantined translated cohort &mdash; not on the gold probe, which it never went through. On that scale it returned <strong>&minus;0.7936&nbsp;pp</strong> across three matched seeds (SD 1.0816, interval spanning zero), against <strong>+1.2094&nbsp;pp</strong> for the matching image-only arm. The two numbers are comparable to each other and to nothing else on this page. Frozen multilingual E5 remains the reference.</p>
+      <div class="callout" style="margin-top:18px">
+        <strong>Two confounds a reader will raise.</strong> Every arm used <code>--lr-image 1e-5</code>, chosen when one block was trainable, so &ldquo;depth helps&rdquo; and &ldquo;this learning rate suits more blocks&rdquo; are not yet separated. And the shuffled-pairing control earned its share of the gain by <em>memorising</em> the random pairings, which is instance discrimination rather than domain adaptation &mdash; so the objective/adaptation split is an ordering, not a clean decomposition.
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <h2>Full path to complete contrastive learning</h2>
+      <div class="timeline">
+        <div class="step done-step">
+          <div class="dot">&check;</div>
+          <div class="step-body"><h3>1. Audit pairing, preprocessing, reports, and historical runs</h3><p>Confirmed 4,407 unique study rows, a 58-study gold integration set, three-plane decoding, and preliminary&mdash;not conclusive&mdash;historical signal.</p></div>
+        </div>
+        <div class="step done-step">
+          <div class="dot">&check;</div>
+          <div class="step-body"><h3>2. Repair and independently validate retrieval metrics</h3><p>Collapsed embeddings now receive chance-level expected credit. All 18 best checkpoints of the time were re-scored; none contained ties and none changed.</p></div>
+        </div>
+        <div class="step done-step">
+          <div class="dot">&check;</div>
+          <div class="step-body"><h3>3. Make the report language contract explicit</h3><p>Pinned multilingual E5 with mean pooling and prefixing. Tokenizer QC covers all 4,407 reports. The language policy has since been measured directly and is null.</p></div>
+        </div>
+        <div class="step done-step">
+          <div class="dot">&check;</div>
+          <div class="step-body"><h3>4. Finish canonical full-cohort manifest and pixel QC</h3><p>Complete. Schema, hashes, patient-grouped splits and the translated cohort are frozen, and all 4,407 rows pass three-plane decode/normalization QC. The translated cohort carries 4,405 training-eligible rows: two duplicate-pixel studies are quarantined from it only.</p></div>
+        </div>
+        <div class="step done-step">
+          <div class="dot">&check;</div>
+          <div class="step-body"><h3>5. Make experiments reproducible and resumable</h3><p>Protected outputs, exact resume state, model/source revision hashes, compact checkpoints, atomic bounded caching, and training-health diagnostics are implemented and tested. Matrix selection is a one-way door: a written <code>validation-selection.json</code> refuses to be rewritten.</p></div>
+        </div>
+        <div class="step done-step">
+          <div class="dot">&check;</div>
+          <div class="step-body"><h3>6. Train the full-cohort baseline</h3><p>Done on an RTX&nbsp;3070. Validation loss and retrieval behave as expected: training loss falls throughout, validation loss reaches its minimum early, and selection is on validation R@1 rather than loss.</p></div>
+        </div>
+        <div class="step done-step">
+          <div class="dot">&check;</div>
+          <div class="step-body"><h3>7. Run controlled representation ablations</h3><p>Report language, adaptation depth, schedule length, text-tower adaptation, pooling at readout, and a shuffled-pairing control &mdash; one change at a time, three seeds wherever a claim is made. Summarised above.</p></div>
+        </div>
+        <div class="step ready-step">
+          <div class="dot">8</div>
+          <div class="step-body"><h3>8. Evaluate on an independent cohort</h3><p><strong>Still open.</strong> The 58 gold cases have now all been examined, including two from the former test split. The other 438 test studies have not been scored here, and repeated use of the gold set limits it as an independent model-selection test.</p></div>
+        </div>
+        <div class="step blocked-step">
+          <div class="dot">9</div>
+          <div class="step-body"><h3>9. Establish usefulness beyond retrieval</h3><p><strong>The real open work.</strong> The older gold-only probe used 56 cases exposed to representation training or selection. New LM-supervised heads were scored on all 58 cases excluded from their fitting, but repeated examination of this small gold cohort remains a limit. External cohort, subgroups, calibration, failure modes and expert review are still needed.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="evidence">
+      <h2>Evidence and artifacts</h2>
+      <table>
+        <thead><tr><th>Area</th><th>Current evidence</th><th>Interpretation</th></tr></thead>
+        <tbody>
+          <tr><td>Unit and syntax checks</td><td>63 tests pass, 1 skipped.</td><td>Core seams and known regression cases are covered; this is not model validation.</td></tr>
+          <tr><td>Full cohort</td><td>4,407 studies; 3,526 train, 441 validation, 440 locked test; all pass three-plane pixel QC.</td><td>The splits are patient-grouped and immutable. Patient <em>independence</em> is unverifiable &mdash; see open risks.</td></tr>
+          <tr><td>Metric repair</td><td>Four collapsed embeddings produce R@1 = 0.25 and mean rank = 2.5.</td><td>The previous perfect score for tied outputs is fixed.</td></tr>
+          <tr><td><strong>Regularisation: stochastic depth</strong>, 6 rates &times; 3 seeds</td><td>Memorisation gap falls monotonically +0.2689 &rarr; +0.1150 (&minus;57%); validation R@1 falls with it 0.1340 &rarr; 0.1085.</td><td><strong>Closed at 4 blocks.</strong> The trade is parallel &mdash; no rate buys a smaller gap for free. Whatever limits retrieval is not memorisation capacity. <a href="drop-path-sweep-v1.md">Sweep</a>.</td></tr>
+          <tr><td>Generalisation estimate (gold held out of training)</td><td>0.6938 macro AUROC on 56 unexposed studies against 0.7106 exposed (pooled over 3 seeds); +0.0500 over unadapted DINOv2 at 0.6438, 3 of 3 intervals excluding zero.</td><td>The project's first number that is not a development statistic. Exposure accounted for &minus;0.0168; the data-size confound for &minus;0.0005.</td></tr>
+          <tr><td>Adaptation depth</td><td>+0.0356 to +0.0455 macro AUROC for 4 blocks over 1, at three seeds, every interval excluding zero.</td><td>The only lever measured so far that clears the seed noise floor of 0.0038.</td></tr>
+          <tr><td>Shuffled-pairing control</td><td>Control mean 0.6659 against 0.7106 for true pairings; it recovers ~33% of the gain over unadapted DINOv2.</td><td>The image/report objective contributes, but a third of the apparent benefit is available without any correct pairing.</td></tr>
+          <tr><td>False negatives in the objective</td><td>Genuine semantic duplicates occur ~0.10 times per batch of 32 &mdash; one pair in 496.</td><td>Rules out false-negative cancellation and soft similarity targets at this batch size. <a href="false-negative-rate-audit.md">Audit</a>.</td></tr>
+          <tr><td>Report truncation</td><td>14.2% of original reports exceed 512 tokens; the conclusion is entirely cut for 8.5%.</td><td>Real and architectural &mdash; 512 is E5's ceiling. The <code>impression_first</code> remedy reorders 30.7% of reports to fix ~10.8% and measured worse.</td></tr>
+          <tr><td>Gold-case exposure</td><td>In the older four-block experiment, 56 of 58 gold studies were training pairs or in the selection split; a later gold-holdout encoder and LM-head study excluded all 58 from fitting.</td><td>The older exposure effect was &minus;0.0168 macro AUROC. The later 58-case comparison includes the two former gold test cases and is still limited by repeated gold-set examination. <a href="gold-holdout-v1.md">Held-out write-up</a> · <a href="lm-head-tower-size-58-v1.html">LM-head comparison</a>.</td></tr>
+        </tbody>
+      </table>
+      <div class="split" style="margin-top:20px">
+        <div>
+          <h3>Primary readable documents</h3>
+          <ul>
+            <li><a href="image-block-variants-v1.md">What moves downstream readout: depth, not language or schedule</a></li>
+            <li><a href="image-block-variants-curves.html">Training curves and per-run label readout</a></li>
+            <li><a href="contrastive-learning-pipeline.md">Pipeline reference</a></li>
+            <li><a href="knee-clip-feedback-response.md">Response to the knee CLIP feedback</a></li>
+            <li><a href="false-negative-rate-audit.md">False-negative rate audit</a></li>
+            <li><a href="gold-case-inventory.md">Gold-case exposure inventory</a></li>
+            <li><a href="integrity-coverage-audit.md">Duplicate/join coverage and split independence</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Important implementation entry points</h3>
+          <ul>
+            <li><code>scripts/build_contrastive_manifest.py</code></li>
+            <li><code>scripts/train_contrastive.py</code></li>
+            <li><code>scripts/evaluate_contrastive.py</code></li>
+            <li><code>scripts/evaluate_downstream_probe.py</code></li>
+            <li><code>scripts/run_contrastive_matrix.py</code></li>
+            <li><code>scripts/finalize_contrastive_matrix.py</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="risks">
+      <h2>What is still missing or uncertain</h2>
+      <article class="card" style="margin-bottom:22px">
+        <h3 class="warn">Preprocessing: what the pipeline never sees (measured 2026-09-14)</h3>
+        <p>Audited against the DICOM rather than the provided tables, after
+        <code>prev/rsna_knee_101.ipynb</code> flagged the series CSV as unreliable. Full detail:
+        <a href="acquisition-metadata-trust.md">acquisition-metadata-trust.md</a>.</p>
+        <ul>
+          <li><strong>The series CSV carries one bit, not two.</strong> <code>Fluid_Sensitive</code> is byte-identical to <code>Fat_Suppression</code> on <strong>24,371 of 24,371 rows</strong>. <code>pick_study_slots</code> documents itself as preferring fluid-sensitive series and actually selects fat-suppressed ones &mdash; but they correlate, so what it picks is <strong>99.9% fluid-sensitive</strong> anyway. Right answer, wrong reason; no cohort needs rebuilding.</li>
+          <li><strong>4.6% of the pixels are read.</strong> Studies hold a median of 5 series (range 3&ndash;14) and ~194 slices; the pipeline opens 3 series and 9 slices. The discarded series are diagnostic, not localizers &mdash; dominated by <strong>T1 non-fat-sat</strong>, the contrast the model has never seen. <code>Coronal / T1 / no-fatsat</code> fills <strong>64.1%</strong> of studies.</li>
+          <li><strong>The three channels of one input straddle a median 62.7mm</strong> &mdash; wider than the joint. DINOv2 is being fed three anatomically unrelated images stacked as RGB, and 89.9% of slices are never read.</li>
+          <li><strong>The 130mm crop discards real anatomy:</strong> it retains 86.1% of tissue on average (p10 70.6%). It could not simply be raised &mdash; the old guard silently skipped whenever the box exceeded the image, so scale was never normalised for those series. Crop-or-pad now makes the extent exact; <strong>150mm</strong> is chosen for the re-baseline.</li>
+          <li><strong>No detectable protocol leak.</strong> Series count predicts none of the 12 gold labels (0 of 12 at p&lt;0.05, mean |AUROC&minus;0.5| 0.058) &mdash; though with 58 labelled studies this only rules out effects above ~0.15.</li>
+          <li><strong>Verified sound:</strong> slice ordering (filename order matches anatomy in 0 of 180 series; the pipeline sorts geometrically), rescale slope/intercept, and laterality (98.3% resolved, the rest left unmirrored rather than guessed).</li>
+        </ul>
+        <p class="tiny muted">Every claim re-verified on this project's data rather than taken from the notebook. None of this has been acted on yet: a preprocessing change invalidates the image cache and makes recorded runs non-comparable, so it needs a new experiment version and a re-baseline.</p>
+      </article>
+      <div class="split">
+        <div>
+          <h3 class="warn">Limits on the numbers above</h3>
+          <ul>
+            <li><strong>The levels are development statistics; the generalisation estimate is 0.6938.</strong> 56 of 58 gold studies were exposed to training or selection, and the reports state the findings. A held-out replication measured that inflation at &minus;0.0168 and confirmed +0.0500 of real gain on unseen studies. <em>Only levels are affected &mdash; paired differences compare arms sharing the same exposure.</em> <a href="gold-holdout-v1.md">Write-up</a>.</li>
+            <li><strong>Depth and learning rate are confounded.</strong> Every arm used one rate chosen when one block was trainable.</li>
+            <li><strong>Two labels regress at depth</strong> (Medial Meniscus, MCL) &mdash; the two that unadapted DINOv2 already reads best. With 8&ndash;33 positives per label, single-label movements are fragile.</li>
+            <li><strong>Do not tune the probe on these 56 studies.</strong> Sweeping <code>C</code>, class weights or fold count would raise macro AUROC by selecting on the evaluation set.</li>
+            <li><strong>Contrastive checkpoint selection used validation retrieval R@1.</strong> The later four-tower comparison reads gold AUROC after selection; its observed ranking has not been validated on a new independent gold cohort.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="warn">Required before clinical claims</h3>
+          <ul>
+            <li><strong>Patient independence is unverifiable, not merely unresolved.</strong> De-identification re-randomised every identity tag &mdash; proven by a known duplicate pair carrying two different <code>PatientID</code>s on identical pixels. Every figure here is a study-level estimate.</li>
+            <li>Validate multilingual medical semantics, not only tokenizer coverage.</li>
+            <li>Assess the information lost by representing a 3D study with nine slices.</li>
+            <li>Add an external cohort, subgroup analysis, calibration, and expert error review.</li>
+            <li><s>Handle clinically similar studies that ordinary InfoNCE treats as negatives</s> &mdash; <strong>measured and closed at this batch size</strong>: genuine duplicates appear in ~9% of batches, too rare for either remedy to act on.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="open">
+      <h2>What is open</h2>
+      <p><strong>Nothing is queued and nothing is running.</strong> This section records decisions and candidates; it is not an instruction to launch anything, and every item below is a user decision.</p>
+      <table>
+        <thead><tr><th>Item</th><th>State</th></tr></thead>
+        <tbody>
+          <tr><td>Separate adaptation depth from learning rate</td><td>The strongest methodological objection to the headline result. An LR sweep at each depth would settle it.</td></tr>
+          <tr><td>Separate domain adaptation from instance discrimination</td><td>An images-only self-supervised arm at 4 blocks would say whether the control&rsquo;s third of the gain is adaptation or per-study discrimination.</td></tr>
+          <tr><td>Conditional truncation handling</td><td>Reorder only reports that would actually be truncated, leaving the rest byte-identical &mdash; unlike <code>impression_first</code>, which rewrote most reports to fix a minority problem.</td></tr>
+          <tr><td>Sign off or decline the gold-case estimand</td><td>Open. The exposure inventory argues a probe on these cases buys a development statistic rather than a generalisation estimate.</td></tr>
+          <tr><td>Final model selection</td><td>Not made. Frozen multilingual E5 with 4-block image adaptation leads, but nothing is frozen.</td></tr>
+          <tr><td>Locked-test evaluation</td><td>Not authorized. It stays locked until a selection is frozen on validation.</td></tr>
+          <tr><td>Larger backbone</td><td>Candidate, not run. Gains scaling with depth suggest capacity is binding; <code>dinov2-base</code> would double the hidden width to 768 and fits in 8&nbsp;GB at this batch size.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer>Static local digest &middot; contains summaries and paths, not embedded report text or patient identifiers</footer>
+  </main>
+
+</body>
+</html>

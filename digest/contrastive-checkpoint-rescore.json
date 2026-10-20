@@ -1,0 +1,1518 @@
+{
+  "checkpoint_count": 18,
+  "checkpoints_with_metric_changes": 0,
+  "metric_tie_policy": "uniform_expected_credit",
+  "queries_with_tied_candidates": 0,
+  "results": [
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.5
+        ],
+        "mean_r@1": [
+          0.0,
+          0.3333333333333333
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.5
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/cpu-smoke-multilingual-e5-v1/best.pt",
+      "checkpoint_epoch": 1,
+      "checkpoint_sha256": "52940a5a7c9ed885f9c3afe503e25b45e707a88cdb017dffab14972224ed0dad",
+      "metric_deltas": {
+        "image_embedding_dimension_std_mean": 0.0,
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "inverse_temperature": 0.0,
+        "mean_r@1": 0.0,
+        "negative_similarity_mean": 0.0,
+        "positive_similarity_mean": 0.0,
+        "text_embedding_dimension_std_mean": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0,
+        "validation_loss": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.010821523144841194,
+        "image_to_text_mean_rank": 2.6666667461395264,
+        "image_to_text_median_rank": 2.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 1.0,
+        "image_to_text_r@5": 0.8333333134651184,
+        "inverse_temperature": 14.258033752441406,
+        "mean_r@1": 0.1666666716337204,
+        "negative_similarity_mean": 0.18010549247264862,
+        "positive_similarity_mean": 0.18148185312747955,
+        "text_embedding_dimension_std_mean": 0.007790635339915752,
+        "text_to_image_mean_rank": 3.5,
+        "text_to_image_median_rank": 3.0,
+        "text_to_image_r@1": 0.1666666716337204,
+        "text_to_image_r@10": 1.0,
+        "text_to_image_r@5": 0.8333333134651184,
+        "validation_loss": 1.7818224430084229
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "d128750597153bb5987e10b1c3493a34e5a4502a"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 3.5,
+        "r@1": 0.16666666666666666,
+        "r@10": 1.0,
+        "r@5": 0.8333333333333334
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 1,
+        "image_embedding_dimension_std_mean": 0.010821523144841194,
+        "image_to_text_mean_rank": 2.6666667461395264,
+        "image_to_text_median_rank": 2.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 1.0,
+        "image_to_text_r@5": 0.8333333134651184,
+        "inverse_temperature": 14.258033752441406,
+        "lr_projection_decay": 0.0,
+        "lr_projection_no_decay": 0.0,
+        "mean_r@1": 0.1666666716337204,
+        "negative_similarity_mean": 0.18010549247264862,
+        "positive_similarity_mean": 0.18148185312747955,
+        "text_embedding_dimension_std_mean": 0.007790635339915752,
+        "text_to_image_mean_rank": 3.5,
+        "text_to_image_median_rank": 3.0,
+        "text_to_image_r@1": 0.1666666716337204,
+        "text_to_image_r@10": 1.0,
+        "text_to_image_r@5": 0.8333333134651184,
+        "train_grad_norm": 2.896559953689575,
+        "train_loss": 2.875229239463806,
+        "validation_loss": 1.7818224430084229
+      },
+      "studies": 6
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.4166666666666667
+        ],
+        "mean_r@1": [
+          0.0,
+          0.375
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.4166666666666667
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/gold-translated-biomedbert/best.pt",
+      "checkpoint_epoch": 5,
+      "checkpoint_sha256": "4fb2e94c8a442e9451ec15c10acd0189253763495cd1efb595b12c352c70f66d",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.029727516695857048,
+        "image_to_text_mean_rank": 5.083333492279053,
+        "image_to_text_median_rank": 4.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5833333134651184,
+        "inverse_temperature": 14.21769905090332,
+        "mean_r@1": 0.1666666716337204,
+        "negative_similarity_mean": 0.08418489247560501,
+        "positive_similarity_mean": 0.11302626132965088,
+        "text_embedding_dimension_std_mean": 0.023795293644070625,
+        "text_to_image_mean_rank": 4.916666507720947,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.1666666716337204,
+        "text_to_image_r@10": 1.0,
+        "text_to_image_r@5": 0.5,
+        "validation_loss": 2.4892044067382812
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "e1354b7a3a09615f6aba48dfad4b7a613eef7062"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.5,
+        "r@1": 0.08333333333333333,
+        "r@10": 0.8333333333333334,
+        "r@5": 0.4166666666666667
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 5,
+        "image_to_text_mean_rank": 5.083333492279053,
+        "image_to_text_median_rank": 4.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5833333134651184,
+        "mean_r@1": 0.1666666716337204,
+        "text_to_image_mean_rank": 4.916666507720947,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.1666666716337204,
+        "text_to_image_r@10": 1.0,
+        "text_to_image_r@5": 0.5,
+        "train_loss": 1.6054075717926026
+      },
+      "studies": 12
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.4166666666666667
+        ],
+        "mean_r@1": [
+          0.041666666666666664,
+          0.2916666666666667
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.4166666666666667
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/gold-translated-radbert-va/best.pt",
+      "checkpoint_epoch": 1,
+      "checkpoint_sha256": "3947999582625f4c1afe7835cd409b4d00b9175a1b99217f37466a29d34114e1",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.010003805160522461,
+        "image_to_text_mean_rank": 6.75,
+        "image_to_text_median_rank": 7.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 0.75,
+        "image_to_text_r@5": 0.4166666567325592,
+        "inverse_temperature": 14.22047233581543,
+        "mean_r@1": 0.1666666716337204,
+        "negative_similarity_mean": 0.055377352982759476,
+        "positive_similarity_mean": 0.05514712259173393,
+        "text_embedding_dimension_std_mean": 0.005389222875237465,
+        "text_to_image_mean_rank": 6.416666507720947,
+        "text_to_image_median_rank": 6.0,
+        "text_to_image_r@1": 0.1666666716337204,
+        "text_to_image_r@10": 0.8333333134651184,
+        "text_to_image_r@5": 0.4166666567325592,
+        "validation_loss": 2.504485607147217
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "7162dace6aaa3fe2a51b95ab086d03b99b8c6aa7"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.5,
+        "r@1": 0.08333333333333333,
+        "r@10": 0.8333333333333334,
+        "r@5": 0.4166666666666667
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 1,
+        "image_to_text_mean_rank": 6.75,
+        "image_to_text_median_rank": 7.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 0.75,
+        "image_to_text_r@5": 0.4166666567325592,
+        "mean_r@1": 0.1666666716337204,
+        "text_to_image_mean_rank": 6.416666507720947,
+        "text_to_image_median_rank": 6.0,
+        "text_to_image_r@1": 0.1666666716337204,
+        "text_to_image_r@10": 0.8333333134651184,
+        "text_to_image_r@5": 0.4166666567325592,
+        "train_loss": 2.174034309387207
+      },
+      "studies": 12
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.4166666666666667
+        ],
+        "mean_r@1": [
+          0.0,
+          0.4583333333333333
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.5
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/gold-translated-stanford-radbert/best.pt",
+      "checkpoint_epoch": 3,
+      "checkpoint_sha256": "bf456271abe294e455174bb4d7fc04754acea4728eacdd5f06f87a68cc007cf9",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.017246151342988014,
+        "image_to_text_mean_rank": 5.666666507720947,
+        "image_to_text_median_rank": 5.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5,
+        "inverse_temperature": 14.162532806396484,
+        "mean_r@1": 0.2083333358168602,
+        "negative_similarity_mean": 0.17900899052619934,
+        "positive_similarity_mean": 0.19345630705356598,
+        "text_embedding_dimension_std_mean": 0.015331365168094635,
+        "text_to_image_mean_rank": 5.083333492279053,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.25,
+        "text_to_image_r@10": 0.9166666865348816,
+        "text_to_image_r@5": 0.5833333134651184,
+        "validation_loss": 2.376990795135498
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "c8f97547ff6dd96debf4e50022d9679219e6987b"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.5,
+        "r@1": 0.08333333333333333,
+        "r@10": 0.8333333333333334,
+        "r@5": 0.4166666666666667
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 3,
+        "image_to_text_mean_rank": 5.666666507720947,
+        "image_to_text_median_rank": 5.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5,
+        "mean_r@1": 0.2083333358168602,
+        "text_to_image_mean_rank": 5.083333492279053,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.25,
+        "text_to_image_r@10": 0.9166666865348816,
+        "text_to_image_r@5": 0.5833333134651184,
+        "train_loss": 1.875519609451294
+      },
+      "studies": 12
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.4166666666666667
+        ],
+        "mean_r@1": [
+          0.0,
+          0.4583333333333333
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.5
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/session-20260902/cv/biomedbert-fold-0/best.pt",
+      "checkpoint_epoch": 2,
+      "checkpoint_sha256": "52195c84170f521f9301ad8329e76e783c2f7feb6966cc961f0d50e74f3c42ec",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.014543375000357628,
+        "image_to_text_mean_rank": 5.583333492279053,
+        "image_to_text_median_rank": 5.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5,
+        "inverse_temperature": 14.18967342376709,
+        "mean_r@1": 0.2083333358168602,
+        "negative_similarity_mean": -0.07657276093959808,
+        "positive_similarity_mean": -0.06992123275995255,
+        "text_embedding_dimension_std_mean": 0.016930393874645233,
+        "text_to_image_mean_rank": 5.833333492279053,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.25,
+        "text_to_image_r@10": 0.8333333134651184,
+        "text_to_image_r@5": 0.5,
+        "validation_loss": 2.444129705429077
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "e1354b7a3a09615f6aba48dfad4b7a613eef7062"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.5,
+        "r@1": 0.08333333333333333,
+        "r@10": 0.8333333333333334,
+        "r@5": 0.4166666666666667
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 2,
+        "image_to_text_mean_rank": 5.583333492279053,
+        "image_to_text_median_rank": 5.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5,
+        "mean_r@1": 0.2083333358168602,
+        "text_to_image_mean_rank": 5.833333492279053,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.25,
+        "text_to_image_r@10": 0.8333333134651184,
+        "text_to_image_r@5": 0.5,
+        "train_loss": 2.000435781478882
+      },
+      "studies": 12
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.5
+        ],
+        "mean_r@1": [
+          0.08333333333333333,
+          0.3333333333333333
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.4166666666666667
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/session-20260902/cv/biomedbert-fold-1/best.pt",
+      "checkpoint_epoch": 4,
+      "checkpoint_sha256": "a02bbe40a4aeb32e8bc1a3288fdb3c8d7a77335e6e67a5e8699b8a63f6d03e2d",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.027292773127555847,
+        "image_to_text_mean_rank": 5.083333492279053,
+        "image_to_text_median_rank": 5.0,
+        "image_to_text_r@1": 0.25,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5,
+        "inverse_temperature": 14.230015754699707,
+        "mean_r@1": 0.2083333358168602,
+        "negative_similarity_mean": 0.014585708267986774,
+        "positive_similarity_mean": 0.04501429200172424,
+        "text_embedding_dimension_std_mean": 0.026673324406147003,
+        "text_to_image_mean_rank": 5.166666507720947,
+        "text_to_image_median_rank": 4.0,
+        "text_to_image_r@1": 0.1666666716337204,
+        "text_to_image_r@10": 0.9166666865348816,
+        "text_to_image_r@5": 0.5,
+        "validation_loss": 2.6489791870117188
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "e1354b7a3a09615f6aba48dfad4b7a613eef7062"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.5,
+        "r@1": 0.08333333333333333,
+        "r@10": 0.8333333333333334,
+        "r@5": 0.4166666666666667
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 4,
+        "image_to_text_mean_rank": 5.083333492279053,
+        "image_to_text_median_rank": 5.0,
+        "image_to_text_r@1": 0.25,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5,
+        "mean_r@1": 0.2083333358168602,
+        "text_to_image_mean_rank": 5.166666507720947,
+        "text_to_image_median_rank": 4.0,
+        "text_to_image_r@1": 0.1666666716337204,
+        "text_to_image_r@10": 0.9166666865348816,
+        "text_to_image_r@5": 0.5,
+        "train_loss": 1.425547456741333
+      },
+      "studies": 12
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.4166666666666667
+        ],
+        "mean_r@1": [
+          0.0,
+          0.4583333333333333
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.5
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/session-20260902/cv/biomedbert-fold-2/best.pt",
+      "checkpoint_epoch": 3,
+      "checkpoint_sha256": "4a55d9c67b6f2faa79194048bf795ed1623bc521a32a4a61f4bd304f36775698",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.025211062282323837,
+        "image_to_text_mean_rank": 4.916666507720947,
+        "image_to_text_median_rank": 4.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.6666666865348816,
+        "inverse_temperature": 14.218523025512695,
+        "mean_r@1": 0.2083333358168602,
+        "negative_similarity_mean": -0.05901750922203064,
+        "positive_similarity_mean": -0.036489859223365784,
+        "text_embedding_dimension_std_mean": 0.026322875171899796,
+        "text_to_image_mean_rank": 5.666666507720947,
+        "text_to_image_median_rank": 7.0,
+        "text_to_image_r@1": 0.25,
+        "text_to_image_r@10": 1.0,
+        "text_to_image_r@5": 0.4166666567325592,
+        "validation_loss": 2.488206386566162
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "e1354b7a3a09615f6aba48dfad4b7a613eef7062"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.5,
+        "r@1": 0.08333333333333333,
+        "r@10": 0.8333333333333334,
+        "r@5": 0.4166666666666667
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 3,
+        "image_to_text_mean_rank": 4.916666507720947,
+        "image_to_text_median_rank": 4.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.6666666865348816,
+        "mean_r@1": 0.2083333358168602,
+        "text_to_image_mean_rank": 5.666666507720947,
+        "text_to_image_median_rank": 7.0,
+        "text_to_image_r@1": 0.25,
+        "text_to_image_r@10": 1.0,
+        "text_to_image_r@5": 0.4166666567325592,
+        "train_loss": 1.7005114078521728
+      },
+      "studies": 12
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.5454545454545454
+        ],
+        "mean_r@1": [
+          0.045454545454545456,
+          0.5
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.5454545454545454
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/session-20260902/cv/biomedbert-fold-3/best.pt",
+      "checkpoint_epoch": 5,
+      "checkpoint_sha256": "06d9dff101ad32649acb713de534278d40bb20eefe8d22593542db413b9beb85",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.026422474533319473,
+        "image_to_text_mean_rank": 3.7272727489471436,
+        "image_to_text_median_rank": 3.0,
+        "image_to_text_r@1": 0.27272728085517883,
+        "image_to_text_r@10": 1.0,
+        "image_to_text_r@5": 0.7272727489471436,
+        "inverse_temperature": 14.221431732177734,
+        "mean_r@1": 0.27272728085517883,
+        "negative_similarity_mean": 0.08430688083171844,
+        "positive_similarity_mean": 0.15833459794521332,
+        "text_embedding_dimension_std_mean": 0.0332484096288681,
+        "text_to_image_mean_rank": 3.8181817531585693,
+        "text_to_image_median_rank": 3.0,
+        "text_to_image_r@1": 0.27272728085517883,
+        "text_to_image_r@10": 0.9090909361839294,
+        "text_to_image_r@5": 0.8181818127632141,
+        "validation_loss": 2.039316177368164
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "e1354b7a3a09615f6aba48dfad4b7a613eef7062"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.0,
+        "r@1": 0.09090909090909091,
+        "r@10": 0.9090909090909091,
+        "r@5": 0.45454545454545453
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 5,
+        "image_to_text_mean_rank": 3.7272727489471436,
+        "image_to_text_median_rank": 3.0,
+        "image_to_text_r@1": 0.27272728085517883,
+        "image_to_text_r@10": 1.0,
+        "image_to_text_r@5": 0.7272727489471436,
+        "mean_r@1": 0.27272728085517883,
+        "text_to_image_mean_rank": 3.8181817531585693,
+        "text_to_image_median_rank": 3.0,
+        "text_to_image_r@1": 0.27272728085517883,
+        "text_to_image_r@10": 0.9090909361839294,
+        "text_to_image_r@5": 0.8181818127632141,
+        "train_loss": 1.2240001440048218
+      },
+      "studies": 11
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.2727272727272727
+        ],
+        "mean_r@1": [
+          0.0,
+          0.22727272727272727
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.2727272727272727
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/session-20260902/cv/biomedbert-fold-4/best.pt",
+      "checkpoint_epoch": 1,
+      "checkpoint_sha256": "5a9866f78e92dfc2aef3cdc02f6383348e86736c88f6f109685bc55561db6d69",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.011547913774847984,
+        "image_to_text_mean_rank": 5.909090995788574,
+        "image_to_text_median_rank": 7.0,
+        "image_to_text_r@1": 0.09090909361839294,
+        "image_to_text_r@10": 0.9090909361839294,
+        "image_to_text_r@5": 0.3636363744735718,
+        "inverse_temperature": 14.22324275970459,
+        "mean_r@1": 0.09090909361839294,
+        "negative_similarity_mean": -0.04415793716907501,
+        "positive_similarity_mean": -0.044656429439783096,
+        "text_embedding_dimension_std_mean": 0.014167503453791142,
+        "text_to_image_mean_rank": 5.7272725105285645,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.09090909361839294,
+        "text_to_image_r@10": 0.9090909361839294,
+        "text_to_image_r@5": 0.5454545617103577,
+        "validation_loss": 2.427971363067627
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "e1354b7a3a09615f6aba48dfad4b7a613eef7062"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.0,
+        "r@1": 0.09090909090909091,
+        "r@10": 0.9090909090909091,
+        "r@5": 0.45454545454545453
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 1,
+        "image_to_text_mean_rank": 5.909090995788574,
+        "image_to_text_median_rank": 7.0,
+        "image_to_text_r@1": 0.09090909361839294,
+        "image_to_text_r@10": 0.9090909361839294,
+        "image_to_text_r@5": 0.3636363744735718,
+        "mean_r@1": 0.09090909361839294,
+        "text_to_image_mean_rank": 5.7272725105285645,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.09090909361839294,
+        "text_to_image_r@10": 0.9090909361839294,
+        "text_to_image_r@5": 0.5454545617103577,
+        "train_loss": 2.1123304843902586
+      },
+      "studies": 11
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.08333333333333333,
+          0.5833333333333334
+        ],
+        "mean_r@1": [
+          0.08333333333333333,
+          0.5
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.5
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/session-20260902/cv/radbert-fold-0/best.pt",
+      "checkpoint_epoch": 3,
+      "checkpoint_sha256": "f2d60a0a6b5801e4ef63346b4902515241b40fbb394eed75d8ce6583dc9864f2",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.02624686434864998,
+        "image_to_text_mean_rank": 4.916666507720947,
+        "image_to_text_median_rank": 4.0,
+        "image_to_text_r@1": 0.3333333432674408,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5833333134651184,
+        "inverse_temperature": 14.207164764404297,
+        "mean_r@1": 0.2916666716337204,
+        "negative_similarity_mean": 0.009222117252647877,
+        "positive_similarity_mean": 0.04453384876251221,
+        "text_embedding_dimension_std_mean": 0.020798057317733765,
+        "text_to_image_mean_rank": 5.166666507720947,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.25,
+        "text_to_image_r@10": 0.9166666865348816,
+        "text_to_image_r@5": 0.5,
+        "validation_loss": 2.321843385696411
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "c8f97547ff6dd96debf4e50022d9679219e6987b"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.5,
+        "r@1": 0.08333333333333333,
+        "r@10": 0.8333333333333334,
+        "r@5": 0.4166666666666667
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 3,
+        "image_to_text_mean_rank": 4.916666507720947,
+        "image_to_text_median_rank": 4.0,
+        "image_to_text_r@1": 0.3333333432674408,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5833333134651184,
+        "mean_r@1": 0.2916666716337204,
+        "text_to_image_mean_rank": 5.166666507720947,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.25,
+        "text_to_image_r@10": 0.9166666865348816,
+        "text_to_image_r@5": 0.5,
+        "train_loss": 1.6789896965026856
+      },
+      "studies": 12
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.25
+        ],
+        "mean_r@1": [
+          0.0,
+          0.20833333333333334
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.25
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/session-20260902/cv/radbert-fold-1/best.pt",
+      "checkpoint_epoch": 1,
+      "checkpoint_sha256": "87474239774a08dc718ab17d759f76cc08115033be08a6818b98fedc86298d25",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.014697551727294922,
+        "image_to_text_mean_rank": 6.25,
+        "image_to_text_median_rank": 5.0,
+        "image_to_text_r@1": 0.0833333358168602,
+        "image_to_text_r@10": 0.8333333134651184,
+        "image_to_text_r@5": 0.5,
+        "inverse_temperature": 14.220417976379395,
+        "mean_r@1": 0.0833333358168602,
+        "negative_similarity_mean": -0.0026655427645891905,
+        "positive_similarity_mean": -0.001291267923079431,
+        "text_embedding_dimension_std_mean": 0.01660243421792984,
+        "text_to_image_mean_rank": 5.25,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.0833333358168602,
+        "text_to_image_r@10": 1.0,
+        "text_to_image_r@5": 0.5833333134651184,
+        "validation_loss": 2.5623581409454346
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "c8f97547ff6dd96debf4e50022d9679219e6987b"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.5,
+        "r@1": 0.08333333333333333,
+        "r@10": 0.8333333333333334,
+        "r@5": 0.4166666666666667
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 1,
+        "image_to_text_mean_rank": 6.25,
+        "image_to_text_median_rank": 5.0,
+        "image_to_text_r@1": 0.0833333358168602,
+        "image_to_text_r@10": 0.8333333134651184,
+        "image_to_text_r@5": 0.5,
+        "mean_r@1": 0.0833333358168602,
+        "text_to_image_mean_rank": 5.25,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.0833333358168602,
+        "text_to_image_r@10": 1.0,
+        "text_to_image_r@5": 0.5833333134651184,
+        "train_loss": 2.1377847671508787
+      },
+      "studies": 12
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.5
+        ],
+        "mean_r@1": [
+          0.0,
+          0.375
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.25
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/session-20260902/cv/radbert-fold-2/best.pt",
+      "checkpoint_epoch": 4,
+      "checkpoint_sha256": "1d58b630b4c8c2d21a93917224ee03eea77c4caa2f1fee822b8fb0b3350b4185",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.029411980882287025,
+        "image_to_text_mean_rank": 5.166666507720947,
+        "image_to_text_median_rank": 4.0,
+        "image_to_text_r@1": 0.25,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5833333134651184,
+        "inverse_temperature": 14.22708511352539,
+        "mean_r@1": 0.1666666679084301,
+        "negative_similarity_mean": 0.14896191656589508,
+        "positive_similarity_mean": 0.19592736661434174,
+        "text_embedding_dimension_std_mean": 0.02328835241496563,
+        "text_to_image_mean_rank": 5.166666507720947,
+        "text_to_image_median_rank": 4.0,
+        "text_to_image_r@1": 0.0833333358168602,
+        "text_to_image_r@10": 0.9166666865348816,
+        "text_to_image_r@5": 0.6666666865348816,
+        "validation_loss": 2.4880905151367188
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "c8f97547ff6dd96debf4e50022d9679219e6987b"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.5,
+        "r@1": 0.08333333333333333,
+        "r@10": 0.8333333333333334,
+        "r@5": 0.4166666666666667
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 4,
+        "image_to_text_mean_rank": 5.166666507720947,
+        "image_to_text_median_rank": 4.0,
+        "image_to_text_r@1": 0.25,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5833333134651184,
+        "mean_r@1": 0.1666666679084301,
+        "text_to_image_mean_rank": 5.166666507720947,
+        "text_to_image_median_rank": 4.0,
+        "text_to_image_r@1": 0.0833333358168602,
+        "text_to_image_r@10": 0.9166666865348816,
+        "text_to_image_r@5": 0.6666666865348816,
+        "train_loss": 1.592832827568054
+      },
+      "studies": 12
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.45454545454545453
+        ],
+        "mean_r@1": [
+          0.045454545454545456,
+          0.45454545454545453
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.5454545454545454
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/session-20260902/cv/radbert-fold-3/best.pt",
+      "checkpoint_epoch": 3,
+      "checkpoint_sha256": "57e8166da3a6324c36320f2fc3b435111114860dca6dfb3ea413d7f0619d6672",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.021277496591210365,
+        "image_to_text_mean_rank": 3.8181817531585693,
+        "image_to_text_median_rank": 3.0,
+        "image_to_text_r@1": 0.1818181872367859,
+        "image_to_text_r@10": 1.0,
+        "image_to_text_r@5": 0.6363636255264282,
+        "inverse_temperature": 14.185529708862305,
+        "mean_r@1": 0.22727273404598236,
+        "negative_similarity_mean": -0.03533207252621651,
+        "positive_similarity_mean": -0.006502819247543812,
+        "text_embedding_dimension_std_mean": 0.014274932444095612,
+        "text_to_image_mean_rank": 4.181818008422852,
+        "text_to_image_median_rank": 3.0,
+        "text_to_image_r@1": 0.27272728085517883,
+        "text_to_image_r@10": 1.0,
+        "text_to_image_r@5": 0.6363636255264282,
+        "validation_loss": 2.1352925300598145
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "c8f97547ff6dd96debf4e50022d9679219e6987b"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.0,
+        "r@1": 0.09090909090909091,
+        "r@10": 0.9090909090909091,
+        "r@5": 0.45454545454545453
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 3,
+        "image_to_text_mean_rank": 3.8181817531585693,
+        "image_to_text_median_rank": 3.0,
+        "image_to_text_r@1": 0.1818181872367859,
+        "image_to_text_r@10": 1.0,
+        "image_to_text_r@5": 0.6363636255264282,
+        "mean_r@1": 0.22727273404598236,
+        "text_to_image_mean_rank": 4.181818008422852,
+        "text_to_image_median_rank": 3.0,
+        "text_to_image_r@1": 0.27272728085517883,
+        "text_to_image_r@10": 1.0,
+        "text_to_image_r@5": 0.6363636255264282,
+        "train_loss": 1.9059059619903564
+      },
+      "studies": 11
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.2727272727272727
+        ],
+        "mean_r@1": [
+          0.0,
+          0.22727272727272727
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.2727272727272727
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/session-20260902/cv/radbert-fold-4/best.pt",
+      "checkpoint_epoch": 1,
+      "checkpoint_sha256": "49281faa13c11d7520a8c2cc40a54eccb4b07d83fffef7e705828b446e7b296f",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.01215378288179636,
+        "image_to_text_mean_rank": 6.636363506317139,
+        "image_to_text_median_rank": 7.0,
+        "image_to_text_r@1": 0.09090909361839294,
+        "image_to_text_r@10": 0.8181818127632141,
+        "image_to_text_r@5": 0.3636363744735718,
+        "inverse_temperature": 14.22214412689209,
+        "mean_r@1": 0.09090909361839294,
+        "negative_similarity_mean": -0.11538483202457428,
+        "positive_similarity_mean": -0.11929439753293991,
+        "text_embedding_dimension_std_mean": 0.01641691103577614,
+        "text_to_image_mean_rank": 7.090909004211426,
+        "text_to_image_median_rank": 8.0,
+        "text_to_image_r@1": 0.09090909361839294,
+        "text_to_image_r@10": 0.8181818127632141,
+        "text_to_image_r@5": 0.3636363744735718,
+        "validation_loss": 2.512176275253296
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "c8f97547ff6dd96debf4e50022d9679219e6987b"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.0,
+        "r@1": 0.09090909090909091,
+        "r@10": 0.9090909090909091,
+        "r@5": 0.45454545454545453
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 1,
+        "image_to_text_mean_rank": 6.636363506317139,
+        "image_to_text_median_rank": 7.0,
+        "image_to_text_r@1": 0.09090909361839294,
+        "image_to_text_r@10": 0.8181818127632141,
+        "image_to_text_r@5": 0.3636363744735718,
+        "mean_r@1": 0.09090909361839294,
+        "text_to_image_mean_rank": 7.090909004211426,
+        "text_to_image_median_rank": 8.0,
+        "text_to_image_r@1": 0.09090909361839294,
+        "text_to_image_r@10": 0.8181818127632141,
+        "text_to_image_r@5": 0.3636363744735718,
+        "train_loss": 2.1389750480651855
+      },
+      "studies": 11
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.4166666666666667
+        ],
+        "mean_r@1": [
+          0.0,
+          0.25
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.25
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/session-20260902/token-length/biomedbert-512/best.pt",
+      "checkpoint_epoch": 3,
+      "checkpoint_sha256": "77a21e3b772cbae5f30b3d241d35e0e6ef7aad801cba6b3a7efb010cab201cfc",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.01769344136118889,
+        "image_to_text_mean_rank": 5.416666507720947,
+        "image_to_text_median_rank": 5.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5,
+        "inverse_temperature": 14.166919708251953,
+        "mean_r@1": 0.1250000037252903,
+        "negative_similarity_mean": -0.001280741998925805,
+        "positive_similarity_mean": 0.014727267436683178,
+        "text_embedding_dimension_std_mean": 0.022898567840456963,
+        "text_to_image_mean_rank": 5.166666507720947,
+        "text_to_image_median_rank": 4.0,
+        "text_to_image_r@1": 0.0833333358168602,
+        "text_to_image_r@10": 1.0,
+        "text_to_image_r@5": 0.6666666865348816,
+        "validation_loss": 2.4398245811462402
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "e1354b7a3a09615f6aba48dfad4b7a613eef7062"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.5,
+        "r@1": 0.08333333333333333,
+        "r@10": 0.8333333333333334,
+        "r@5": 0.4166666666666667
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 3,
+        "image_to_text_mean_rank": 5.416666507720947,
+        "image_to_text_median_rank": 5.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5,
+        "mean_r@1": 0.1250000037252903,
+        "text_to_image_mean_rank": 5.166666507720947,
+        "text_to_image_median_rank": 4.0,
+        "text_to_image_r@1": 0.0833333358168602,
+        "text_to_image_r@10": 1.0,
+        "text_to_image_r@5": 0.6666666865348816,
+        "train_loss": 1.8109062433242797
+      },
+      "studies": 12
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.4166666666666667
+        ],
+        "mean_r@1": [
+          0.0,
+          0.375
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.4166666666666667
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/session-20260902/unfreezing/biomedbert-blocks-0/best.pt",
+      "checkpoint_epoch": 5,
+      "checkpoint_sha256": "1059584dcb2224984f21c93bb02fc81f864cc3c1096d8b874d2b67bf9556bf1b",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.029727516695857048,
+        "image_to_text_mean_rank": 5.083333492279053,
+        "image_to_text_median_rank": 4.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5833333134651184,
+        "inverse_temperature": 14.21769905090332,
+        "mean_r@1": 0.1666666716337204,
+        "negative_similarity_mean": 0.08418489247560501,
+        "positive_similarity_mean": 0.11302626132965088,
+        "text_embedding_dimension_std_mean": 0.023795293644070625,
+        "text_to_image_mean_rank": 4.916666507720947,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.1666666716337204,
+        "text_to_image_r@10": 1.0,
+        "text_to_image_r@5": 0.5,
+        "validation_loss": 2.4892044067382812
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "e1354b7a3a09615f6aba48dfad4b7a613eef7062"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.5,
+        "r@1": 0.08333333333333333,
+        "r@10": 0.8333333333333334,
+        "r@5": 0.4166666666666667
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 5,
+        "image_to_text_mean_rank": 5.083333492279053,
+        "image_to_text_median_rank": 4.0,
+        "image_to_text_r@1": 0.1666666716337204,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5833333134651184,
+        "mean_r@1": 0.1666666716337204,
+        "text_to_image_mean_rank": 4.916666507720947,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.1666666716337204,
+        "text_to_image_r@10": 1.0,
+        "text_to_image_r@5": 0.5,
+        "train_loss": 1.6054075717926026
+      },
+      "studies": 12
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.5
+        ],
+        "mean_r@1": [
+          0.041666666666666664,
+          0.4166666666666667
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.4166666666666667
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/session-20260902/unfreezing/biomedbert-blocks-1/best.pt",
+      "checkpoint_epoch": 3,
+      "checkpoint_sha256": "324666996b487e1a626d39ecc5e23775cd88d5ba150303c8d34c630f008cbb9a",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.02251708321273327,
+        "image_to_text_mean_rank": 5.5,
+        "image_to_text_median_rank": 3.0,
+        "image_to_text_r@1": 0.25,
+        "image_to_text_r@10": 0.8333333134651184,
+        "image_to_text_r@5": 0.5833333134651184,
+        "inverse_temperature": 14.19642448425293,
+        "mean_r@1": 0.2083333358168602,
+        "negative_similarity_mean": 0.0002190242666983977,
+        "positive_similarity_mean": 0.009442714042961597,
+        "text_embedding_dimension_std_mean": 0.017782803624868393,
+        "text_to_image_mean_rank": 6.75,
+        "text_to_image_median_rank": 7.0,
+        "text_to_image_r@1": 0.1666666716337204,
+        "text_to_image_r@10": 0.75,
+        "text_to_image_r@5": 0.3333333432674408,
+        "validation_loss": 2.5903408527374268
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "e1354b7a3a09615f6aba48dfad4b7a613eef7062"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.5,
+        "r@1": 0.08333333333333333,
+        "r@10": 0.8333333333333334,
+        "r@5": 0.4166666666666667
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 3,
+        "image_to_text_mean_rank": 5.5,
+        "image_to_text_median_rank": 3.0,
+        "image_to_text_r@1": 0.25,
+        "image_to_text_r@10": 0.8333333134651184,
+        "image_to_text_r@5": 0.5833333134651184,
+        "mean_r@1": 0.2083333358168602,
+        "text_to_image_mean_rank": 6.75,
+        "text_to_image_median_rank": 7.0,
+        "text_to_image_r@1": 0.1666666716337204,
+        "text_to_image_r@10": 0.75,
+        "text_to_image_r@5": 0.3333333432674408,
+        "train_loss": 1.760645294189453
+      },
+      "studies": 12
+    },
+    {
+      "bootstrap_95_ci": {
+        "image_to_text_r@1": [
+          0.0,
+          0.5
+        ],
+        "mean_r@1": [
+          0.0,
+          0.4583333333333333
+        ],
+        "text_to_image_r@1": [
+          0.0,
+          0.4166666666666667
+        ]
+      },
+      "checkpoint": "checkpoints/contrastive/session-20260902/unfreezing/biomedbert-blocks-2/best.pt",
+      "checkpoint_epoch": 4,
+      "checkpoint_sha256": "491aae8e74b4013307507d22b3465470ef654f3609ff53d16b3bb89f53345e40",
+      "metric_deltas": {
+        "image_to_text_mean_rank": 0.0,
+        "image_to_text_median_rank": 0.0,
+        "image_to_text_r@1": 0.0,
+        "image_to_text_r@10": 0.0,
+        "image_to_text_r@5": 0.0,
+        "mean_r@1": 0.0,
+        "text_to_image_mean_rank": 0.0,
+        "text_to_image_median_rank": 0.0,
+        "text_to_image_r@1": 0.0,
+        "text_to_image_r@10": 0.0,
+        "text_to_image_r@5": 0.0
+      },
+      "metric_tie_policy": "uniform_expected_credit",
+      "metrics": {
+        "image_embedding_dimension_std_mean": 0.027696870267391205,
+        "image_to_text_mean_rank": 5.166666507720947,
+        "image_to_text_median_rank": 4.0,
+        "image_to_text_r@1": 0.25,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5833333134651184,
+        "inverse_temperature": 14.197768211364746,
+        "mean_r@1": 0.2083333358168602,
+        "negative_similarity_mean": 0.009141724556684494,
+        "positive_similarity_mean": 0.02815457619726658,
+        "text_embedding_dimension_std_mean": 0.020205644890666008,
+        "text_to_image_mean_rank": 5.083333492279053,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.1666666716337204,
+        "text_to_image_r@10": 0.9166666865348816,
+        "text_to_image_r@5": 0.5833333134651184,
+        "validation_loss": 2.5631580352783203
+      },
+      "model_info": {
+        "image_blocks": 12,
+        "image_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        "text_blocks": 12,
+        "text_revision": "e1354b7a3a09615f6aba48dfad4b7a613eef7062"
+      },
+      "queries_with_tied_candidates": 0,
+      "random_ranking_baseline": {
+        "mean_rank": 6.5,
+        "r@1": 0.08333333333333333,
+        "r@10": 0.8333333333333334,
+        "r@5": 0.4166666666666667
+      },
+      "schema_version": 1,
+      "split": "validation",
+      "stored_metrics": {
+        "epoch": 4,
+        "image_to_text_mean_rank": 5.166666507720947,
+        "image_to_text_median_rank": 4.0,
+        "image_to_text_r@1": 0.25,
+        "image_to_text_r@10": 0.9166666865348816,
+        "image_to_text_r@5": 0.5833333134651184,
+        "mean_r@1": 0.2083333358168602,
+        "text_to_image_mean_rank": 5.083333492279053,
+        "text_to_image_median_rank": 5.0,
+        "text_to_image_r@1": 0.1666666716337204,
+        "text_to_image_r@10": 0.9166666865348816,
+        "text_to_image_r@5": 0.5833333134651184,
+        "train_loss": 1.5460602045059204
+      },
+      "studies": 12
+    }
+  ],
+  "schema_version": 1
+}

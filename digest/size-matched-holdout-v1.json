@@ -1,0 +1,201 @@
+{
+  "protocol": "One paired backbone swap; same 56 excluded gold studies, fixed eight-fold OOF logistic probe, same seed and hyperparameters",
+  "control_audit": {
+    "active_training_settings_equal_except_backbones": true,
+    "inactive_defaults_newly_serialized": [
+      "declip_image_ss_weight",
+      "declip_mv_weight",
+      "declip_nn_weight",
+      "declip_queue_size",
+      "declip_text_mask_prob",
+      "freeze_temperature",
+      "max_inverse_temperature",
+      "use_declip"
+    ],
+    "changed_fields": [
+      "image_model",
+      "image_model_revision",
+      "output_dir",
+      "text_model",
+      "text_model_revision"
+    ]
+  },
+  "artifacts": {
+    "existing_checkpoint": "/home/q/Projects/novo-project/checkpoints/contrastive/both-lora-holdout-v1/holdout-both-lora-depth6-r64-seed2026/best.pt",
+    "existing_checkpoint_sha256": "c3de2f76fe9b10306fd423759f9e80b8076b9cafdd121f4fcc2650fc870dbdfa",
+    "size_matched_checkpoint": "/home/q/Projects/novo-project/checkpoints/contrastive/size-matched-holdout-v1/dinov2-base-e5-small-depth6-r64-seed2026/best.pt",
+    "size_matched_checkpoint_sha256": "58a9367e925317d72c88cd20520cd734cb3be9fca1784cfd3f865e638fab426d",
+    "training_config": "/home/q/Projects/novo-project/configs/contrastive/size-matched-holdout-v1.json",
+    "probe_config": "/home/q/Projects/novo-project/configs/downstream/gold-probe-size-matched-holdout-v1.json"
+  },
+  "population": {
+    "manifest_sha256": "d104337696a19d52d12480c1cfaae30c937916102e36a67e3124755fa20123f5",
+    "gold_studies": 58,
+    "split_counts": {
+      "train": 0,
+      "validation": 0,
+      "test": 2,
+      "excluded": 56,
+      "absent": 0
+    },
+    "population_splits": [
+      "excluded"
+    ],
+    "population_size": 56
+  },
+  "models": {
+    "existing": {
+      "image": "facebook/dinov2-small",
+      "text": "intfloat/multilingual-e5-base",
+      "feature_dimensions": 768,
+      "image_backbone_parameters": 22056576,
+      "text_backbone_parameters": 278043648
+    },
+    "size_matched": {
+      "image": "facebook/dinov2-base",
+      "text": "intfloat/multilingual-e5-small",
+      "feature_dimensions": 1536,
+      "image_backbone_parameters": 86580480,
+      "text_backbone_parameters": 117653760
+    }
+  },
+  "retrieval": {
+    "existing_best_epoch": 17,
+    "existing_best_mean_r1": 0.13337182998657227,
+    "size_matched_best_epoch": 18,
+    "size_matched_best_mean_r1": 0.1466512754559517,
+    "at_best_checkpoint": {
+      "image_to_text_r@1": {
+        "existing": 0.13972286880016327,
+        "size_matched": 0.13856813311576843
+      },
+      "text_to_image_r@1": {
+        "existing": 0.12702079117298126,
+        "size_matched": 0.15473441779613495
+      },
+      "image_to_text_r@5": {
+        "existing": 0.4526558816432953,
+        "size_matched": 0.480369508266449
+      },
+      "text_to_image_r@5": {
+        "existing": 0.44803693890571594,
+        "size_matched": 0.49191686511039734
+      },
+      "image_to_text_r@10": {
+        "existing": 0.6420323252677917,
+        "size_matched": 0.6743649244308472
+      },
+      "text_to_image_r@10": {
+        "existing": 0.6720554232597351,
+        "size_matched": 0.6697459816932678
+      }
+    }
+  },
+  "loss_trajectory": {
+    "existing": {
+      "minimum_validation_epoch": 6,
+      "minimum_validation_loss": 3.4458045959472656,
+      "final_validation_loss": 4.053892135620117,
+      "final_training_loss": 0.1348988714420961
+    },
+    "size_matched": {
+      "minimum_validation_epoch": 8,
+      "minimum_validation_loss": 3.4157471656799316,
+      "final_validation_loss": 4.097379684448242,
+      "final_training_loss": 0.11940413668613743
+    }
+  },
+  "gold": {
+    "unadapted_small_macro_auroc": 0.6439917511777699,
+    "unadapted_base_macro_auroc": 0.6294793526514758,
+    "existing_macro_auroc": 0.7593615004455258,
+    "size_matched_macro_auroc": 0.6968687165569286,
+    "difference": -0.062492783888597137,
+    "paired_bootstrap": {
+      "macro_auroc_difference_mean": -0.06209817748720323,
+      "macro_auroc_difference_ci95": [
+        -0.10563449093877504,
+        -0.019094994771889657
+      ],
+      "fraction_of_replicates_favouring_right": 0.0022,
+      "single_class_label_replicates_dropped": 1,
+      "resamples": 5000,
+      "unit": "study",
+      "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable"
+    },
+    "per_label": {
+      "ACL": {
+        "existing": 0.7404479578392622,
+        "size_matched": 0.6297760210803689,
+        "difference": -0.11067193675889331,
+        "positives": 23
+      },
+      "MCL": {
+        "existing": 0.7005208333333334,
+        "size_matched": 0.453125,
+        "difference": -0.24739583333333337,
+        "positives": 8
+      },
+      "Medial Meniscus": {
+        "existing": 0.7371794871794872,
+        "size_matched": 0.7153846153846155,
+        "difference": -0.021794871794871717,
+        "positives": 26
+      },
+      "Lateral Meniscus": {
+        "existing": 0.6858288770053476,
+        "size_matched": 0.6470588235294118,
+        "difference": -0.03877005347593576,
+        "positives": 22
+      },
+      "Medial OA": {
+        "existing": 0.9421768707482994,
+        "size_matched": 0.8673469387755102,
+        "difference": -0.0748299319727892,
+        "positives": 14
+      },
+      "Lateral OA": {
+        "existing": 0.8282828282828283,
+        "size_matched": 0.8282828282828283,
+        "difference": 0.0,
+        "positives": 11
+      },
+      "PF OA": {
+        "existing": 0.6638888888888889,
+        "size_matched": 0.5875,
+        "difference": -0.07638888888888884,
+        "positives": 20
+      },
+      "Effusion": {
+        "existing": 0.9051383399209487,
+        "size_matched": 0.8300395256916997,
+        "difference": -0.07509881422924902,
+        "positives": 33
+      },
+      "Synovitis": {
+        "existing": 0.5948717948717949,
+        "size_matched": 0.6384615384615385,
+        "difference": 0.04358974358974366,
+        "positives": 26
+      },
+      "Baker's": {
+        "existing": 0.7708333333333333,
+        "size_matched": 0.7992424242424242,
+        "difference": 0.02840909090909094,
+        "positives": 12
+      },
+      "Contusion": {
+        "existing": 0.871977240398293,
+        "size_matched": 0.8051209103840683,
+        "difference": -0.06685633001422475,
+        "positives": 19
+      },
+      "Fracture": {
+        "existing": 0.6711915535444947,
+        "size_matched": 0.5610859728506787,
+        "difference": -0.11010558069381593,
+        "positives": 17
+      }
+    }
+  }
+}

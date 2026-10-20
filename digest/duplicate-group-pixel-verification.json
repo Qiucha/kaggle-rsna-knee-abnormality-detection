@@ -1,0 +1,532 @@
+{
+ "generated": "2026-09-11T15:31:14+0800",
+ "source_screen": "digest/acquisition-duplicate-screen.json",
+ "method": "sha256 over every decoded slice array of each selected series, in `ordered_slice_paths` order -- the pipeline's own geometric ordering, not file name order.",
+ "groups_examined": 6,
+ "groups_gated_on_locked_test": 0,
+ "gated": [
+  {
+   "members": 2,
+   "splits": [
+    "test",
+    "train"
+   ],
+   "study_uids": [
+    "study-7721d58988002023",
+    "study-2287d66535a19a17"
+   ],
+   "reason": "contains a locked-test study; decoding its pixels is a protocol decision for the user, not taken here",
+   "resolved": {
+    "on": "2026-09-11",
+    "by": "user instruction to decode the gated candidate",
+    "verdict": "CLEARED -- different decoded pixels on all three planes; not a duplicate",
+    "evidence": "digest/gated-duplicate-resolution.json"
+   }
+  }
+ ],
+ "groups_confirmed_identical": 1,
+ "studies_in_confirmed_groups": 2,
+ "confirmed_groups_crossing_splits": 0,
+ "confirmed_groups_with_conflicting_reports": 1,
+ "confirmed_studies_still_training_eligible": 0,
+ "seconds": 22.3,
+ "detail": [
+  {
+   "members": 7,
+   "splits": [
+    "train",
+    "validation"
+   ],
+   "crosses_splits": true,
+   "pixels_identical_on_every_plane": false,
+   "identical_planes": {
+    "Axial": false,
+    "Coronal": false,
+    "Sagittal": false
+   },
+   "distinct_translated_reports": 7,
+   "reports_conflict": true,
+   "all_members_training_eligible": true,
+   "study_uids": [
+    "study-37185d4351f6c614",
+    "study-bd7602e5577fcb3f",
+    "study-691d5c4c2674aac3",
+    "study-123275de7dc1e124",
+    "study-f025d9a5c7146d61",
+    "study-96c8c344e70133d2",
+    "study-4d21fc242bf6c11a"
+   ],
+   "per_study": {
+    "study-37185d4351f6c614": {
+     "split": "train",
+     "training_eligible": true,
+     "report_sha256": "b1398d2b80252178913b2a74a263c1ce9de36687f5d8cbf01f0c0e062a7471ab",
+     "source_report_sha256": "b1398d2b80252178913b2a74a263c1ce9de36687f5d8cbf01f0c0e062a7471ab",
+     "laterality": "R",
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "c9fbfc60694b1b23aed0ae4823dbe899192f0be52e3331759a308c0f25854980",
+       "slices": 24
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "5e07436c035f281c24edb1e62bc98e8c2189f42c791d0afd6ff2c9d97cd11c71",
+       "slices": 24
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "f422ad95f0b69acc88b8d710ec1cc1dca8b35f3bfbddcf9ada50be09c3294eee",
+       "slices": 24
+      }
+     }
+    },
+    "study-bd7602e5577fcb3f": {
+     "split": "train",
+     "training_eligible": true,
+     "report_sha256": "683372a2ad04b7357f81f653e7003e5ea342e1f6920e25376b056a34f8afec0c",
+     "source_report_sha256": "683372a2ad04b7357f81f653e7003e5ea342e1f6920e25376b056a34f8afec0c",
+     "laterality": null,
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "4ac5264a810afe2a60a3b11005b3a10af62788382789d06a74d313ecc76a9dd0",
+       "slices": 24
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "f05d5fe1824f8fe575de291c59bf07104f83cefa0fd5aa5ab3419602d6056b8a",
+       "slices": 24
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "4fa739edcf4e6b80a3a045718015af25948f4707aa931a2dc46ad74d41c8daca",
+       "slices": 24
+      }
+     }
+    },
+    "study-691d5c4c2674aac3": {
+     "split": "train",
+     "training_eligible": true,
+     "report_sha256": "b109411d67fcaa36a5d27506a0ab6bbfe01153c1ae93c25d9e5adbc620f4953a",
+     "source_report_sha256": "b109411d67fcaa36a5d27506a0ab6bbfe01153c1ae93c25d9e5adbc620f4953a",
+     "laterality": "L",
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "c821878fa23fd9b588bd7009dcc79c95f06621537ec3a3796f1691eba9984106",
+       "slices": 24
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "bb08dcf7715cfc8b8deaf2954b660bf86e27aed3a959ebab70e65b6b72697d17",
+       "slices": 24
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "6ae03c300481aab4f9c44fdc99410af4e1a3cd67c9f33c520c6b09010541ac65",
+       "slices": 24
+      }
+     }
+    },
+    "study-123275de7dc1e124": {
+     "split": "validation",
+     "training_eligible": true,
+     "report_sha256": "2e83925457e766fbf8df8f89840329f1a4b335d639f713d4fcee7b3c7acc3f1e",
+     "source_report_sha256": "2e83925457e766fbf8df8f89840329f1a4b335d639f713d4fcee7b3c7acc3f1e",
+     "laterality": "R",
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "3254cef81cad7de3163fa067e68f549f14459f3fc2a9e1df50c4e293124a3c83",
+       "slices": 24
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "60eb1302a4469f449420fa1b3820fa92740c707b6e04e6bf3ac1b2909935e42e",
+       "slices": 24
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "c60d7f9b99214527ec699f779312d153f4e2b23ebfa1baa74ae8246950469842",
+       "slices": 24
+      }
+     }
+    },
+    "study-f025d9a5c7146d61": {
+     "split": "train",
+     "training_eligible": true,
+     "report_sha256": "859345251cdd437a9da7c5ddeea8129354ca06195f4f23c8d810c85dce8641b6",
+     "source_report_sha256": "859345251cdd437a9da7c5ddeea8129354ca06195f4f23c8d810c85dce8641b6",
+     "laterality": null,
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "ae33e17ca28f62614c58479b99a67df1e1970250090402af617fe3abad3c3845",
+       "slices": 24
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "8320029178689ad8eca2b3bc080c2426ce20c83bf86abf99b5ed58f66d55737e",
+       "slices": 24
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "9fbcdaaaecffb6dbd47a6014d39fe7a647ece22368b8c98b5ae1b05db7dd286c",
+       "slices": 24
+      }
+     }
+    },
+    "study-96c8c344e70133d2": {
+     "split": "train",
+     "training_eligible": true,
+     "report_sha256": "5680f8eefe252c6a6d1e49102aaa8993ccb63ad9ac89feb0b38f73ecf4835ca3",
+     "source_report_sha256": "5680f8eefe252c6a6d1e49102aaa8993ccb63ad9ac89feb0b38f73ecf4835ca3",
+     "laterality": null,
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "98c4b2d5d62499fd2c16df240c7bd80e15e4866c32c11023d9e51c3d2ce23510",
+       "slices": 24
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "8a22fb43df1ae2fbbacd73f55235b4b447c619146d8fbdff30821af354cda404",
+       "slices": 24
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "d8ba153e8f7613f924f8a46ac6ffc09eb410c3f7564fcdf65fca424bdd606387",
+       "slices": 24
+      }
+     }
+    },
+    "study-4d21fc242bf6c11a": {
+     "split": "train",
+     "training_eligible": true,
+     "report_sha256": "19806d44330e7e3274a47032abde0931982e7b36f3edede76e1e7f16b87ffb4d",
+     "source_report_sha256": "19806d44330e7e3274a47032abde0931982e7b36f3edede76e1e7f16b87ffb4d",
+     "laterality": null,
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "2430b7d616cd0290c091087f59037727557cd89e773e9d52075d73137fcc636f",
+       "slices": 24
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "aea3aeb970aa9a084a3fbac84c48bb73aa6982a18d4c8647eb5b8498beb3de86",
+       "slices": 24
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "a2495a77c1070dcc4293963210dc409ae3c867d527bccab4b9f98785e02e64fb",
+       "slices": 24
+      }
+     }
+    }
+   }
+  },
+  {
+   "members": 2,
+   "splits": [
+    "train"
+   ],
+   "crosses_splits": false,
+   "pixels_identical_on_every_plane": false,
+   "identical_planes": {
+    "Axial": false,
+    "Coronal": false,
+    "Sagittal": false
+   },
+   "distinct_translated_reports": 2,
+   "reports_conflict": true,
+   "all_members_training_eligible": true,
+   "study_uids": [
+    "study-7ef5b4db6160e555",
+    "study-0c04e4ee70d20ca4"
+   ],
+   "per_study": {
+    "study-7ef5b4db6160e555": {
+     "split": "train",
+     "training_eligible": true,
+     "report_sha256": "6c05fc6acfa7619df60c705a11e808133cbf772c55292ac4dd790560f7240e52",
+     "source_report_sha256": "6c05fc6acfa7619df60c705a11e808133cbf772c55292ac4dd790560f7240e52",
+     "laterality": "R",
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "8c53099301a137f3bb52727ceb00c9e4871fe83d3dca28111eae0debce603e7d",
+       "slices": 26
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "d2f9342ee986f51000b6a186e05a1a8903e0e83735735a1448172dfe1acb4b04",
+       "slices": 26
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "ef51dd6175e15601f5cf35f3e81398e1fb0892f299527aa130d774c8a8136347",
+       "slices": 24
+      }
+     }
+    },
+    "study-0c04e4ee70d20ca4": {
+     "split": "train",
+     "training_eligible": true,
+     "report_sha256": "540a0a94dd3601fe1231ff81de8e913b1fcd93ef788abe98088fdae27ed34de0",
+     "source_report_sha256": "540a0a94dd3601fe1231ff81de8e913b1fcd93ef788abe98088fdae27ed34de0",
+     "laterality": null,
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "6de6e5727c28f4c9893e3dd9a25a2f53309c8ed063aa3d7b7156a6f1e06f6a41",
+       "slices": 26
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "335dc3a3b14612ca2f6ce9c262739813e3725f9341729fde1cc833a479863b1c",
+       "slices": 26
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "51ceecee04a85da291053c0571412a1dbf97e50c2d1ea0b367e91d5b24bf14a6",
+       "slices": 24
+      }
+     }
+    }
+   }
+  },
+  {
+   "members": 2,
+   "splits": [
+    "train"
+   ],
+   "crosses_splits": false,
+   "pixels_identical_on_every_plane": false,
+   "identical_planes": {
+    "Axial": false,
+    "Coronal": false,
+    "Sagittal": false
+   },
+   "distinct_translated_reports": 2,
+   "reports_conflict": true,
+   "all_members_training_eligible": true,
+   "study_uids": [
+    "study-cc30bb8bee610751",
+    "study-ce31fec079007df6"
+   ],
+   "per_study": {
+    "study-cc30bb8bee610751": {
+     "split": "train",
+     "training_eligible": true,
+     "report_sha256": "98758411dbab6bbf7ac4acff012ad13650d4adf3d8495860af2e577eafdf7502",
+     "source_report_sha256": "98758411dbab6bbf7ac4acff012ad13650d4adf3d8495860af2e577eafdf7502",
+     "laterality": "L",
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "d179b1e1be136c56fbb947d541bfca8d187af6aead85ba862aea07d7d1dfb466",
+       "slices": 30
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "86769978cc4c2e7fccd8a4625f7127cb5892efd1ded8696c092d4f814f872a38",
+       "slices": 28
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "edb0bbedd83b10171ef3b9ca22bfcf270602af4b6652d1dc073bfc84911715b9",
+       "slices": 24
+      }
+     }
+    },
+    "study-ce31fec079007df6": {
+     "split": "train",
+     "training_eligible": true,
+     "report_sha256": "0f0fd9f08d2a713c8225c27eb60dca8c65db0781f371581eab1fe65d285bb9f3",
+     "source_report_sha256": "0f0fd9f08d2a713c8225c27eb60dca8c65db0781f371581eab1fe65d285bb9f3",
+     "laterality": null,
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "6f2a1ba2ec2232ad9b154139f07e3723b01b4a465d7596882029c148ef16e706",
+       "slices": 30
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "4343d0eeab859f1c83a742e6e3df789f1dc447d29835f348ea3043cf56ea6be2",
+       "slices": 28
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "cf8db10be0ddb166fca46b53f50ba5e99e0938425d8d73630d333d1f097d42f9",
+       "slices": 24
+      }
+     }
+    }
+   }
+  },
+  {
+   "members": 2,
+   "splits": [
+    "train"
+   ],
+   "crosses_splits": false,
+   "pixels_identical_on_every_plane": false,
+   "identical_planes": {
+    "Axial": false,
+    "Coronal": false,
+    "Sagittal": false
+   },
+   "distinct_translated_reports": 2,
+   "reports_conflict": true,
+   "all_members_training_eligible": true,
+   "study_uids": [
+    "study-321d38d6b7f7ab0d",
+    "study-8e6d6458591dace0"
+   ],
+   "per_study": {
+    "study-321d38d6b7f7ab0d": {
+     "split": "train",
+     "training_eligible": true,
+     "report_sha256": "3d00f501ebc2fa962d59f777f4e60a654fcc12bc554ceb4129982ea329525d34",
+     "source_report_sha256": "3d00f501ebc2fa962d59f777f4e60a654fcc12bc554ceb4129982ea329525d34",
+     "laterality": "L",
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "90ef27d4c6e56109bffaa2158aab7d4a04f74708762593cf76fd335076a54bc9",
+       "slices": 40
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "998ab50859bf200902862a317f30539c0cf8ed6b277238f8744498106f45fb67",
+       "slices": 30
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "043eaf8f99d176a6ffe7786017e41c43bac7c1317ac4aab00fac46503d6ef046",
+       "slices": 30
+      }
+     }
+    },
+    "study-8e6d6458591dace0": {
+     "split": "train",
+     "training_eligible": true,
+     "report_sha256": "c516d7bf524f48ece4973c9dc65393c47667ce4014c9faa2367da71bc6b1a3af",
+     "source_report_sha256": "c516d7bf524f48ece4973c9dc65393c47667ce4014c9faa2367da71bc6b1a3af",
+     "laterality": "L",
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "0da1859d70c534459323a2472b763aab61af8658c21b4dcc928509f783e38af9",
+       "slices": 40
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "84a138799d9f9755deebfd46eddc178d725246fbcfb1c77b86cf6b31f79bb85b",
+       "slices": 30
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "19b0fa2a68c25e64cfbd452d26972429532ed4777d594afb4e76fc7e577f1589",
+       "slices": 30
+      }
+     }
+    }
+   }
+  },
+  {
+   "members": 2,
+   "splits": [
+    "train"
+   ],
+   "crosses_splits": false,
+   "pixels_identical_on_every_plane": false,
+   "identical_planes": {
+    "Axial": false,
+    "Coronal": false,
+    "Sagittal": false
+   },
+   "distinct_translated_reports": 2,
+   "reports_conflict": true,
+   "all_members_training_eligible": true,
+   "study_uids": [
+    "study-cd036e21e36d47c3",
+    "study-766527a42a4bd847"
+   ],
+   "per_study": {
+    "study-cd036e21e36d47c3": {
+     "split": "train",
+     "training_eligible": true,
+     "report_sha256": "1c474985ae53bd98a740724978a770381bf6d21481fef8c5e7b85c0687977899",
+     "source_report_sha256": "1c474985ae53bd98a740724978a770381bf6d21481fef8c5e7b85c0687977899",
+     "laterality": "L",
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "0e2446046641e53c4afc4a32784e3f072f13955cacd0942170dd4d1467f0971c",
+       "slices": 22
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "838aeec976bdf739b0c75f3d450a67318ed03917120c2dcf4aef6dc060cb93f3",
+       "slices": 22
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "72e85f988e5fae370eb60ab5758e30604c253faa0d9c8253e261b9a46e1e502f",
+       "slices": 22
+      }
+     }
+    },
+    "study-766527a42a4bd847": {
+     "split": "train",
+     "training_eligible": true,
+     "report_sha256": "a9cad2e41a24aabbff9ac0a02a3a357c075df3f42d74b4d7d2d82d503c9de4db",
+     "source_report_sha256": "a9cad2e41a24aabbff9ac0a02a3a357c075df3f42d74b4d7d2d82d503c9de4db",
+     "laterality": "L",
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "944ab11529ef7ce8ed5d6abc3ffb9d0df89c75459b888c5d1bc0496d24879821",
+       "slices": 22
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "703544d71b3d65d05827e9e0323caba41b60668c24fddf7997d32889e671eb1e",
+       "slices": 22
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "1f8c300e439d0f6a9740c723507650c0400216153a8c1a7854f7c1667c2809a4",
+       "slices": 22
+      }
+     }
+    }
+   }
+  },
+  {
+   "members": 2,
+   "splits": [
+    "train"
+   ],
+   "crosses_splits": false,
+   "pixels_identical_on_every_plane": true,
+   "identical_planes": {
+    "Axial": true,
+    "Coronal": true,
+    "Sagittal": true
+   },
+   "distinct_translated_reports": 2,
+   "reports_conflict": true,
+   "all_members_training_eligible": false,
+   "study_uids": [
+    "study-b65cfd4f5265d33b",
+    "study-7bbbc0e80da5e8ac"
+   ],
+   "per_study": {
+    "study-b65cfd4f5265d33b": {
+     "split": "train",
+     "training_eligible": false,
+     "report_sha256": "2f90d8a955552b7ade9d7f7f85731d8a4b222beb1afa0e221abdc257cc0f6e9d",
+     "source_report_sha256": "6860d5231de13011daea1e80ee5d6c3f790e31ed4fa20952f29407c5dd5df72e",
+     "laterality": "R",
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "7bd0ad9dc1c2fca2b7df672bfb359dd457be3b8418d50f6c302dba1e680080a6",
+       "slices": 30
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "951fdcc938a11c06d71b5453ac9bba835144773a35206cfd46005116e7471989",
+       "slices": 27
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "d0fbcd8f0b9094ca6cca2cc5ffe9e4353002cdc9af53e4fbccd91c1581691d26",
+       "slices": 30
+      }
+     }
+    },
+    "study-7bbbc0e80da5e8ac": {
+     "split": "train",
+     "training_eligible": false,
+     "report_sha256": "63b7b6faf84e149c1f4cb6bdd0f6ebe56e8c22d6d000b11e56bd72a68b145f81",
+     "source_report_sha256": "d0ea18644715a7f99897d3baf6943ef04385b552ea7400410c914ab25270baa9",
+     "laterality": "R",
+     "planes": {
+      "Axial": {
+       "ordered_decoded_pixel_sha256": "7bd0ad9dc1c2fca2b7df672bfb359dd457be3b8418d50f6c302dba1e680080a6",
+       "slices": 30
+      },
+      "Coronal": {
+       "ordered_decoded_pixel_sha256": "951fdcc938a11c06d71b5453ac9bba835144773a35206cfd46005116e7471989",
+       "slices": 27
+      },
+      "Sagittal": {
+       "ordered_decoded_pixel_sha256": "d0fbcd8f0b9094ca6cca2cc5ffe9e4353002cdc9af53e4fbccd91c1581691d26",
+       "slices": 30
+      }
+     }
+    }
+   }
+  }
+ ],
+ "gated_groups_since_resolved": 1,
+ "note_on_gated": "The gated entry is retained as the record of what was deferred and why. It was resolved the same day under an explicit user decision; see each entry's \"resolved\" field. No group remains gated."
+}

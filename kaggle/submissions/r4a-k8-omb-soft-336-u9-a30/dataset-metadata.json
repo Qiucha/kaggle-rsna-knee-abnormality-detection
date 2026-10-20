@@ -1,0 +1,7 @@
+{
+  "title": "RSNA Knee OmniRad-base U9 A30 Bundle",
+  "subtitle": "Private offline bundle: OmniRad-base u9, lateral oversample + noise, 30 epochs",
+  "description": "Inference-only bundle for the RSNA Knee Abnormality Detection competition: run r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30 (OmniRad-base ViT-B/14, last 9 blocks fine-tuned on soft LM label values at 336 px, K=8 3-slice windows per plane, masked mean pooling; lateral-label oversampling and label noise during training, 30 epochs), offline inference code, and vendored DICOM codec wheels. Contains no competition images, reports, labels, or study identifiers.",
+  "id": "kyunhsuan/rsna-knee-omb-u9-a30-bundle",
+  "licenses": [{"name": "other"}]
+}

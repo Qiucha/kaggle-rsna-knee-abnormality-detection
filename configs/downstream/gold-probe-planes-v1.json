@@ -1,0 +1,76 @@
+{
+  "bootstrap": {
+    "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable",
+    "resamples": 5000,
+    "seed": 2029,
+    "unit": "study"
+  },
+  "checkpoints": [
+    "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2026/best.pt",
+    "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2027/best.pt",
+    "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2028/best.pt"
+  ],
+  "cohort_manifest": "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
+  "comparison": "Every feature set is paired against uniform_mean_768 OF THE SAME CHECKPOINT, on the same studies and folds. The primary question is a within-checkpoint pooling difference, so the before-CL arm is not the comparator here.",
+  "derived_from": {
+    "config": "configs/downstream/gold-probe-v1.json",
+    "config_sha256_at_derivation": "1c4267387340a2cade7c4ade1de38ca398a4e41e998017221c81913031b6c576",
+    "policy": "The probe and bootstrap blocks below are copied by value from that config, unchanged, so every number here sits on the same folds, seeds and resamples and is directly comparable to its table. That config is frozen and is NOT edited to add these arms."
+  },
+  "estimand": "Readout quality of a frozen representation on a cohort it was trained on. Explicitly NOT generalisation: 56 of 58 gold cases were exposed to contrastive training or checkpoint selection.",
+  "feature_sets": {
+    "attention_no_embeddings_768": "sum_p w_p f_p -- the same learned weights without the additive plane-embedding term, isolating re-weighting from the nuisance vector the embeddings contribute",
+    "attention_pooled_768": "sum_p w_p (f_p + e_p) -- exactly what ImageTower.forward feeds the projection head",
+    "concat_planes_2304": "all three planes concatenated; an upper bound on plane INFORMATION, not on achievable probe score -- 2304 features over 56 cases at fixed C may score below uniform mean purely from dimensionality",
+    "plane_axial_768": "one plane alone",
+    "plane_coronal_768": "one plane alone",
+    "plane_sagittal_768": "one plane alone, to measure where each label's signal actually lives",
+    "uniform_mean_768": "mean over the three plane vectors; the reference arm every comparison here is paired against"
+  },
+  "gold_labels_csv": "data/gold_label.csv",
+  "labels": [
+    "ACL",
+    "MCL",
+    "Medial Meniscus",
+    "Lateral Meniscus",
+    "Medial OA",
+    "Lateral OA",
+    "PF OA",
+    "Effusion",
+    "Synovitis",
+    "Baker's",
+    "Contusion",
+    "Fracture"
+  ],
+  "manifest_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+  "metrics": {
+    "environment_note": "sklearn 1.8 deprecates the explicit penalty=l2 argument pinned above and removes it in 1.10. The fitted model is unchanged, since l2 is the default; a rerun on 1.10 must translate it to l1_ratio=0 rather than silently dropping it.",
+    "primary": "pooled out-of-fold AUROC per label, macro-averaged over the 12 labels",
+    "rare_labels": "MCL has 8 positives over 56 cases: pooled-OOF only, fold-level AUROC declared uninformative in advance",
+    "secondary": "pooled out-of-fold average precision (AUPRC)",
+    "tie_policy": "midrank. Every reported point estimate comes from sklearn.metrics.roc_auc_score. The bootstrap replicates use an equivalent rank-sum implementation (scipy.stats.rankdata) for speed, and the script asserts the two agree to 1e-9 on every label's real scores before building any interval. Section 6 of the EDA notebook's argsort AUROC is reported alongside the LM reference for comparison only, never used as a result."
+  },
+  "population": "gold studies whose cohort split is train or validation; locked-test gold studies are counted only",
+  "probe": {
+    "C": 1.0,
+    "class_weight": null,
+    "estimator": "sklearn.linear_model.LogisticRegression",
+    "fold": "StratifiedKFold(shuffle=True), stratification computed inside the per-label fold loop",
+    "fold_seed": 2026,
+    "folds": 8,
+    "max_iter": 5000,
+    "penalty": "l2",
+    "predictions": "exactly one held-out decision_function score per study per label",
+    "solver": "lbfgs",
+    "standardize": "StandardScaler fitted inside each training fold",
+    "tuning": "none; every hyperparameter is fixed here before the first fit"
+  },
+  "probe_version": "gold-probe-planes-v1",
+  "purpose": "Why does the contrastive model's learned plane pooling read pathology labels worse than a trivial average of the same three planes?",
+  "schema_version": 1,
+  "scope": "Read-only over existing checkpoints and the cached image tensors. No training, no locked-test study loaded.",
+  "unadapted_backbone": {
+    "image_model": "facebook/dinov2-small",
+    "image_model_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056"
+  }
+}

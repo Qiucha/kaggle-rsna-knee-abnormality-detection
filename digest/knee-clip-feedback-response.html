@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Evidence-backed answers to all Knee CLIP feedback issues, with limitations and proposed next-step decision gates. Analysis only."><title>Knee CLIP feedback — answers and next steps</title><style>
+:root{color-scheme:light;--ink:#183036;--muted:#50676b;--paper:#fff;--accent:#086c63;--line:#d6e2df}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:#eef3f1;color:var(--ink);font:16px/1.7 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:var(--accent);text-underline-offset:3px}a:hover{text-decoration-thickness:2px}a:focus-visible,.table-scroll:focus-visible{outline:3px solid #bf720f;outline-offset:4px}.layout{max-width:1450px;margin:auto;display:grid;grid-template-columns:270px minmax(0,1fr);gap:34px;padding:32px}aside{position:sticky;top:24px;align-self:start;max-height:calc(100vh - 48px);overflow:auto}aside .label{font-weight:750;letter-spacing:.1em;font-size:12px;color:var(--muted);text-transform:uppercase}nav{display:grid;gap:10px;margin:18px 0}nav a{font-size:14px;line-height:1.45;text-decoration:none;padding:3px 0}.links{border-top:1px solid var(--line);padding-top:16px;display:grid;gap:9px;font-size:14px}main{min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:clamp(22px,4vw,58px);box-shadow:0 8px 30px #18303606}h1{font-size:clamp(30px,4vw,44px);line-height:1.15;letter-spacing:-.035em;margin:0 0 18px}h2{font-size:25px;line-height:1.3;margin:52px 0 18px;padding-top:25px;border-top:2px solid var(--line);letter-spacing:-.02em}h3{font-size:19px;margin-top:28px}p{margin:16px 0}main>p:first-of-type{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}main>p:nth-of-type(2){font-size:20px;line-height:1.6;padding:20px 24px;background:#edf7f2;border-left:4px solid var(--accent);border-radius:0 8px 8px 0}.table-scroll{overflow-x:auto;margin:22px 0;border:1px solid var(--line);border-radius:8px}table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.55}th,td{padding:12px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);min-width:130px}th{background:#eaf1ed;font-weight:700}tr:last-child td{border-bottom:0}tr:nth-child(even) td{background:#f8faf9}code{font-size:.88em;background:#eff3f1;border-radius:4px;padding:2px 5px;overflow-wrap:anywhere}pre{overflow:auto;padding:18px;background:#142e32;color:#e3f3ed;border-radius:8px;line-height:1.6}pre code{padding:0;background:none;color:inherit;white-space:pre}strong{font-weight:720}.skip{position:absolute;left:-9999px}.skip:focus{left:20px;top:10px;background:white;padding:8px;z-index:5}footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}@media(max-width:950px){.layout{grid-template-columns:1fr;padding:16px;gap:18px}aside{position:static;max-height:none}nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 20px}.links{display:flex;flex-wrap:wrap;gap:16px}main{border-radius:10px}}@media(max-width:550px){nav{grid-template-columns:1fr}main{padding:22px 18px}h2{font-size:22px}main>p:nth-of-type(2){font-size:18px;padding:16px}th,td{padding:10px;min-width:150px}}@media print{body{background:white;font-size:10pt}.layout{display:block;padding:0}aside,.skip{display:none}main{padding:0;border:0;box-shadow:none}h1{font-size:26pt}h2{font-size:17pt;break-after:avoid}h3{break-after:avoid}.table-scroll{overflow:visible}table{font-size:9pt}tr{break-inside:avoid}a{color:inherit}pre{white-space:pre-wrap}}
+</style></head>
+<body><a class="skip" href="#main">Skip to digest</a><div class="layout"><aside aria-label="Digest navigation"><div class="label">Feedback review · 08 Sep 2026</div><nav aria-label="Contents"><a href="#1-decision-map">1. Decision map</a><a href="#2-image-encoder-the-exact-tensor-flow">2. Image encoder: the exact tensor flow</a><a href="#3-projection-head-useful-information-or-pair-matching">3. Projection head: useful information or pair matching?</a><a href="#4-text-tower-what-512-tokens-and-masked-mean-actually-do">4. Text tower: what 512 tokens and masked mean actually do</a><a href="#5-temperature-implementation-and-saved-values">5. Temperature: implementation and saved values</a><a href="#6-semantic-targets-what-must-be-defined-before-medclip-style-training">6. Semantic targets: what must be defined before MedCLIP-style training</a><a href="#7-translation-encoders-seeds-and-retrieval-interpretation">7. Translation, encoders, seeds, and retrieval interpretation</a><a href="#8-identical-images-with-conflicting-reports-what-is-and-is-not-known">8. Identical images with conflicting reports: what is and is not known</a><a href="#9-fifty-eight-gold-studies-the-question-the-evaluation-can-answer">9. Fifty-eight gold studies: the question the evaluation can answer</a><a href="#10-proposed-next-steps-and-decision-gates">10. Proposed next steps and decision gates</a><a href="#11-evidence-guide-and-remaining-unanswered-questions">11. Evidence guide and remaining unanswered questions</a></nav><div class="links"><a href="knee-clip-feedback-response.md">Markdown source</a><a href="knee-clip-feedback.md">Original feedback</a><a href="project-state.html">Project digest</a><a href="knee-clip-feedback-source-notes.md">Primary-source notes</a></div></aside><main id="main"><h1 id="knee-clip-feedback-answers-evidence-and-next-steps">Knee CLIP feedback: answers, evidence, and next steps</h1>
+<p>Prepared 8 September 2026 · Analysis and documentation only</p>
+<p>The current evidence supports image–report correspondence, not validated recognition of the 12 target abnormalities. The feedback identifies the right scientific gap, but several implementation questions already have answers and some descriptions need correction. The immediate priority is to settle data provenance and the evaluation contract before selecting more experiments.</p>
+<p>This digest answers all eight sections of <a href="knee-clip-feedback.md">the original feedback</a>. It distinguishes current source code, saved experimental evidence, scientific interpretation, and proposed future work. No training, model changes, label changes, checkpoint evaluation, or deployment was performed for this review. Existing results below are historical; temperature summaries were calculated from saved metric logs. The original feedback is preserved.</p>
+<h2 id="1-decision-map">1. Decision map</h2>
+<div class="table-scroll" tabindex="0"><table>
+<thead>
+<tr>
+<th>Feedback issue</th>
+<th>Answer now</th>
+<th>What remains unresolved</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3B versus 9B</td>
+<td>Resolved for the current computation: three slices are three channels within each plane; DINOv2 receives <code>[3B,3,224,224]</code>.</td>
+<td>Real-study slice provenance and whether sparse channel stacking preserves useful pathology.</td>
+</tr>
+<tr>
+<td>Slice and plane pooling</td>
+<td>No independent slice mean exists. Spatial patch tokens are averaged; plane attention varies by study.</td>
+<td>Suitability for focal findings and comparison with independent slice encoding.</td>
+</tr>
+<tr>
+<td>Projection head</td>
+<td>Learns features useful for the contrastive target; no direct 12-label supervision.</td>
+<td>Whether pathology information improves or is lost at each representation stage.</td>
+</tr>
+<tr>
+<td>Text truncation and pooling</td>
+<td>Padding is masked. Baseline validation truncates 67/441 reports; 43 lose a complete late summary heading under the preflight heuristic.</td>
+<td>Clinical content lost, section extraction reliability, and benefit of preserving it.</td>
+</tr>
+<tr>
+<td>Temperature</td>
+<td>Both outputs normalized; shared learned temperature starts at 0.07; inverse scale capped at 100.</td>
+<td>Future semantic-target scaling must be specified separately.</td>
+</tr>
+<tr>
+<td>Semantic supervision</td>
+<td>Not implemented in the inspected objective. A report-derived target would be a MedCLIP-inspired adaptation.</td>
+<td>Label ontology, missingness, parser validity, normal-case treatment, matrix validity, and independence from evaluation.</td>
+</tr>
+<tr>
+<td>Translation/model comparisons</td>
+<td>Several controlled comparisons and paired intervals already exist.</td>
+<td>Translation quality itself is not established; complete matched translation comparisons and text error interpretation are missing.</td>
+</tr>
+<tr>
+<td>Duplicate/conflicting reports</td>
+<td>One confirmed duplicate group with two training entries, both quarantined.</td>
+<td>Upstream root cause, exhaustive raw-image/join coverage, and patient independence.</td>
+</tr>
+<tr>
+<td>58-study evaluation</td>
+<td>A 47/11 split is too unstable for the intended 12-label comparison.</td>
+<td>Gold provenance, per-label counts, exposure to representation training, and a defensible exploratory OOF protocol.</td>
+</tr>
+</tbody>
+</table></div>
+<p>“Resolved” here means the specific implementation question has an evidence-backed answer. It does not mean the design has been shown to be clinically effective.</p>
+<h2 id="2-image-encoder-the-exact-tensor-flow">2. Image encoder: the exact tensor flow</h2>
+<p><strong>Answer: 3B is intentional for the existing architecture.</strong> The feedback's 9B expectation applies to an architecture that encodes every grayscale slice independently. This project instead uses a three-slice, channel-stacked input for each plane. These are different designs, not equivalent reshapes.</p>
+<div class="table-scroll" tabindex="0"><table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Shape</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Study batch</td>
+<td><code>[B,3,3,224,224]</code></td>
+<td>Study × plane × slice/channel × height × width. Plane order: sagittal, coronal, axial.</td>
+</tr>
+<tr>
+<td>DINOv2 input</td>
+<td><code>[3B,3,224,224]</code></td>
+<td>Row <code>b*3+p</code> is one plane of one study. Its three channels contain sampled slices.</td>
+</tr>
+<tr>
+<td>Patch convolution</td>
+<td><code>[3B,384,16,16]</code></td>
+<td>The 14×14 patch projection mixes all three channels. Slice identity no longer has a separate axis.</td>
+</tr>
+<tr>
+<td>Transformer output</td>
+<td><code>[3B,257,384]</code></td>
+<td>One CLS token plus 256 spatial patch tokens.</td>
+</tr>
+<tr>
+<td>Plane representation</td>
+<td><code>[3B,768]</code></td>
+<td>Concatenate CLS with the mean of spatial patch tokens.</td>
+</tr>
+<tr>
+<td>Restore planes</td>
+<td><code>[B,3,768]</code></td>
+<td>Add learned plane embeddings.</td>
+</tr>
+<tr>
+<td>Plane attention</td>
+<td><code>[B,3]</code></td>
+<td>Score each study's plane features and softmax over its three planes.</td>
+</tr>
+<tr>
+<td>Study representation</td>
+<td><code>[B,768]</code></td>
+<td>Weighted sum of that study's plane features.</td>
+</tr>
+<tr>
+<td>Shared-space projection</td>
+<td><code>[B,256]</code></td>
+<td>LayerNorm → Linear → GELU → Linear → L2 normalization.</td>
+</tr>
+</tbody>
+</table></div>
+<p>There is <strong>no mean over three independently encoded slice features</strong>. Consequently, “replace slice mean with max” is not a small pooling change to the present model. It first requires choosing an independent-slice representation, for example nine grayscale-to-three-channel inputs. That would change encoding and compute as well as aggregation. Hold slice positions and other settings fixed to interpret such a future comparison.</p>
+<p>Plane scoring uses shared learned parameters, but its three weights depend on each study's features. The feedback's concern about one global plane weight therefore needs qualification. The actual limitation is that the resulting study embedding is shared across all labels: there is no explicit disease-conditioned plane aggregation. Attention weights alone are not evidence that a lesion was localized.</p>
+<p><strong>Exact selection rule.</strong> For each plane, the source selector prefers fluid-sensitive series and takes the one with most DICOM files; if no fluid-sensitive series exists it falls back to the plane's other series. The first manifest row wins equal file counts. For a geometrically ordered series of length <code>n</code>, compute <code>low=int(0.20*(n−1))</code>, <code>high=int(0.80*(n−1))</code>, then take three evenly spaced positions between these endpoints, cast to integers and deduplicate. If the endpoints do not span a range, use the central slice. Repeat the last index until three slots exist. These are approximately 20/50/80% positions, not three adjacent central slices. Existing cohort records contain selected paths; the selector describes how those paths are constructed, not a new selection performed in this review.</p>
+<p>Geometry ordering uses image position projected onto the slice normal where available, then SliceLocation, InstanceNumber, and deterministic UID/file fallbacks. A failed selected-slice decode is replaced with the nearest successfully decoded selected slot; mismatched dimensions become zeros; a fully undecodable plane fails loading. A conditional 130 mm center crop, 1st–99th percentile normalization over the selected stack, and spatial resize follow. Right-knee sagittal processing reverses channel order; coronal/axial processing flips spatial width. DINO input also receives the existing three-channel normalization.</p>
+<p><strong>Evidence boundary.</strong> The saved shape audit used random DINOv2-small weights and two synthetic studies, preserving all 18 input markers. It verifies axis handling, not nine distinct successfully decoded source slices in every real study, spatial lesion coverage, or trained representation quality. Sparse sampling and crop coverage remain plausible limitations, not demonstrated causes of retrieval errors.</p>
+<p><strong>Closure criterion:</strong> an architecture description is now available; a later provenance review should quantify repeated indices, substituted/zero slices, geometry fallbacks, and crop/selection coverage on real studies before interpreting a sampling ablation. Sources: <a href="image-shape-audit.md">shape audit</a>, <a href="../src/contrastive_learning/model.py">model</a>, <a href="../src/contrastive_learning/preprocessing.py">preprocessing</a>, <a href="../src/contrastive_learning/data.py">data selection</a>.</p>
+<h2 id="3-projection-head-useful-information-or-pair-matching">3. Projection head: useful information or pair matching?</h2>
+<p><strong>Answer: those mechanisms can coexist.</strong> The heads compress image and text features to 256 dimensions and optimize a paired contrastive loss. Features retained may reflect abnormalities, acquisition characteristics, report style, or other correlated information. Neither dimensionality reduction nor improved retrieval demonstrates that pathology was discarded; neither demonstrates that it was preserved.</p>
+<p>A future representation comparison needs precise study-level definitions:</p>
+<div class="table-scroll" tabindex="0"><table>
+<thead>
+<tr>
+<th>Representation</th>
+<th>Proposed definition</th>
+<th>Question answered</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frozen DINO reference</td>
+<td>Fixed, declared aggregation of frozen plane features, before learned plane embeddings/attention.</td>
+<td>What does the pretrained image encoder already provide?</td>
+</tr>
+<tr>
+<td>Learned study representation</td>
+<td>The 768-dimensional weighted study vector before projection.</td>
+<td>What does trained plane aggregation contribute?</td>
+</tr>
+<tr>
+<td>Projected representation</td>
+<td>The normalized 256-dimensional output.</td>
+<td>What changes after the projection head?</td>
+</tr>
+<tr>
+<td>Adapted counterparts</td>
+<td>The corresponding stages after image final-block adaptation, and eventually validated semantic training.</td>
+<td>Does changing supervision or the encoder improve pathology-related structure?</td>
+</tr>
+</tbody>
+</table></div>
+<p>A raw collection of three plane vectors is not directly comparable with one study vector until its aggregation is specified. A 768-dimensional probe also has more parameters than a 256-dimensional probe; use the same predeclared regularization approach and report dimensions. Any scaling or dimensionality reduction learned for the probe must use only its training fold.</p>
+<p>Use exact-pair retrieval for paired correspondence, gold-label neighbourhood agreement for pathology-related structure, and a strongly regularized image-only probe for label predictability. Define neighbourhood similarity, neighbour count, exclusion of self/duplicates, and rare-label weighting in advance. Raw image and text features do not automatically share aligned coordinates, so raw DINO-versus-raw E5 cosine retrieval is not a meaningful control without a declared alignment method.</p>
+<p>If retrieval rises while both pathology-related measures fall consistently, that would support an objective mismatch. One noisy change on 58 studies is insufficient to identify the mechanism. There is currently no completed gold representation comparison establishing this result. Source: <a href="../src/contrastive_learning/model.py">projection and loss implementation</a>, <a href="handoff/">current data/evaluation boundaries</a>.</p>
+<h2 id="4-text-tower-what-512-tokens-and-masked-mean-actually-do">4. Text tower: what 512 tokens and masked mean actually do</h2>
+<p><strong>Answer: padding dilution is not the present bug.</strong> The inspected mean-pooling branch uses:</p>
+<pre><code class="language-python">mask = attention_mask.unsqueeze(-1).to(tokens.dtype)
+features = (tokens * mask).sum(dim=1) / mask.sum(dim=1).clamp_min(1)
+</code></pre>
+<p>Only mask-valid positions contribute. This includes valid special/prefix tokens; it does not select clinically important words. The reference uses <code>intfloat/multilingual-e5-base</code>, mean pooling and <code>query: </code>, with a 512-token total input cap. The exact E5 card recommends masked average pooling and task-dependent prefixes, including <code>query:</code> for symmetric similarity/feature use. This is a declared baseline convention, not proof it is optimal for MRI–report alignment. Sources: <a href="../src/contrastive_learning/model.py">TextTower</a>, <a href="https://huggingface.co/intfloat/multilingual-e5-base">E5 model card</a>.</p>
+<p>The later preflight provides the requested token distribution on the quarantined cohort:</p>
+<div class="table-scroll" tabindex="0"><table>
+<thead>
+<tr>
+<th>Baseline text statistic</th>
+<th style="text-align:right">Training</th>
+<th style="text-align:right">Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Studies</td>
+<td style="text-align:right">3,524</td>
+<td style="text-align:right">441</td>
+</tr>
+<tr>
+<td>Reports over 512</td>
+<td style="text-align:right">464 (13.17%)</td>
+<td style="text-align:right">67 (15.19%)</td>
+</tr>
+<tr>
+<td>Median tokens</td>
+<td style="text-align:right">269</td>
+<td style="text-align:right">271</td>
+</tr>
+<tr>
+<td>90th percentile</td>
+<td style="text-align:right">587.7</td>
+<td style="text-align:right">602</td>
+</tr>
+<tr>
+<td>95th percentile</td>
+<td style="text-align:right">690.7</td>
+<td style="text-align:right">685</td>
+</tr>
+<tr>
+<td>Maximum</td>
+<td style="text-align:right">1,241</td>
+<td style="text-align:right">1,032</td>
+</tr>
+<tr>
+<td>Last summary heading not fully retained</td>
+<td style="text-align:right">302</td>
+<td style="text-align:right">43</td>
+</tr>
+</tbody>
+</table></div>
+<p>These are tokenizer-specific counts, not word counts. The earlier audit reported 300 training headings entirely beyond the cutoff; the later preflight reports 302 not fully retained. Their definitions differ, so they should not be merged into one statistic. Heading loss is a lexical proxy: it does not establish exactly which clinical findings are lost or whether equivalent findings appear earlier. Source: <a href="english-medical-text-preflight.json">preflight</a>, <a href="claude-translated-dfd07db-input-audit.json">earlier audit</a>.</p>
+<p>The controlled impression-first run scored 9.6372% versus 10.6576% mean R@1 for original full-report order at seed 2026. This rejects promotion under that experiment's rule; it does not establish that impressions are uninformative. The review also found short-report errors and known section-parser limitations. Source: <a href="claude-translated-dfd07db-comparison-results.md">ordering comparison</a>.</p>
+<p><strong>Proposed answer path:</strong> first build a qualitative inventory of actual retained/lost findings in original, translated, and reordered text, including inline headings and findings–impression contradictions. Only then choose a bounded comparison among validated section parsing, head-plus-tail selection, overlapping chunks, or separate section embeddings. Each changes content coverage or aggregation and needs a declared contract. No option is selected or implemented here.</p>
+<h2 id="5-temperature-implementation-and-saved-values">5. Temperature: implementation and saved values</h2>
+<p><strong>Answer: temperature is already learned and logged indirectly.</strong> Both projection heads L2-normalize their outputs. The model initializes <code>logit_scale=log(1/0.07)</code>, then computes <code>exp(logit_scale) × image_embeddings @ text_embeddings.T</code>. Symmetric cross-entropy uses this same matrix and its transpose, hence the same temperature in both directions. After optimizer updates the training loop caps log scale at <code>log(100)</code>; the effective temperature is at least 0.01. There is no corresponding lower log-scale clamp in this project's training loop, so no finite upper bound on temperature is imposed by that clamp. Sources: <a href="../src/contrastive_learning/model.py">model</a>, <a href="../src/contrastive_learning/training.py">training</a>.</p>
+<p>The following values are reciprocals of recorded <code>inverse_temperature</code>, not a new checkpoint evaluation:</p>
+<div class="table-scroll" tabindex="0"><table>
+<thead>
+<tr>
+<th>Run</th>
+<th style="text-align:right">Selected epoch</th>
+<th style="text-align:right">Temperature at selected epoch</th>
+<th style="text-align:right">Temperature at final epoch 20</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frozen multilingual reference, 2026</td>
+<td style="text-align:right">19</td>
+<td style="text-align:right">0.055005</td>
+<td style="text-align:right">0.054990</td>
+</tr>
+<tr>
+<td>Frozen reference, 2027</td>
+<td style="text-align:right">18</td>
+<td style="text-align:right">0.055388</td>
+<td style="text-align:right">0.055277</td>
+</tr>
+<tr>
+<td>Frozen reference, 2028</td>
+<td style="text-align:right">13</td>
+<td style="text-align:right">0.058540</td>
+<td style="text-align:right">0.055180</td>
+</tr>
+<tr>
+<td>Image-block adaptation, 2026</td>
+<td style="text-align:right">18</td>
+<td style="text-align:right">0.050267</td>
+<td style="text-align:right">0.050147</td>
+</tr>
+<tr>
+<td>Image-block adaptation, 2027</td>
+<td style="text-align:right">18</td>
+<td style="text-align:right">0.049576</td>
+<td style="text-align:right">0.049444</td>
+</tr>
+<tr>
+<td>Image-block adaptation, 2028</td>
+<td style="text-align:right">17</td>
+<td style="text-align:right">0.049977</td>
+<td style="text-align:right">0.049593</td>
+</tr>
+<tr>
+<td>English E5, 2026</td>
+<td style="text-align:right">12</td>
+<td style="text-align:right">0.058375</td>
+<td style="text-align:right">0.053894</td>
+</tr>
+<tr>
+<td>PubMedBERT Embeddings, 2026</td>
+<td style="text-align:right">19</td>
+<td style="text-align:right">0.052754</td>
+<td style="text-align:right">0.052739</td>
+</tr>
+</tbody>
+</table></div>
+<p>Source logs: <a href="../checkpoints/contrastive/claude-translated-dfd07db-q2-v1/00-full-seed2026/metrics.jsonl">reference</a>, <a href="../checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/">image comparison run directory</a>, <a href="../checkpoints/contrastive/english-medical-text-v1/">text comparison run directory</a>. Selected epochs were identified from saved metrics using the documented R@1, validation-loss, then earliest-epoch rule. Historical execution snapshots should remain the authority for historical source behavior.</p>
+<p>Smaller temperature sharpens model probabilities and changes training gradients. For fixed embeddings a positive scalar does not change similarity ranking, so changing temperature alone cannot improve R@1 after training. A future temperature used to normalize semantic targets would be a separate parameter with a separate effect. The original MedCLIP defaults are a reference, not an optimum established for this dataset; see <a href="knee-clip-feedback-source-notes.md">primary-source notes</a>.</p>
+<h2 id="6-semantic-targets-what-must-be-defined-before-medclip-style-training">6. Semantic targets: what must be defined before MedCLIP-style training</h2>
+<p><strong>Answer: replacing the identity matrix with unvalidated LLM labels is not yet justified.</strong> The current code uses identity targets with symmetric cross-entropy. A semantic alternative would make some unmatched reports partial positives based on medical overlap. This can address false negatives, but can also teach systematic parser mistakes and erase distinctions between cases.</p>
+<p>The original MedCLIP uses diagnosis vectors associated with images and UMLS/MetaMap extraction for report sentences. A correction to the feedback: structured image-associated labels are not necessarily independently expert-adjudicated image labels; CheXpert training labels themselves originate in report labeling. Independence must be audited per dataset rather than inferred from the label format. This project would still be an adaptation, because its report-level 12-label ontology and label provenance differ. Sources: <a href="https://aclanthology.org/2022.emnlp-main.256/">MedCLIP paper</a>, <a href="https://arxiv.org/abs/1901.07031">CheXpert primary paper</a>, <a href="knee-clip-feedback-source-notes.md">source notes</a>.</p>
+<p>The paper and current public code also differ: the paper defines cosine label similarity, while the authors’ current loss code uses a signed-label dot product before directional softmax. The cosine formula in the feedback should therefore be called the paper-style formulation, not a verified copy of the public implementation. Pin the exact variant before any future reproduction claim. Source: <a href="https://raw.githubusercontent.com/RyanWangZf/MedCLIP/main/medclip/losses.py">authors’ loss code</a>.</p>
+<h3 id="label-contract">Label contract</h3>
+<p>For each of the 12 targets, specify definition, anatomy, laterality, negation, uncertainty, historical/postoperative findings, and handling of contradictions between report sections. Preserve the supporting report phrase and provenance. At minimum distinguish positive, explicitly negative, uncertain, and not mentioned. An LLM confidence number is not automatically a calibrated probability. A competition label may use a closed-world convention; a clinically faithful report parser must not silently assume it.</p>
+<p>Using a paired report's pseudo-label as an image label is weak supervision. It is not automatically evaluation leakage, but the two labels are not independent corroboration. It becomes leakage when evaluation cases or their gold outcomes influence target design, representation training, or model selection without being accounted for. A report parser's agreement with image gold also mixes parser error with genuine image–report discrepancy; report annotation and image annotation answer different questions.</p>
+<h3 id="normal-and-unknown-cases">Normal and unknown cases</h3>
+<p>“No positive finding mentioned,” “verified negative for all 12 targets,” and “clinically normal knee MRI” are different statements. Two verified target-negative cases can be related for this task, while differing in conditions outside the 12 labels. An all-zero vector has undefined cosine; adding epsilon avoids numerical failure but does not define the desired semantics. An explicit no-target-finding indicator is only meaningful when all required targets were assessed sufficiently. Unknown cases should not be automatically grouped with negatives.</p>
+<p>Possible future candidates are confidence-masked positive overlap, capped inverse-prevalence weighting, and a deliberately limited normal-normal attraction. Estimate prevalence weights only from the appropriate training data. Predefine zero-overlap/no-observed-label behavior. Similarity based on many shared negatives can overwhelm a decisive positive disagreement; positive-only overlap avoids that mechanism but can ignore clinically meaningful explicit negative evidence. No single candidate is established as best.</p>
+<h3 id="the-target-distribution-needs-its-own-audit">The target distribution needs its own audit</h3>
+<p>Declare the similarity function, masks, row normalization for image-to-text, column normalization for text-to-image, diagonal treatment, batch composition, and any target temperature. Reverse-direction targets must normalize over the reverse candidates; simply transposing an already row-normalized target does not generally preserve row sums. Even symmetric similarities can yield asymmetric normalized probabilities.</p>
+<p>A useful mathematical caution: if candidate scores lie in <code>[0,1]</code>, one score of 1 against 31 scores of 0 has softmax probability <code>e/(e+31) ≈ 8.06%</code>, versus 3.125% uniform probability. Thus “soft medical positives” may be a very diffuse target. This is an illustrative derivation, not a measured project result. Inspect target entropy, diagonal probability, off-diagonal mass, rare-label contradictions, and batch sensitivity. A diagonal/semantic mixture is another design option, but its mixing weight and effect would need validation rather than automatic adoption.</p>
+<h3 id="validation-before-training">Validation before training</h3>
+<p>First assess extraction against independent report adjudication where possible: per-label errors, missingness, uncertainty, and contradiction handling. Then compare a small number of predeclared candidate matrices with a gold-label matrix on eligible expert-labeled studies: pairwise rank agreement, semantic-neighbour precision/recall, and qualitative disagreement review. The gold matrix is a 12-target reference, not exhaustive clinical similarity. Define its metric and treatment of unknown/negative cases too.</p>
+<p>Fifty-eight studies give 1,653 unordered pairs, not 1,653 independent observations. Resample studies or known patient groups and rebuild pair statistics; do not independently bootstrap matrix cells. Repeated sampled copies must not be credited as new independent perfect-match neighbours. Use held-out or nested development rules if gold cases influence matrix choice; otherwise call the exercise descriptive development and reserve new independent labels for later validation. Matrix agreement and improved image-only predictions are separate milestones.</p>
+<p><strong>Closure criterion:</strong> a reviewable target specification and a defensible validation design, followed in a separately authorized stage by evidence that the target is faithful enough to test. The present task stops at understanding and planning.</p>
+<h2 id="7-translation-encoders-seeds-and-retrieval-interpretation">7. Translation, encoders, seeds, and retrieval interpretation</h2>
+<p><strong>Answer: some recommended controls are already present; the complete translation question remains open.</strong> Comparing original reports with multilingual E5 against translated reports with English E5 changes two factors. It cannot isolate translation. The more recent encoder screen holds translated text fixed and changes the encoder package, including its appropriate tokenizer/prefix. Equal token caps do not mean equal retained text.</p>
+<div class="table-scroll" tabindex="0"><table>
+<thead>
+<tr>
+<th>Existing comparison</th>
+<th>Result</th>
+<th>Supported interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Full order vs impression-first, seed 2026</td>
+<td>10.6576% vs 9.6372% mean R@1</td>
+<td>This reordering did not meet its promotion rule.</td>
+</tr>
+<tr>
+<td>Frozen vs image final block + final norm, seeds 2026/2027/2028</td>
+<td>Gains +0.4535/+1.4739/+1.7007 percentage points</td>
+<td>Consistent exploratory direction; no pathology result.</td>
+</tr>
+<tr>
+<td>Multilingual vs English E5, same translated text, seed 2026</td>
+<td>10.6576% vs 8.8435%; difference CI −4.4218 to +0.6803 pp</td>
+<td>Candidate did not meet its repeat rule; not proof of general inferiority.</td>
+</tr>
+<tr>
+<td>Multilingual vs PubMedBERT Embeddings, same translated text, seed 2026</td>
+<td>10.6576% vs 9.4104%; difference CI −3.9683 to +1.3605 pp</td>
+<td>Same limitation; this is the specific NeuML embedding model, not every PubMedBERT configuration.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Across the three image-comparison seeds, frozen-reference mean R@1 is approximately <strong>9.4860% ± 1.0162 pp sample SD</strong>; adapted mean is <strong>10.6954% ± 0.3645 pp</strong>. The paired gain is <strong>1.2094 ± 0.6643 pp</strong>. These summarize three trained seeds, not confidence intervals for deployment performance. All three per-seed paired-query intervals include zero. Repeats were conditional on a positive first-seed result; that screening history limits broad claims. Sources: <a href="claude-translated-dfd07db-image-block-results.md">image results</a>, <a href="english-medical-text-results.md">text results</a>, <a href="claude-translated-dfd07db-comparison-results.md">ordering results</a>.</p>
+<p><strong>Gallery is resolved:</strong> validation concatenates embeddings across batches and compares all 441 studies. Training uses in-batch negatives, normally 31 per query at batch 32. Validation random R@1 is <code>1/441 ≈ 0.2268%</code>, not <code>1/32</code>. R@5 and R@10 chance levels are about 1.1338% and 2.2676%. Exact ties receive uniform expected credit, which avoids credit determined by arbitrary tied ordering. Identical reports remain separate paired targets; a semantically acceptable but differently paired report can still count as a miss. Sources: <a href="../src/contrastive_learning/evaluation.py">evaluation</a>, <a href="../src/contrastive_learning/training.py">training metrics</a>.</p>
+<p>Directional R@1/5/10 and mean/median rank already appear in results. MRR is optional additional evidence, not a substitute for pathology evaluation. Paired query bootstraps preserve method pairing on the same gallery but describe uncertainty conditional on those selected checkpoints and that gallery. They do not capture a newly sampled gallery, unknown repeated patients, seed variation, or all checkpoint/model selection. Combine the two directions within study when estimating their mean, rather than pretending there are 882 independent studies.</p>
+<p><strong>Remaining translation answer:</strong> fix multilingual E5 and the same cohort/splits, compare original, raw translation, and cleaned translation at matched seeds if a future controlled experiment is warranted. First audit translation fidelity on negation, anatomy, laterality, uncertainty, severity, and omissions using source-language review. Retrieval parity alone cannot show that translation quality is solved. The pending qualitative English/medical-text error packet should be interpreted before another candidate is selected; automated worst-case extraction is not that review. Source: <a href="handoff/">current handoff and pending review</a>.</p>
+<h2 id="8-identical-images-with-conflicting-reports-what-is-and-is-not-known">8. Identical images with conflicting reports: what is and is not known</h2>
+<p><strong>Answer: the known incident is one duplicate pair, containing two entries.</strong> The existing source verification found identical ordered decoded pixels across 30 sagittal, 27 coronal, and 30 axial slices: all 87 slices of the three selected series. Fresh preprocessing matched both caches; report hashes differed. Both DICOM studies were tagged right, while one report stated left. Both entries were training members and are now ineligible in the quarantined cohort. This is not evidence of two separate duplicate groups. Source: <a href="claude-translated-dfd07db-duplicate-verification.json">duplicate verification</a>.</p>
+<p>Because decoded source pixels already match, the duplicate cannot be explained solely by the later selected-slice reshape or a stale preprocessed cache. It could still originate in upstream acquisition duplication, exporting, identifier assignment, or image–report joining. Pixel agreement does not identify the correct report or justify choosing one. Quarantine contains the known contradiction without resolving provenance.</p>
+<p>Existing coverage is 3,967 train/validation cached tensors plus a 16×16 pooled near-duplicate screen; full decoded-pixel comparison was performed for the known pair. The screen found only that pair, but is not an exhaustive raw-volume audit. Existing corpus audits also report 20 exact translated-report groups spanning splits, involving 78 studies. Repeated text can reflect templates and does not alone prove duplicate patients or images. The locked test's pixels, report examples, labels, and performance were not inspected by these audits. Sources: <a href="claude-translated-dfd07db-input-audit.json">input audit</a>, <a href="claude-translated-dfd07db-continuation.md">provenance continuation</a>.</p>
+<p><strong>Proposed provenance packet:</strong> map source report ID and versions through study/series/SOP identifiers, acquisition metadata, laterality, raw file hashes, ordered decoded-pixel hashes, selected indices, preprocessed hashes, and eligibility/split membership. Separate byte-identical files, identical decoded images, near-duplicate acquisitions, template reports, and many-to-one joins. Record raw and translated report lineage separately. If source patient identity is missing, say so; synthetic grouping IDs do not establish independence.</p>
+<p><strong>Closure criterion:</strong> explain the known pair's lineage or explicitly document why it cannot be recovered; state full audit coverage and exceptions; assess whether historical results need qualification or replacement. Do not silently repair joins, relabel a report, or treat removing two entries as a clean bill of health. Any future whole-dataset integrity check involving the locked test needs a predefined separation from outcome/model-selection access, preferably through an independent custodian. This review does not open it.</p>
+<h2 id="9-fifty-eight-gold-studies-the-question-the-evaluation-can-answer">9. Fifty-eight gold studies: the question the evaluation can answer</h2>
+<p><strong>Answer: use all eligible gold studies efficiently for exploratory screening, but do not label the result independent clinical validation.</strong> The 58-case count is user-confirmed in the project record; this review did not re-adjudicate cases or inspect locked labels. The existing retrieval split has only eight gold validation cases and zero positive MCL cases. That is different from the feedback's proposed new 47/11 split; neither supplies an adequate 12-label final test. Source: <a href="claude-translated-dfd07db-continuation.md">data boundaries</a>.</p>
+<p>A 256-to-12 linear layer has 3,072 weights plus 12 intercepts. Strong regularization reduces effective complexity but cannot replace missing independent examples. High prediction confidence is not representation quality or reliable calibration.</p>
+<h3 id="resolve-independence-before-choosing-folds">Resolve independence before choosing folds</h3>
+<p>Record each gold study's image-label provenance, adjudication, missing labels, duplicate/patient group where known, and exposure to contrastive training, report-based targets, validation checkpoint selection, and previous manual analysis. Holding a case out of a probe does not undo its earlier exposure to the representation learner.</p>
+<p>Two estimands must be distinguished: a frozen-representation probe on this available cohort, potentially exposed during pretraining, and generalization to new independent patients. The former may be feasible as exploratory analysis. The latter requires independent data or a properly isolated representation-development process, not just a new probe split. Using all 58 must also respect any current locked-test membership; that conflict needs an explicit protocol decision before data access.</p>
+<h3 id="proposed-probe-contract">Proposed probe contract</h3>
+<div class="table-scroll" tabindex="0"><table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Proposed decision and limitation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model</td>
+<td>Per-label, strongly L2-regularized logistic probes with predeclared settings; no MLP or threshold search.</td>
+</tr>
+<tr>
+<td>Features</td>
+<td>Small prespecified set of frozen study representations; same folds for all methods.</td>
+</tr>
+<tr>
+<td>Preprocessing</td>
+<td>Fit standardization, imputation and any dimensionality reduction inside each training fold.</td>
+</tr>
+<tr>
+<td>Folds</td>
+<td>Prefer feasible grouped multilabel folds after inspecting eligible label counts; LOO is an alternative, not automatically best. Keep known duplicate/patient groups together.</td>
+</tr>
+<tr>
+<td>Rare labels</td>
+<td>Check both test and training class counts. A label with one positive can leave a training fold with no positives. Mark it not estimable under the probe protocol; do not fabricate a score.</td>
+</tr>
+<tr>
+<td>Predictions</td>
+<td>In one fold partition, exactly one held-out prediction per study. With repetitions, retain a study-by-repeat table; never count repeated predictions as additional studies.</td>
+</tr>
+<tr>
+<td>Metrics</td>
+<td>Report positive/negative/unknown counts, per-label AUROC where support exists, and explicitly named macro-average eligibility. Consider PR metrics with prevalence context if predeclared.</td>
+</tr>
+<tr>
+<td>Uncertainty</td>
+<td>Resample known patients, otherwise studies with an explicit independence limitation; pair methods on the same resampled units. Report invalid rare-class bootstrap draws and coverage.</td>
+</tr>
+<tr>
+<td>Tuning</td>
+<td>Fix hyperparameters beforehand or tune entirely within outer training folds. Keep gold-driven target design and model selection inside the same independence boundary.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Pooled OOF AUROC is preferable to calculating AUROC on a single held-out LOO case, which is undefined. However, pooled scores come from different fitted models. AUROC compares scores across cases and is not a per-case decomposable metric; changes in model scale or fold prevalence can distort the pooled ranking. Report the construction and comparability assumption and treat it as an exploratory statistic, not an automatically unbiased generalization estimate. Where fold-level AUROCs are defined, they can be a declared sensitivity analysis. See <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_predict.html">scikit-learn's cross_val_predict caveat</a> and <a href="knee-clip-feedback-source-notes.md">source notes</a>.</p>
+<p>Bootstrapping fixed OOF predictions describes conditional case-level variability. It does not repeat representation learning, all probe training, matrix selection, or architecture search. Refitting the complete procedure would answer a broader uncertainty question but is not automatically reliable with only 58 cases either. Cross-validation and bootstrap redistribute or resample existing information; neither creates new patients.</p>
+<p><strong>Closure criterion:</strong> a signed-off exploratory estimand, eligible-case inventory, exposure audit, per-label feasibility table, folds and selection rules before fitting anything. If the same 58 cases are used to choose a semantic target and report its success without nesting or separate labels, call that development evidence. Additional independently adjudicated studies are needed for a credible final estimate.</p>
+<h2 id="10-proposed-next-steps-and-decision-gates">10. Proposed next steps and decision gates</h2>
+<p>This sequence is a planning recommendation. No job is queued and no implementation is requested by this document. It replaces “try another model next” as the proposed priority for responding to this feedback; it does not change existing frozen experiment protocols.</p>
+<div class="table-scroll" tabindex="0"><table>
+<thead>
+<tr>
+<th>Order</th>
+<th>Question to settle</th>
+<th>Concrete reviewable output</th>
+<th>Exit condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 — Integrity</td>
+<td>Are the study/report pairings and real image inputs trustworthy enough to interpret results?</td>
+<td>Provenance packet for the known pair; join and duplicate coverage table; selected-slice failure/fallback inventory.</td>
+<td>Every claim distinguishes verified coverage from unknowns; systematic contradictions are resolved or explicitly constrain interpretation.</td>
+</tr>
+<tr>
+<td>2 — Evaluation contract</td>
+<td>What independent evidence can the gold cases provide?</td>
+<td>Gold-case provenance/exposure inventory, per-label feasibility counts, intended estimand, fold/uncertainty plan.</td>
+<td>No implicit patient-independence, weak-label ground truth, locked-test reuse, or hidden gold-driven tuning.</td>
+</tr>
+<tr>
+<td>3 — Explain existing results</td>
+<td>Which remaining errors suggest lost content, report inconsistency, or objective mismatch?</td>
+<td>Qualitative text-candidate review and retained/lost finding inventory, compared with completed ordering/image reviews.</td>
+<td>Hypotheses are tied to actual examples and separated from causal claims; no need to rerun completed comparisons merely to reproduce tables.</td>
+</tr>
+<tr>
+<td>4 — Specify semantics</td>
+<td>What should two studies sharing a finding mean to the objective?</td>
+<td>Twelve-label parsing/uncertainty contract, normal-case policy, small candidate-matrix specification and validation protocol.</td>
+<td>The target is mathematically defined for all cases and its gold-data use is compatible with step 2.</td>
+</tr>
+<tr>
+<td>5 — Choose a minimal future comparison</td>
+<td>Which single unresolved hypothesis is most useful to test?</td>
+<td>A bounded protocol specifying comparator, one intended change, fixed seeds/gallery/checkpoint rule, metrics and stopping condition.</td>
+<td>Integrity and evaluation limitations are accepted explicitly; matrix validation precedes semantic training. No broad architecture sweep.</td>
+</tr>
+<tr>
+<td>6 — Strengthen final evidence</td>
+<td>How will results eventually generalize beyond these cases?</td>
+<td>Plan for additional independent expert labels and a held-out final evaluation.</td>
+<td>A final assessment is separated from representation, target, and threshold development.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Steps 2 and 3 can be developed while provenance questions are investigated. Defining the evaluation contract belongs before semantic-matrix tuning, even if actual downstream fitting happens later. Frozen DINO versus current CLIP representation screening need not wait for a MedCLIP implementation; it does require the exposure and label contract. Pooling, chunking, more slices, disease-specific attention, and text adaptation remain candidate hypotheses rather than a mandatory implementation checklist.</p>
+<p>The near-term deliverable is therefore an evidence and evaluation decision, not a more complex model. Retain the multilingual full-report model as an experimental reference, describe image adaptation as promising, and leave final model selection open.</p>
+<h2 id="11-evidence-guide-and-remaining-unanswered-questions">11. Evidence guide and remaining unanswered questions</h2>
+<div class="table-scroll" tabindex="0"><table>
+<thead>
+<tr>
+<th>Evidence</th>
+<th>Use it for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="knee-clip-feedback.md">Original feedback</a></td>
+<td>The eight concerns and original recommendations.</td>
+</tr>
+<tr>
+<td><a href="project-state.html">Current project digest</a></td>
+<td>Broader architecture and experiment history.</td>
+</tr>
+<tr>
+<td><a href="image-shape-audit.md">Shape audit</a></td>
+<td>Synthetic runtime evidence and real-data limitations.</td>
+</tr>
+<tr>
+<td><a href="../src/contrastive_learning/model.py">Model</a>, <a href="../src/contrastive_learning/preprocessing.py">preprocessing</a>, <a href="../src/contrastive_learning/training.py">training</a>, <a href="../src/contrastive_learning/evaluation.py">evaluation</a></td>
+<td>Current computation, pooling, normalization, temperature, gallery and objective.</td>
+</tr>
+<tr>
+<td><a href="claude-translated-dfd07db-input-audit.json">Input audit</a>, <a href="claude-translated-dfd07db-duplicate-verification.json">duplicate verification</a>, <a href="claude-translated-dfd07db-continuation.md">continuation</a></td>
+<td>Scope of integrity checks and quarantine.</td>
+</tr>
+<tr>
+<td><a href="english-medical-text-preflight.json">Text preflight</a></td>
+<td>Token distributions and model-specific input coverage.</td>
+</tr>
+<tr>
+<td><a href="claude-translated-dfd07db-comparison-results.md">Ordering comparison</a>, <a href="claude-translated-dfd07db-image-block-results.md">image results</a>, <a href="english-medical-text-results.md">text results</a></td>
+<td>Completed comparisons, directional metrics, uncertainty.</td>
+</tr>
+<tr>
+<td><a href="handoff/">Current handoff</a> (local)</td>
+<td>Pending qualitative text review and historical execution boundaries; experiment suggestions there do not authorize work in this session.</td>
+</tr>
+<tr>
+<td><a href="knee-clip-feedback-source-notes.md">Primary-source notes</a></td>
+<td>MedCLIP/E5 provenance and OOF methodology qualifications.</td>
+</tr>
+</tbody>
+</table></div>
+<p>The repository cannot currently answer which report belongs to the known duplicate acquisition, whether all remaining studies are independent, how much target-specific clinical information truncation removes, whether the projected embedding preserves all 12 targets, which semantic target is reliable, or how accurately a final image-only model generalizes. Each is retained above as an explicit question with an evidence requirement, rather than filled in with an assumption.</p>
+<footer>Offline document · Analysis and planning only · No experiments or implementation changes launched by this review.</footer></main></div></body></html>

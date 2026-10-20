@@ -1,0 +1,104 @@
+{
+  "metric": "lm_test_macro_auroc",
+  "paired_intervals": {
+    "lm-mlp-tower-size-58-dinov2-base-e5-base - lm-mlp-tower-size-58-dinov2-base-e5-small": {
+      "ci95": [
+        -0.015993316494910505,
+        0.0007325281081310104
+      ],
+      "difference": -0.0076859819002597085
+    },
+    "lm-mlp-tower-size-58-dinov2-small-e5-base - lm-mlp-tower-size-58-dinov2-base-e5-base": {
+      "ci95": [
+        -0.008397359206544183,
+        0.010785612713678838
+      ],
+      "difference": 0.0012127663545424827
+    },
+    "lm-mlp-tower-size-58-dinov2-small-e5-base - lm-mlp-tower-size-58-dinov2-base-e5-small": {
+      "ci95": [
+        -0.016330143218586973,
+        0.002578704266143135
+      ],
+      "difference": -0.006473215545717226
+    },
+    "lm-mlp-tower-size-58-dinov2-small-e5-base - lm-mlp-tower-size-58-dinov2-small-e5-small": {
+      "ci95": [
+        -0.0017079548016779966,
+        0.014114511370518886
+      ],
+      "difference": 0.006078633530843924
+    },
+    "lm-mlp-tower-size-58-dinov2-small-e5-small - lm-mlp-tower-size-58-dinov2-base-e5-base": {
+      "ci95": [
+        -0.014897554643305614,
+        0.005697384003988007
+      ],
+      "difference": -0.004865867176301442
+    },
+    "lm-mlp-tower-size-58-dinov2-small-e5-small - lm-mlp-tower-size-58-dinov2-base-e5-small": {
+      "ci95": [
+        -0.022341627879328484,
+        -0.0027553080108808693
+      ],
+      "difference": -0.01255184907656115
+    },
+    "lora-holdout-v1 - lm-mlp-tower-size-58-dinov2-base-e5-base": {
+      "ci95": [
+        -0.17128878645740023,
+        -0.12571122352630393
+      ],
+      "difference": -0.14795795207980778
+    },
+    "lora-holdout-v1 - lm-mlp-tower-size-58-dinov2-base-e5-small": {
+      "ci95": [
+        -0.1785030908342776,
+        -0.13392377588409313
+      ],
+      "difference": -0.15564393398006748
+    },
+    "lora-holdout-v1 - lm-mlp-tower-size-58-dinov2-small-e5-base": {
+      "ci95": [
+        -0.17088390789308988,
+        -0.1288892706479758
+      ],
+      "difference": -0.14917071843435026
+    },
+    "lora-holdout-v1 - lm-mlp-tower-size-58-dinov2-small-e5-small": {
+      "ci95": [
+        -0.1633834693358278,
+        -0.12326503501864455
+      ],
+      "difference": -0.14309208490350633
+    }
+  },
+  "public_pairwise_agreement": "3/3",
+  "runs": {
+    "lm-mlp-tower-size-58-dinov2-base-e5-base": {
+      "lm_test_macro_auroc": 0.8323822829152098,
+      "public_score": null,
+      "studies": 432
+    },
+    "lm-mlp-tower-size-58-dinov2-base-e5-small": {
+      "lm_test_macro_auroc": 0.8400682648154695,
+      "public_score": null,
+      "studies": 432
+    },
+    "lm-mlp-tower-size-58-dinov2-small-e5-base": {
+      "lm_test_macro_auroc": 0.8335950492697523,
+      "public_score": 0.788,
+      "studies": 432
+    },
+    "lm-mlp-tower-size-58-dinov2-small-e5-small": {
+      "lm_test_macro_auroc": 0.8275164157389083,
+      "public_score": 0.774,
+      "studies": 432
+    },
+    "lora-holdout-v1": {
+      "lm_test_macro_auroc": 0.684424330835402,
+      "public_score": 0.717,
+      "studies": 432
+    }
+  },
+  "studies": 432
+}

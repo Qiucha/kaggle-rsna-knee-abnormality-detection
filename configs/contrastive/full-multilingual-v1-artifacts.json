@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "experiment_version": "full-multilingual-v1",
+  "artifacts": [
+    {
+      "path": "data/processed/contrastive-cohort.jsonl",
+      "bytes": 17929462,
+      "sha256": "54bd803e23acf3299daeb815d651a34249c736689e20d790f862fc71c0520b63"
+    },
+    {
+      "path": "data/processed/contrastive-cohort.meta.json",
+      "bytes": 1309,
+      "sha256": "199416bb6a4b401ab586ace7a5d980bb281f96883d3ce8d1af6e29dbe7adbbf6"
+    },
+    {
+      "path": "data/train.csv",
+      "bytes": 5690007,
+      "sha256": "8ca2203c0e9d61c080c7a314c7cdb51c1b03a1d9eb4770819f7f34af53ef4e33"
+    },
+    {
+      "path": "/mnt/d/train_series.csv",
+      "bytes": 3458834,
+      "sha256": "573c1d80772bf41211c91b149c95677385a1c22d63f485c347f1b46c0177aef3"
+    },
+    {
+      "path": "data/gold_translated.csv",
+      "bytes": 166734,
+      "sha256": "f111d544a9afea18c4db8dce0911c88003128284458a129a00458101c523890a"
+    },
+    {
+      "path": "/home/q/.cache/huggingface/hub/models--facebook--dinov2-small/snapshots/ed25f3a31f01632728cabb09d1542f84ab7b0056/config.json",
+      "bytes": 547,
+      "sha256": "1809f83e3bdb1609a501a610ad4a742f4fd8ae44d72ca4aa0df52d1f2ac8628d"
+    },
+    {
+      "path": "/home/q/.cache/huggingface/hub/models--facebook--dinov2-small/snapshots/ed25f3a31f01632728cabb09d1542f84ab7b0056/model.safetensors",
+      "bytes": 88249960,
+      "sha256": "ae1e99fcefd534ed978cdeb8326f08030c96e28b7a81ffcbc98a857c84d14be1"
+    },
+    {
+      "path": "/home/q/.cache/huggingface/hub/models--intfloat--multilingual-e5-base/snapshots/d128750597153bb5987e10b1c3493a34e5a4502a/config.json",
+      "bytes": 694,
+      "sha256": "9dab198f24c8c0879e481cf7822005d5ecbceedbacb390ffafa594e28d31bac4"
+    },
+    {
+      "path": "/home/q/.cache/huggingface/hub/models--intfloat--multilingual-e5-base/snapshots/d128750597153bb5987e10b1c3493a34e5a4502a/model.safetensors",
+      "bytes": 1112201288,
+      "sha256": "a18a44fad1d0b46ded15928144138cff1135d5cc8233bdd90be5f18822de09a7"
+    },
+    {
+      "path": "/home/q/.cache/huggingface/hub/models--intfloat--multilingual-e5-base/snapshots/d128750597153bb5987e10b1c3493a34e5a4502a/sentencepiece.bpe.model",
+      "bytes": 5069051,
+      "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+    },
+    {
+      "path": "/home/q/.cache/huggingface/hub/models--intfloat--multilingual-e5-base/snapshots/d128750597153bb5987e10b1c3493a34e5a4502a/special_tokens_map.json",
+      "bytes": 280,
+      "sha256": "06e405a36dfe4b9604f484f6a1e619af1a7f7d09e34a8555eb0b77b66318067f"
+    },
+    {
+      "path": "/home/q/.cache/huggingface/hub/models--intfloat--multilingual-e5-base/snapshots/d128750597153bb5987e10b1c3493a34e5a4502a/tokenizer.json",
+      "bytes": 17082660,
+      "sha256": "62c24cdc13d4c9952d63718d6c9fa4c287974249e16b7ade6d5a85e7bbb75626"
+    },
+    {
+      "path": "/home/q/.cache/huggingface/hub/models--intfloat--multilingual-e5-base/snapshots/d128750597153bb5987e10b1c3493a34e5a4502a/tokenizer_config.json",
+      "bytes": 418,
+      "sha256": "efb5c0d09722e5fe59a462cd2a9976ee216d55b037597d997cd3fe833216da15"
+    }
+  ],
+  "dicom_root": "/mnt/d/train_series",
+  "dicom_integrity": "Per-series fingerprints in manifest; saved pixel QC, no bytewise DICOM inventory.",
+  "label_values": {
+    "ACL": {
+      "": 4349,
+      "0": 34,
+      "1": 24
+    },
+    "MCL": {
+      "": 4349,
+      "0": 49,
+      "1": 9
+    },
+    "Medial Meniscus": {
+      "": 4349,
+      "0": 32,
+      "1": 26
+    },
+    "Lateral Meniscus": {
+      "": 4349,
+      "0": 35,
+      "1": 23
+    },
+    "Medial OA": {
+      "": 4349,
+      "0": 43,
+      "1": 15
+    },
+    "Lateral OA": {
+      "": 4349,
+      "0": 47,
+      "1": 11
+    },
+    "PF OA": {
+      "": 4349,
+      "1": 21,
+      "0": 37
+    },
+    "Effusion": {
+      "": 4349,
+      "1": 35,
+      "0": 23
+    },
+    "Synovitis": {
+      "": 4349,
+      "0": 31,
+      "1": 27
+    },
+    "Baker's": {
+      "": 4349,
+      "0": 46,
+      "1": 12
+    },
+    "Contusion": {
+      "": 4349,
+      "0": 39,
+      "1": 19
+    },
+    "Fracture": {
+      "": 4349,
+      "0": 40,
+      "1": 18
+    }
+  }
+}

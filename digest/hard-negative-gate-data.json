@@ -1,0 +1,83 @@
+{
+  "note": "Gate data for lever A (hard-negative reweighting). COMPUTED, NOT A DECISION. The arm is not authorized.",
+  "question": "At the learned temperature, what share of off-diagonal softmax mass sits on the top-1 / top-3 / top-10 negative? If top-1 already dominates, explicit hard-negative reweighting is close to a no-op.",
+  "distribution": "softmax over negatives only (diagonal masked to -inf), training-split embeddings, augmentation off",
+  "seeds": {
+    "original-unfreeze4-seed2026/best.pt": {
+      "inverse_temperature": 20.385719299316406,
+      "train_matched_n_441": {
+        "top1_share_mean": 0.27127915620803833,
+        "top3_share_mean": 0.5581559538841248,
+        "top10_share_mean": 0.8861358165740967,
+        "n": 441
+      },
+      "train_full_3526": {
+        "top1_share_mean": 0.06619114428758621,
+        "top3_share_mean": 0.15826387703418732,
+        "top10_share_mean": 0.3626498579978943,
+        "n": 3526
+      }
+    },
+    "original-unfreeze4-seed2027/best.pt": {
+      "inverse_temperature": 20.361515045166016,
+      "train_matched_n_441": {
+        "top1_share_mean": 0.2813818156719208,
+        "top3_share_mean": 0.5686590075492859,
+        "top10_share_mean": 0.8942880630493164,
+        "n": 441
+      },
+      "train_full_3526": {
+        "top1_share_mean": 0.07034581899642944,
+        "top3_share_mean": 0.16687147319316864,
+        "top10_share_mean": 0.3759653568267822,
+        "n": 3526
+      }
+    },
+    "original-unfreeze4-seed2028/best.pt": {
+      "inverse_temperature": 19.49085235595703,
+      "train_matched_n_441": {
+        "top1_share_mean": 0.253498911857605,
+        "top3_share_mean": 0.519935667514801,
+        "top10_share_mean": 0.854052722454071,
+        "n": 441
+      },
+      "train_full_3526": {
+        "top1_share_mean": 0.06038892641663551,
+        "top3_share_mean": 0.1445007473230362,
+        "top10_share_mean": 0.33321207761764526,
+        "n": 3526
+      }
+    }
+  },
+  "summary": {
+    "top1_share_mean_over_seeds_matched_n": 0.2687199612458547,
+    "top3_share_mean_over_seeds_matched_n": 0.5489168763160706,
+    "top10_share_mean_over_seeds_matched_n": 0.8781588673591614
+  },
+  "train_batch_32_as_the_gate_specified": {
+    "original-unfreeze4-seed2026/best.pt": {
+      "batch_size": 32,
+      "negatives_per_row": 31,
+      "top1_share_mean": 0.7535209582177076,
+      "top3_share_mean": 0.9521651003252376,
+      "batches_sampled": 5500
+    },
+    "original-unfreeze4-seed2027/best.pt": {
+      "batch_size": 32,
+      "negatives_per_row": 31,
+      "top1_share_mean": 0.7505744576779279,
+      "top3_share_mean": 0.94904515617544,
+      "batches_sampled": 5500
+    },
+    "original-unfreeze4-seed2028/best.pt": {
+      "batch_size": 32,
+      "negatives_per_row": 31,
+      "top1_share_mean": 0.7325313556844538,
+      "top3_share_mean": 0.9447762150330977,
+      "batches_sampled": 5500
+    }
+  },
+  "gate_reading": "GATE FAILS at batch 32. The gate asked: at the learned temperature, on real training batches, does the top-1 negative already dominate the InfoNCE denominator? It does -- the top-1 negative carries 0.73-0.75 of the off-diagonal softmax mass and the top-3 carries 0.94-0.95, over 31 negatives. The loss is already almost entirely a hard-negative loss, so explicit hard-negative reweighting is close to a no-op and three seeds would measure noise. Lever A should NOT be run at batch 32 on this evidence.",
+  "why_the_n441_numbers_are_not_the_gate": "The matched-N=441 shares (top-1 0.269, top-3 0.549) are the same quantity at a different candidate count and must not be read as the gate. The gate was specified on training batches because that is the distribution the loss actually saw. Spreading the same softmax over 440 negatives instead of 31 necessarily lowers the top-1 share; it says nothing about whether the training objective is already hard-negative dominated.",
+  "what_would_change_it": "Concentration falls as batch size grows. If the batch ever moves to 64/128 for another reason (e.g. lever B), re-measure this at the new size rather than carrying the batch-32 verdict forward. SigLIP pairwise-sigmoid is unaffected by this gate: it drops the softmax entirely, so a denominator-dominance argument does not bear on it either way."
+}

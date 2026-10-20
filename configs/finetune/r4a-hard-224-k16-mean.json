@@ -1,0 +1,46 @@
+{
+  "name": "r4a-hard-224-k16-mean",
+  "cohort_manifest": "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
+  "manifest_sha256": "d104337696a19d52d12480c1cfaae30c937916102e36a67e3124755fa20123f5",
+  "lm_labels_csv": "data/lm_label/lm_labels_kaggle.csv",
+  "gold_labels_csv": "data/gold_label.csv",
+  "gold_splits": [
+    "excluded",
+    "test"
+  ],
+  "expected_gold_studies": 58,
+  "image_model": "facebook/dinov2-small",
+  "image_model_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+  "image_unfreeze_last": 3,
+  "image_size": 224,
+  "crop_mm": 130.0,
+  "slices_per_plane": 3,
+  "slice_band": [
+    0.2,
+    0.8
+  ],
+  "image_cache_dir": "checkpoints/contrastive/full-multilingual-v1/image-cache",
+  "targets": "verdict",
+  "head_hidden": [
+    256
+  ],
+  "dropout": 0.2,
+  "epochs": 20,
+  "patience": 5,
+  "min_delta": 1e-05,
+  "batch_size": 4,
+  "num_workers": 6,
+  "lr_backbone": 2e-05,
+  "lr_head": 0.001,
+  "weight_decay": 0.02,
+  "warmup_fraction": 0.1,
+  "grad_clip_norm": 1.0,
+  "amp": true,
+  "seed": 2026,
+  "init_checkpoint": "checkpoints/contrastive/both-lora-holdout-v1/holdout-both-lora-depth6-r64-seed2026/best.pt",
+  "train_slice_sampling": "random",
+  "grad_accumulation": 4,
+  "windows_per_plane": 16,
+  "pooling": "mean",
+  "window_cache_dir": "checkpoints/finetune/window-cache-k16-224"
+}

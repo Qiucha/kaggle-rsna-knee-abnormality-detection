@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "probe_version": "gold-probe-declip-v1",
+  "purpose": "Evaluate downstream 12-label AUROC for DeCLIP data-efficient alignment (Multi-View InfoNCE + Nearest-Neighbour Report Queue) compared against unadapted DINOv2 and previous project-best LoRA and Full FT baselines.",
+  "derived_from": {
+    "config": "configs/downstream/gold-probe-both-block-depth-v1.json",
+    "config_sha256_at_derivation": "f784d0b2f81ba5506a7267568551fa0d4c82c3c1356396e00b84c8a514d87214"
+  },
+  "cohort_manifest": "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
+  "manifest_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+  "gold_labels_csv": "data/gold_label.csv",
+  "population": "gold studies whose cohort split is train or validation; locked-test gold studies are counted only",
+  "estimand": "Readout quality of a frozen representation on a cohort it was trained on. 56 of 58 gold cases were exposed to contrastive training or checkpoint selection.",
+  "labels": [
+    "ACL",
+    "MCL",
+    "Medial Meniscus",
+    "Lateral Meniscus",
+    "Medial OA",
+    "Lateral OA",
+    "PF OA",
+    "Effusion",
+    "Synovitis",
+    "Baker's",
+    "Contusion",
+    "Fracture"
+  ],
+  "probe": {
+    "estimator": "sklearn.linear_model.LogisticRegression",
+    "penalty": "l2",
+    "C": 1.0,
+    "solver": "lbfgs",
+    "max_iter": 5000,
+    "class_weight": null,
+    "standardize": "StandardScaler fitted inside each training fold",
+    "folds": 8,
+    "fold": "StratifiedKFold(shuffle=True), stratification computed inside the per-label fold loop",
+    "fold_seed": 2026,
+    "predictions": "exactly one held-out decision_function score per study per label",
+    "tuning": "none; every hyperparameter is fixed here before the first fit"
+  },
+  "metrics": {
+    "primary": "pooled out-of-fold AUROC per label, macro-averaged over the 12 labels",
+    "secondary": "pooled out-of-fold average precision (AUPRC)",
+    "tie_policy": "midrank. Every reported point estimate comes from sklearn.metrics.roc_auc_score.",
+    "environment_note": "sklearn 1.8 deprecates penalty=l2",
+    "rare_labels": "MCL has 8 positives over 56 cases: pooled-OOF only, fold-level AUROC declared uninformative in advance"
+  },
+  "bootstrap": {
+    "resamples": 5000,
+    "seed": 2029,
+    "unit": "study",
+    "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable"
+  },
+  "arms": {
+    "before_cl": {
+      "name": "dinov2-unadapted",
+      "image_model": "facebook/dinov2-small",
+      "image_model_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+      "pooling": "uniform mean over the three planes",
+      "features": [
+        "uniform_mean_768"
+      ]
+    },
+    "after_cl": {
+      "name": "DeCLIP alignment and previous best baselines (Both LoRA 6b, Both Full FT 6b)",
+      "checkpoints": [
+        "checkpoints/contrastive/both-block-depth-v1/both-unfreeze6-seed2026/best.pt",
+        "checkpoints/contrastive/both-lora-v1/both-lora-depth6-r64-seed2026/best.pt",
+        "checkpoints/contrastive/both-lora-v1/both-lora-depth6-r64-bs64-reg-seed2026/best.pt",
+        "checkpoints/contrastive/declip-v1/declip-frozen-seed2026/best.pt",
+        "checkpoints/contrastive/declip-v1/declip-mv-only-frozen-seed2026/best.pt",
+        "checkpoints/contrastive/declip-v1/declip-lora-depth6-r64-seed2026/best.pt"
+      ],
+      "features": [
+        "uniform_mean_768",
+        "plane_attention_768",
+        "projection_256"
+      ]
+    }
+  },
+  "comparisons": {
+    "primary": "after_cl/declip-frozen-seed2026/uniform_mean_768 versus after_cl/both-lora-depth6-r64-seed2026/uniform_mean_768 and both-unfreeze6-seed2026/uniform_mean_768",
+    "anchor": "before_cl/uniform_mean_768 versus each adapted arm",
+    "secondary": "plane_attention_768 against uniform_mean_768 of the same arm",
+    "confounded": "projection_256 (learned 768->256 projection)"
+  },
+  "reference": {
+    "lm_label_extraction": "data/lm_label/*.csv scored against the same gold labels on the same 56 studies"
+  },
+  "scope": "Read-only over existing artifacts."
+}

@@ -1,0 +1,160 @@
+{
+  "question": "How often does a training batch of 32 contain a semantically equivalent report pair that InfoNCE then pushes apart, and is there a similarity source that identifies such pairs reliably?",
+  "population": {
+    "manifest": "data/processed/contrastive-cohort.jsonl",
+    "split": "train",
+    "n_studies": 3526,
+    "n_pairs": 6214575,
+    "batch_size": 32,
+    "pairs_per_batch": 496
+  },
+  "e5_full_report": {
+    "how": "frozen intfloat/multilingual-e5-base rev d1287505, 'query: ' prefix, mean pooling, 512 tokens - exactly the text tower the arms would use",
+    "percentiles": {
+      "50": 0.8890445232391357,
+      "75": 0.9104357957839966,
+      "90": 0.9368701577186584,
+      "95": 0.9520342350006104,
+      "99": 0.9754137396812439,
+      "99.5": 0.9848493933677673,
+      "99.9": 0.992864191532135,
+      "99.99": 1.0
+    },
+    "in_batch_collisions": {
+      "0.9": {
+        "pair_fraction": 0.35345538512287644,
+        "pairs_over_threshold": 2196575,
+        "expected_collisions_per_batch_of_32": 175.31387102094672,
+        "approx_p_batch_has_any": 1.0
+      },
+      "0.92": {
+        "pair_fraction": 0.17855251565875382,
+        "pairs_over_threshold": 1109628,
+        "expected_collisions_per_batch_of_32": 88.5620477667419,
+        "approx_p_batch_has_any": 1.0
+      },
+      "0.94": {
+        "pair_fraction": 0.08853493601734631,
+        "pairs_over_threshold": 550207,
+        "expected_collisions_per_batch_of_32": 43.91332826460377,
+        "approx_p_batch_has_any": 1.0
+      },
+      "0.95": {
+        "pair_fraction": 0.05575007140472196,
+        "pairs_over_threshold": 346463,
+        "expected_collisions_per_batch_of_32": 27.652035416742095,
+        "approx_p_batch_has_any": 0.9999999999995604
+      },
+      "0.96": {
+        "pair_fraction": 0.03040835455360986,
+        "pairs_over_threshold": 188975,
+        "expected_collisions_per_batch_of_32": 15.08254385859049,
+        "approx_p_batch_has_any": 0.9999997771170249
+      },
+      "0.97": {
+        "pair_fraction": 0.014762071420813169,
+        "pairs_over_threshold": 91740,
+        "expected_collisions_per_batch_of_32": 7.321987424723332,
+        "approx_p_batch_has_any": 0.9993742559276009
+      },
+      "0.98": {
+        "pair_fraction": 0.007389403136980405,
+        "pairs_over_threshold": 45922,
+        "expected_collisions_per_batch_of_32": 3.6651439559422805,
+        "approx_p_batch_has_any": 0.9747455436720677
+      },
+      "0.99": {
+        "pair_fraction": 0.002291065760731828,
+        "pairs_over_threshold": 14238,
+        "expected_collisions_per_batch_of_32": 1.1363686173229866,
+        "approx_p_batch_has_any": 0.6794356865048393
+      }
+    },
+    "verdict": "UNUSABLE as a false-negative detector. Similarity is dominated by the shared structured template, not by findings: a Morel-Lavallee hematoma and a patellofemoral maltracking report sit at 0.9912, while the median pair is 0.889. Only above ~0.995 are pairs genuinely equivalent, and that is 0.19 expected collisions per batch."
+  },
+  "tfidf": {
+    "how": "sublinear TF-IDF, 1-2 grams, min_df=3, max_df=0.5; document frequency discounts the template",
+    "percentiles": {
+      "50": 0.0033,
+      "90": 0.11288,
+      "99": 0.47412,
+      "99.9": 0.73831,
+      "99.99": 1.0
+    },
+    "thresholds": {
+      "0.6": {
+        "pair_fraction": 0.004160220127683711,
+        "expected_collisions_per_batch_of_32": 2.0634691833311205,
+        "p_batch_has_any": 0.873532935963677,
+        "studies_with_a_partner": 0.5212705615428247
+      },
+      "0.7": {
+        "pair_fraction": 0.001551031245097211,
+        "expected_collisions_per_batch_of_32": 0.7693114975682167,
+        "p_batch_has_any": 0.5369446697619842,
+        "studies_with_a_partner": 0.2963698241633579
+      },
+      "0.8": {
+        "pair_fraction": 0.000488850806370508,
+        "expected_collisions_per_batch_of_32": 0.24246999995977198,
+        "p_batch_has_any": 0.21535923104828303,
+        "studies_with_a_partner": 0.15541690300623937
+      },
+      "0.85": {
+        "pair_fraction": 0.00027676872513405983,
+        "expected_collisions_per_batch_of_32": 0.13727728766649366,
+        "p_batch_has_any": 0.12828809008878228,
+        "studies_with_a_partner": 0.11089052750992626
+      },
+      "0.9": {
+        "pair_fraction": 0.00019180716299988334,
+        "expected_collisions_per_batch_of_32": 0.09513635284794214,
+        "p_batch_has_any": 0.09075934960306375,
+        "studies_with_a_partner": 0.08111174134997164
+      },
+      "0.95": {
+        "pair_fraction": 0.00015174006267524329,
+        "expected_collisions_per_batch_of_32": 0.07526307108692067,
+        "p_batch_has_any": 0.07250584079753153,
+        "studies_with_a_partner": 0.05927396483267158
+      }
+    },
+    "verdict": "Behaves correctly - pairs above 0.90 are genuinely equivalent by reading, pairs at 0.80 are not - but genuine duplicates are RARE: 0.10 expected collisions per batch of 32, i.e. ~9% of batches contain one, one pair in 496."
+  },
+  "conclusion": {
+    "fnc": "NOT SUPPORTED at batch 32. The only similarity source that identifies genuine duplicates (TF-IDF) finds ~0.1 per batch. Masking one pair in 496 cannot move a 3-seed result, and the source that would fire often enough (full-report e5) fires on unrelated findings.",
+    "soft_targets": "NOT SUPPORTED either. At most 3% of off-diagonal target mass reaches a genuine duplicate at any setting large enough to matter. Both forms fail for the same reason: at batch 32 there is almost nothing to fix. Batch size, not target shape, is the binding constraint."
+  },
+  "soft_target_mass_attribution": {
+    "how": "600 random batches of 32; share of all off-diagonal target mass landing on TF-IDF>0.90 pairs",
+    "normalised_tfidf": {
+      "power_1": {
+        "off_diagonal_mass": 0.4654,
+        "share_on_genuine_duplicates": 0.0037
+      },
+      "power_2": {
+        "off_diagonal_mass": 0.1864,
+        "share_on_genuine_duplicates": 0.0143
+      },
+      "power_3": {
+        "off_diagonal_mass": 0.0851,
+        "share_on_genuine_duplicates": 0.029
+      }
+    },
+    "softmax": {
+      "tau_0.2": {
+        "off_diagonal_mass": 0.2313,
+        "share_on_genuine_duplicates": 0.008
+      },
+      "tau_0.15": {
+        "off_diagonal_mass": 0.0763,
+        "share_on_genuine_duplicates": 0.0311
+      },
+      "tau_0.1": {
+        "off_diagonal_mass": 0.0122,
+        "share_on_genuine_duplicates": 0.2168
+      }
+    },
+    "verdict": "Sharpening trades one failure for another. Loose settings put target mass on true negatives; the one well-aimed setting moves 0.26% of total target mass. Soft targets degenerate to uniform label smoothing at this duplicate rate."
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "counts": {
+    "train": {
+      "studies": 3524,
+      "reordered": 2046,
+      "changed_model_input": 2046,
+      "summary_starts_input": 2046
+    },
+    "validation": {
+      "studies": 441,
+      "reordered": 254,
+      "changed_model_input": 254,
+      "summary_starts_input": 254
+    }
+  },
+  "all_word_multisets_preserved": true,
+  "no_test_inputs_inspected": true,
+  "late_summary_recovery": {
+    "train_lost": 300,
+    "train_moved_front": 292,
+    "validation_lost": 43,
+    "validation_moved_front": 42
+  }
+}

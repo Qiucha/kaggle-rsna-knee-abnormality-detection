@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "probe_version": "gold-probe-v1",
+  "purpose": "Does contrastive learning improve the downstream label-extraction task, measured as pooled out-of-fold AUROC on the 58-case gold label set?",
+  "cohort_manifest": "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
+  "manifest_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+  "gold_labels_csv": "data/gold_label.csv",
+  "population": "gold studies whose cohort split is train or validation; locked-test gold studies are counted only",
+  "estimand": "Readout quality of a frozen representation on a cohort it was trained on. Explicitly NOT generalisation: 56 of 58 gold cases were exposed to contrastive training or checkpoint selection.",
+  "labels": [
+    "ACL", "MCL", "Medial Meniscus", "Lateral Meniscus", "Medial OA", "Lateral OA",
+    "PF OA", "Effusion", "Synovitis", "Baker's", "Contusion", "Fracture"
+  ],
+  "probe": {
+    "estimator": "sklearn.linear_model.LogisticRegression",
+    "penalty": "l2",
+    "C": 1.0,
+    "solver": "lbfgs",
+    "max_iter": 5000,
+    "class_weight": null,
+    "standardize": "StandardScaler fitted inside each training fold",
+    "folds": 8,
+    "fold": "StratifiedKFold(shuffle=True), stratification computed inside the per-label fold loop",
+    "fold_seed": 2026,
+    "predictions": "exactly one held-out decision_function score per study per label",
+    "tuning": "none; every hyperparameter is fixed here before the first fit"
+  },
+  "metrics": {
+    "primary": "pooled out-of-fold AUROC per label, macro-averaged over the 12 labels",
+    "secondary": "pooled out-of-fold average precision (AUPRC)",
+    "tie_policy": "midrank. Every reported point estimate comes from sklearn.metrics.roc_auc_score. The bootstrap replicates use an equivalent rank-sum implementation (scipy.stats.rankdata) for speed, and the script asserts the two agree to 1e-9 on every label's real scores before building any interval. Section 6 of the EDA notebook's argsort AUROC is reported alongside the LM reference for comparison only, never used as a result.",
+    "environment_note": "sklearn 1.8 deprecates the explicit penalty=l2 argument pinned above and removes it in 1.10. The fitted model is unchanged, since l2 is the default; a rerun on 1.10 must translate it to l1_ratio=0 rather than silently dropping it.",
+    "rare_labels": "MCL has 8 positives over 56 cases: pooled-OOF only, fold-level AUROC declared uninformative in advance"
+  },
+  "bootstrap": {
+    "resamples": 5000,
+    "seed": 2029,
+    "unit": "study",
+    "limitation": "resampling studies is not resampling patients; anonymisation is per study, so patient identity is unverifiable"
+  },
+  "arms": {
+    "before_cl": {
+      "name": "dinov2-unadapted",
+      "image_model": "facebook/dinov2-small",
+      "image_model_revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+      "pooling": "uniform mean over the three planes",
+      "features": ["uniform_mean_768"]
+    },
+    "after_cl": {
+      "name": "image-block adaptation (--image-unfreeze-last 1)",
+      "checkpoints": [
+        "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2026/best.pt",
+        "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2027/best.pt",
+        "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2028/best.pt"
+      ],
+      "features": ["uniform_mean_768", "plane_attention_768", "projection_256"]
+    },
+    "frozen_tower_null": {
+      "name": "frozen-backbone contrastive runs (--image-unfreeze-last 0)",
+      "checkpoints": [
+        "checkpoints/contrastive/claude-translated-dfd07db-q2-v1/00-full-seed2026/best.pt",
+        "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/full-seed2027/best.pt",
+        "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/full-seed2028/best.pt"
+      ],
+      "features": ["uniform_mean_768", "plane_attention_768", "projection_256"],
+      "declared_in_advance": "These runs never updated a DINOv2 weight, so their uniform_mean_768 features must be numerically identical to the before_cl arm. That identity is asserted as a correctness check, and any difference in that feature set would be a bug, not a result."
+    }
+  },
+  "comparisons": {
+    "primary": "before_cl/uniform_mean_768 versus after_cl/uniform_mean_768 -- matched pooling, matched dimensionality, so the only difference is the adapted DINOv2 block",
+    "secondary": "before_cl/uniform_mean_768 versus after_cl/plane_attention_768 -- adds the learned plane pooling",
+    "confounded": "projection_256 is a learned 768->256 linear-plus-GELU compression; a linear probe cannot gain from compression, so this arm is reported but is not evidence against contrastive learning"
+  },
+  "reference": {
+    "lm_label_extraction": "data/lm_label/*.csv scored against the same gold labels on the same 56 studies, as the text-side label-extraction ceiling"
+  },
+  "scope": "Read-only over existing artifacts. No training, no locked-test evaluation, no writes into any run directory."
+}

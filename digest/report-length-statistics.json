@@ -1,0 +1,70 @@
+{
+  "cohorts": {
+    "original (multilingual_raw)": {
+      "conclusion_detection_rate": 0.39006126616746084,
+      "conclusion_entirely_truncated": 374,
+      "conclusion_entirely_truncated_fraction": 0.08486498751985477,
+      "conclusion_partially_truncated": 99,
+      "conclusion_partially_truncated_fraction": 0.0224642614023145,
+      "conclusion_start_token": {
+        "max": 970.0,
+        "mean": 310.55730075625365,
+        "median": 270.0,
+        "n": 1719,
+        "over_limit": 374,
+        "over_limit_fraction": 0.21756835369400815,
+        "p75": 419.0,
+        "p90": 633.2,
+        "p95": 684.0999999999999,
+        "p99": 796.7399999999996
+      },
+      "max": 1241.0,
+      "mean": 313.41366008622646,
+      "median": 285.0,
+      "n": 4407,
+      "over_limit": 625,
+      "over_limit_fraction": 0.14181983208531881,
+      "p75": 414.0,
+      "p90": 600.0,
+      "p95": 692.0,
+      "p99": 843.9399999999996,
+      "reports_impression_first_actually_reorders": 1354,
+      "reports_with_detectable_conclusion": 1719
+    },
+    "translated (english)": {
+      "conclusion_detection_rate": 0.5793416572077185,
+      "conclusion_entirely_truncated": 368,
+      "conclusion_entirely_truncated_fraction": 0.08354143019296255,
+      "conclusion_partially_truncated": 108,
+      "conclusion_partially_truncated_fraction": 0.024517593643586834,
+      "conclusion_start_token": {
+        "max": 948.0,
+        "mean": 255.85384012539186,
+        "median": 215.0,
+        "n": 2552,
+        "over_limit": 368,
+        "over_limit_fraction": 0.14420062695924765,
+        "p75": 326.0,
+        "p90": 598.0,
+        "p95": 655.0,
+        "p99": 763.4899999999998
+      },
+      "max": 1241.0,
+      "mean": 303.338933030647,
+      "median": 268.0,
+      "n": 4405,
+      "over_limit": 589,
+      "over_limit_fraction": 0.1337116912599319,
+      "p75": 395.0,
+      "p90": 591.0,
+      "p95": 685.0,
+      "p99": 833.6800000000003,
+      "reports_impression_first_actually_reorders": 2549,
+      "reports_with_detectable_conclusion": 2552
+    }
+  },
+  "max_text_length": 512,
+  "prefix": "query: ",
+  "revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+  "tokenizer": "intfloat/multilingual-e5-base"
+}

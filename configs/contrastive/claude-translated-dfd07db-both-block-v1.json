@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "requires_cuda": true,
+  "output_root": "checkpoints/contrastive/claude-translated-dfd07db-both-block-v1",
+  "base_args": [
+    "--cohort-manifest",
+    "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
+    "--text-model",
+    "multilingual-e5",
+    "--text-model-revision",
+    "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "--text-pooling",
+    "mean",
+    "--text-prefix",
+    "query: ",
+    "--image-model",
+    "facebook/dinov2-small",
+    "--image-model-revision",
+    "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+    "--max-text-length",
+    "512",
+    "--image-unfreeze-last",
+    "0",
+    "--text-unfreeze-last",
+    "0",
+    "--epochs",
+    "20",
+    "--batch-size",
+    "32",
+    "--num-workers",
+    "4",
+    "--image-cache-dir",
+    "checkpoints/contrastive/full-multilingual-v1/image-cache",
+    "--image-memory-cache-size",
+    "16",
+    "--trainable-checkpoints",
+    "--local-files-only",
+    "--report-view",
+    "full",
+    "--lr-image",
+    "1e-5",
+    "--lr-text",
+    "2e-5"
+  ],
+  "experiments": [
+    {
+      "name": "both-block-seed2026",
+      "purpose": "Final image block and final text block adapted together; matched full report. Isolates whether unfreezing text adds anything to image semantics over image-only adaptation at the same seed.",
+      "args": [
+        "--image-unfreeze-last",
+        "1",
+        "--text-unfreeze-last",
+        "1",
+        "--seed",
+        "2026"
+      ]
+    },
+    {
+      "name": "both-block-seed2027",
+      "purpose": "Same arm, second matched seed; budgeted up front rather than triggered by a positive first seed",
+      "args": [
+        "--image-unfreeze-last",
+        "1",
+        "--text-unfreeze-last",
+        "1",
+        "--seed",
+        "2027"
+      ]
+    },
+    {
+      "name": "both-block-seed2028",
+      "purpose": "Same arm, third matched seed; budgeted up front rather than triggered by a positive first seed",
+      "args": [
+        "--image-unfreeze-last",
+        "1",
+        "--text-unfreeze-last",
+        "1",
+        "--seed",
+        "2028"
+      ]
+    }
+  ],
+  "experiment_version": "claude-translated-dfd07db-both-block-v1",
+  "manifest_sha256": "8f6f021954e268b995dbe63daf42a2cc5f0dd92efdd27ad511b0ddbe5832f99b",
+  "selection_policy": "mean_r@1 descending, validation_loss ascending, earliest epoch",
+  "baseline_output": "checkpoints/contrastive/claude-translated-dfd07db-q2-v1/00-full-seed2026",
+  "baseline_checkpoint_sha256": "792aed1588acdda11ecd22238230b8c99cdaaa279c3cdbdc69877b7a3fc063c2",
+  "primary_comparator": {
+    "arm": "claude-translated-dfd07db-image-block-v1 (--image-unfreeze-last 1, --text-unfreeze-last 0)",
+    "rationale": "The working question is whether the IMAGE tower reads medical semantics better. Unadapted DINOv2 is the anchor, not the contrast: both-block versus unadapted confounds two simultaneous changes. Image-block at the same seed is the single-factor comparator, so the only difference is whether the final text block was also unfrozen."
+  },
+  "matched_baselines": {
+    "2026": {
+      "output": "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2026",
+      "checkpoint_sha256": "e828102d9a6919a2e9338e6a004ed99216f00c192e846d17c4ba5e1e2140f15f",
+      "mean_r@1_pp": 11.1111
+    },
+    "2027": {
+      "output": "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2027",
+      "checkpoint_sha256": "1282a2b994a72df9e67b590717d83ed429a8053b0772a853112b6e29fdf45014",
+      "mean_r@1_pp": 10.4308
+    },
+    "2028": {
+      "output": "checkpoints/contrastive/claude-translated-dfd07db-image-block-v1/image-block-seed2028",
+      "checkpoint_sha256": "1dccd9c37b3f7ad8b74fc54747933a7ea522c7b2c5ddc82d8c440a91dfa5ac91",
+      "mean_r@1_pp": 10.5442
+    }
+  },
+  "learning_rate_policy": "--lr-image 1e-5 is copied by value from the image-block arm and --lr-text 2e-5 from the text-block arm, so each tower is adapted at the same rate as the single-factor arm it is compared against. Neither was tuned here.",
+  "repeat_seeds": [],
+  "repeat_rule": "None. All three matched seeds are frozen here up front, so no positive-gain trigger decides whether more run. This follows the text-block precedent and deliberately abandons the image-block arm's conditional-repeat rule.",
+  "maximum_new_full_runs": 3
+}

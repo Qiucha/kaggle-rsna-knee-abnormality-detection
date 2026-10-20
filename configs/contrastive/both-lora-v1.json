@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "requires_cuda": true,
+  "output_root": "checkpoints/contrastive/both-lora-v1",
+  "base_args": [
+    "--cohort-manifest",
+    "data/processed/contrastive-cohort.jsonl",
+    "--text-model",
+    "multilingual-e5",
+    "--text-model-revision",
+    "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "--text-pooling",
+    "mean",
+    "--text-prefix",
+    "query: ",
+    "--image-model",
+    "facebook/dinov2-small",
+    "--image-model-revision",
+    "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+    "--max-text-length",
+    "512",
+    "--report-view",
+    "full",
+    "--epochs",
+    "20",
+    "--batch-size",
+    "32",
+    "--num-workers",
+    "4",
+    "--image-cache-dir",
+    "checkpoints/contrastive/full-multilingual-v1/image-cache",
+    "--image-memory-cache-size",
+    "16",
+    "--trainable-checkpoints",
+    "--local-files-only",
+    "--lr-image",
+    "1e-4",
+    "--lr-text",
+    "1e-4",
+    "--lr-projection",
+    "1e-3",
+    "--seed",
+    "2026",
+    "--use-lora"
+  ],
+  "experiments": [
+    {
+      "name": "both-lora-depth6-r16-seed2026",
+      "purpose": "LoRA rank 16 on last 6 transformer blocks of both image and text towers (BS=32)",
+      "args": [
+        "--image-unfreeze-last",
+        "6",
+        "--text-unfreeze-last",
+        "6",
+        "--lora-rank",
+        "16",
+        "--lora-alpha",
+        "32"
+      ]
+    },
+    {
+      "name": "both-lora-depth6-r32-seed2026",
+      "purpose": "LoRA rank 32 on last 6 transformer blocks of both image and text towers (BS=32)",
+      "args": [
+        "--image-unfreeze-last",
+        "6",
+        "--text-unfreeze-last",
+        "6",
+        "--lora-rank",
+        "32",
+        "--lora-alpha",
+        "64"
+      ]
+    },
+    {
+      "name": "both-lora-depth6-r64-seed2026",
+      "purpose": "LoRA rank 64 on last 6 transformer blocks of both image and text towers (BS=32)",
+      "args": [
+        "--image-unfreeze-last",
+        "6",
+        "--text-unfreeze-last",
+        "6",
+        "--lora-rank",
+        "64",
+        "--lora-alpha",
+        "128"
+      ]
+    },
+    {
+      "name": "both-lora-depth12-r32-seed2026",
+      "purpose": "LoRA rank 32 on all 12 transformer blocks of both image and text towers (BS=16)",
+      "args": [
+        "--image-unfreeze-last",
+        "12",
+        "--text-unfreeze-last",
+        "12",
+        "--lora-rank",
+        "32",
+        "--lora-alpha",
+        "64",
+        "--batch-size",
+        "16"
+      ]
+    },
+    {
+      "name": "both-lora-depth8-r64-seed2026",
+      "purpose": "LoRA rank 64 on last 8 transformer blocks of both image and text towers with gradient checkpointing (BS=32)",
+      "args": [
+        "--image-unfreeze-last",
+        "8",
+        "--text-unfreeze-last",
+        "8",
+        "--lora-rank",
+        "64",
+        "--lora-alpha",
+        "128",
+        "--gradient-checkpointing"
+      ]
+    },
+    {
+      "name": "both-lora-depth12-r64-seed2026",
+      "purpose": "LoRA rank 64 on all 12 transformer blocks of both image and text towers with gradient checkpointing (BS=32)",
+      "args": [
+        "--image-unfreeze-last",
+        "12",
+        "--text-unfreeze-last",
+        "12",
+        "--lora-rank",
+        "64",
+        "--lora-alpha",
+        "128",
+        "--gradient-checkpointing"
+      ]
+    },
+    {
+      "name": "both-lora-depth6-r64-bs64-seed2026",
+      "purpose": "LoRA rank 64 on last 6 transformer blocks of both image and text towers with gradient checkpointing (BS=64)",
+      "args": [
+        "--image-unfreeze-last",
+        "6",
+        "--text-unfreeze-last",
+        "6",
+        "--lora-rank",
+        "64",
+        "--lora-alpha",
+        "128",
+        "--batch-size",
+        "64",
+        "--gradient-checkpointing"
+      ]
+    },
+    {
+      "name": "both-lora-depth6-r64-bs64-reg-seed2026",
+      "purpose": "LoRA rank 64 depth 6 at BS=64 with step compensation (40 epochs), regularization (LoRA dropout 0.1, drop-path 0.05), soft label targets (weight 0.1), and temperature capped at 16.0",
+      "args": [
+        "--image-unfreeze-last",
+        "6",
+        "--text-unfreeze-last",
+        "6",
+        "--lora-rank",
+        "64",
+        "--lora-alpha",
+        "128",
+        "--batch-size",
+        "64",
+        "--epochs",
+        "40",
+        "--gradient-checkpointing",
+        "--lora-dropout",
+        "0.1",
+        "--image-drop-path-rate",
+        "0.05",
+        "--label-similarity-weight",
+        "0.1",
+        "--lm-label-csv",
+        "data/lm_label/lm_labels_kaggle.csv",
+        "--max-inverse-temperature",
+        "16.0"
+      ]
+    },
+    {
+      "name": "both-lora-depth6-r64-dinov2-base-bs64-seed2026",
+      "purpose": "LoRA rank 64 on 6 blocks of both towers with facebook/dinov2-base (86.6M, 768-dim) at BS=64 with gradient checkpointing",
+      "args": [
+        "--image-model",
+        "facebook/dinov2-base",
+        "--image-model-revision",
+        "f9e44c814b77203eaa57a6bdbbd535f21ede1415",
+        "--image-unfreeze-last",
+        "6",
+        "--text-unfreeze-last",
+        "6",
+        "--lora-rank",
+        "64",
+        "--lora-alpha",
+        "128",
+        "--batch-size",
+        "64",
+        "--gradient-checkpointing"
+      ]
+    }
+  ],
+  "experiment_version": "both-lora-v1",
+  "manifest_sha256": "54bd803e23acf3299daeb815d651a34249c736689e20d790f862fc71c0520b63",
+  "selection_policy": "mean_r@1 descending, validation_loss ascending, earliest epoch"
+}

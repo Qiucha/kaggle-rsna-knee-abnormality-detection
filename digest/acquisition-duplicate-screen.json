@@ -1,0 +1,162 @@
+{
+ "generated": "2026-09-11T15:30:12+0800",
+ "cohort": "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
+ "method": "Stage 1: sha256 of series-constant acquisition tags plus slice count, per selected plane, one header read per series. Stage 2: within each stage-1 collision group, the sorted multiset of SliceLocation values per plane. No pixels, labels or report text; no UIDs, patient tags or dates.",
+ "stage1_tags": [
+  "Rows",
+  "Columns",
+  "PixelSpacing",
+  "SliceThickness",
+  "SpacingBetweenSlices",
+  "RepetitionTime",
+  "EchoTime",
+  "InversionTime",
+  "FlipAngle",
+  "EchoTrainLength",
+  "PixelBandwidth",
+  "ImagingFrequency",
+  "MagneticFieldStrength",
+  "AcquisitionMatrix",
+  "PercentSampling",
+  "PercentPhaseFieldOfView",
+  "NumberOfPhaseEncodingSteps",
+  "SeriesDescription",
+  "ScanningSequence",
+  "SequenceVariant",
+  "Manufacturer",
+  "ManufacturerModelName",
+  "SoftwareVersions",
+  "ReceiveCoilName",
+  "PatientPosition"
+ ],
+ "stage2_tags": [
+  "SliceLocation",
+  "ImagePositionPatient"
+ ],
+ "studies_fingerprinted": 4407,
+ "studies_incomplete": 0,
+ "incomplete_examples": [],
+ "stage1_seconds": 291.6,
+ "stage2_seconds": 26.3,
+ "positive_control": {
+  "pair": [
+   "study-b65cfd4f5265d33b",
+   "study-7bbbc0e80da5e8ac"
+  ],
+  "stage1_groups_the_pair": true,
+  "stage2_confirms_the_pair": true,
+  "verdict": "screen recovers the known duplicate; a null result elsewhere is meaningful within the stated limitation"
+ },
+ "stage1": {
+  "candidate_groups": 11,
+  "studies_in_candidate_groups": 31,
+  "largest_candidate_group": 7,
+  "group_size_distribution": {
+   "2": 8,
+   "4": 2,
+   "7": 1
+  }
+ },
+ "stage2": {
+  "confirmed_groups": 7,
+  "studies_in_confirmed_groups": 19,
+  "groups_crossing_splits": 2,
+  "groups_involving_test": 1,
+  "groups_skipped_as_too_large": [],
+  "max_group_examined": 40,
+  "detail": [
+   {
+    "members": 7,
+    "splits": [
+     "train",
+     "validation"
+    ],
+    "crosses_splits": true,
+    "involves_test": false,
+    "study_uids": [
+     "study-37185d4351f6c614",
+     "study-bd7602e5577fcb3f",
+     "study-691d5c4c2674aac3",
+     "study-123275de7dc1e124",
+     "study-f025d9a5c7146d61",
+     "study-96c8c344e70133d2",
+     "study-4d21fc242bf6c11a"
+    ]
+   },
+   {
+    "members": 2,
+    "splits": [
+     "train"
+    ],
+    "crosses_splits": false,
+    "involves_test": false,
+    "study_uids": [
+     "study-7ef5b4db6160e555",
+     "study-0c04e4ee70d20ca4"
+    ]
+   },
+   {
+    "members": 2,
+    "splits": [
+     "train"
+    ],
+    "crosses_splits": false,
+    "involves_test": false,
+    "study_uids": [
+     "study-cc30bb8bee610751",
+     "study-ce31fec079007df6"
+    ]
+   },
+   {
+    "members": 2,
+    "splits": [
+     "train"
+    ],
+    "crosses_splits": false,
+    "involves_test": false,
+    "study_uids": [
+     "study-321d38d6b7f7ab0d",
+     "study-8e6d6458591dace0"
+    ]
+   },
+   {
+    "members": 2,
+    "splits": [
+     "test",
+     "train"
+    ],
+    "crosses_splits": true,
+    "involves_test": true,
+    "study_uids": [
+     "study-7721d58988002023",
+     "study-2287d66535a19a17"
+    ]
+   },
+   {
+    "members": 2,
+    "splits": [
+     "train"
+    ],
+    "crosses_splits": false,
+    "involves_test": false,
+    "study_uids": [
+     "study-cd036e21e36d47c3",
+     "study-766527a42a4bd847"
+    ]
+   },
+   {
+    "members": 2,
+    "splits": [
+     "train"
+    ],
+    "crosses_splits": false,
+    "involves_test": false,
+    "study_uids": [
+     "study-b65cfd4f5265d33b",
+     "study-7bbbc0e80da5e8ac"
+    ]
+   }
+  ]
+ },
+ "limitation": "A confirmed group means two studies' selected series agree on every series-constant acquisition tag, slice count, and the full set of slice positions. That is strong evidence of the same acquisition, not proof of identical pixels. Confirming a group by pixels is cheap for train and validation and is a locked-test decision for any group containing a test study. The screen also covers only the three selected series per study, not the full raw volume."
+}
