@@ -125,7 +125,49 @@
    "local_gold58": 0.8814,
    "outcome": "+0.002 over u9-b1 (0.888): new best public single model by a hair, but below both predictions (about 0.896 from LM-test, 0.892 from gold-58). Public moved about a quarter of the LM-test gain; within what single-seed noise can produce, and the extra-training-draws confound is unresolved.",
    "source": "checkpoints/kaggle/r4a-k8-omb-soft-336-u9-a30/leaderboard-submission.json"
+  },
+  {
+   "bundle": "a30-ens4-rank",
+   "title": "Rank ensemble: A30 + u9-b1 + CLIP-init OmniRad + DINOv2-S 336",
+   "family": "ensemble",
+   "run": null,
+   "submission": 57202235,
+   "recorded": "2026-10-15",
+   "public": 0.894,
+   "private": null,
+   "local_lm_test": 0.9047,
+   "local_gold58": 0.8724,
+   "outcome": "+0.004 over A30 (0.890): new best public score and the first ensemble on the leaderboard. About 30% of the LM-test gain (+0.013) transferred, in the predicted +0.003 to +0.008 band; gold-58 (-0.010) pointed the wrong way. Single submission; public-split noise not estimated.",
+   "source": "checkpoints/kaggle/a30-ens4-rank/leaderboard-submission.json"
+  },
+  {
+   "bundle": "a30-ens4-swap-rank",
+   "title": "Rank ensemble swap: from-clip u3 replaced by CLIP-init u9 (A30 recipe)",
+   "family": "ensemble",
+   "run": null,
+   "submission": 57291794,
+   "recorded": "2026-10-17",
+   "public": 0.899,
+   "private": null,
+   "local_lm_test": 0.9047,
+   "local_gold58": 0.8859,
+   "outcome": "+0.005 over the submitted ens4 (0.894): new best public score. LM-test called a tie (-0.0001); gold-58 (+0.0135) pointed the right way this time. Single submission; public-split noise not estimated.",
+   "source": "checkpoints/kaggle/a30-ens4-swap-rank/leaderboard-submission.json"
+  },
+  {
+   "bundle": "a30-deep3-rank",
+   "title": "Rank ensemble, deep three: A30 + u9-b1 + CLIP-init u9 (no shallow members)",
+   "family": "ensemble",
+   "run": null,
+   "submission": 57296356,
+   "recorded": "2026-10-17",
+   "public": 0.902,
+   "private": null,
+   "local_lm_test": 0.9017,
+   "local_gold58": 0.8897,
+   "outcome": "+0.003 over the swap (0.899) and +0.008 over ens4 (0.894): new best public score. LM-test leaned the other way (-0.003 vs the swap); gold-58 (+0.004 vs the swap, +0.017 vs ens4) called the direction, the second time in a row. Single submission; public-split noise not estimated.",
+   "source": "checkpoints/kaggle/a30-deep3-rank/leaderboard-submission.json"
   }
  ],
- "best": "r4a-k8-omb-soft-336-u9-a30"
+ "best": "a30-deep3-rank"
 }

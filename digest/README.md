@@ -38,6 +38,8 @@ same exposure. See [gold-holdout-v1](gold-holdout-v1.md).
 
 | | |
 | --- | --- |
+| [finetune-clip-init-u9-v1.md](finetune-clip-init-u9-v1.md) · [latest results](site/pages/phase2.html#latest-results) | Completed runs through 2026-10-17: A30 stays the best single LM-test run; the first ensemble, CLIP-init swap and deep three scored **0.894 → 0.899 → 0.902 public** |
+| [ensemble-a30-v1.json](ensemble-a30-v1.json) · [digest charts](site/pages/phase2.html#a30-ensemble-sweep) | All 17 A30 and 12 CLIP-init combinations, 8 exportability checks, paired intervals, gold guard and Lateral Meniscus; deep three leads public |
 | [omnirad-clip-frozen-probe-v1.md](omnirad-clip-frozen-probe-v1.md) · [digest page](site/pages/picking.html#frozen-probe) | Plain CLIP lifts the frozen OmniRad tower +0.043 LM-test (gold +0.027, CI spans zero); a frozen head still trails fine-tuning by 0.04 on gold; scanner identity also became easier to read |
 | [combined-lora-k8-336-v1.md](combined-lora-k8-336-v1.md) · [digest page](site/pages/phase1.html#combined-lora-k8-336) | Combined CLIP + LoRA + K8 + 336, both arms complete: OmniRad-base 0.8812 LM-test / 0.7844 gold-58, DINOv2-small 0.8670 / 0.7652 (frozen MLP heads) |
 | [run5-followups-v1.md](run5-followups-v1.md) · [digest page](site/pages/phase2.html#run5-followups) | Completed run-5 follow-ups, including label fine-tuning from the combined LoRA checkpoint, paired comparisons, and remaining queue |
