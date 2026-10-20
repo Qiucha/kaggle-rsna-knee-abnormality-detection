@@ -706,7 +706,7 @@ def check_complete(digest: Path) -> list[str]:
     if missing:
         raise SystemExit(
             "Build failed: these digest/ files have no catalog row. Add an entry to "
-            "scripts/digest_site/catalog.py (page, kind, status, purpose) for each:\n  "
+            "src/digest_site/catalog.py (page, kind, status, purpose) for each:\n  "
             + "\n  ".join(missing)
         )
     stale = [e.path for e in ENTRIES if e.path != "index.html" and not (digest / e.path.rstrip("/")).exists()]

@@ -76,13 +76,13 @@ Open `index.html` (or `../index.html`, which redirects here). Everything in this
     .venv/bin/python scripts/build_digest_site.py          # build
     .venv/bin/python scripts/build_digest_site.py export   # refresh data/ snapshots from checkpoints/, then build
 
-- `pages/<slug>.html`: the site pages, built by `scripts/digest_site/pages/<slug>.py`; the old stage-page
+- `pages/<slug>.html`: the site pages, built by `src/digest_site/pages/<slug>.py`; the old stage-page
   URLs (pipeline, data, text, adaptation, probes, encoders, finetune) are redirect stubs to their new home
 - `docs/<name>.html`: every `digest/*.md`, rendered in the site shell
 - `assets/`: shared `site.css`, `site.js`, `charts.js` (hand-owned)
 - `data/`: JSON snapshots of gitignored run histories (written only by `export`)
 
-Every file in `digest/` must have a row in `scripts/digest_site/catalog.py`; the build fails otherwise.
+Every file in `digest/` must have a row in `src/digest_site/catalog.py`; the build fails otherwise.
 """
 
 

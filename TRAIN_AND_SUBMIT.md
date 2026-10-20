@@ -108,7 +108,7 @@ Decision rule (see the README's "How candidates are judged"):
 - A single seed cannot resolve a difference under about 0.024. Replicate first.
 
 Record the result as `digest/<study>-v1.md` with its JSON. Add both to
-`scripts/digest_site/catalog.py` (the site build fails on uncatalogued files), then
+`src/digest_site/catalog.py` (the site build fails on uncatalogued files), then
 run `python scripts/build_digest_site.py`.
 
 ---

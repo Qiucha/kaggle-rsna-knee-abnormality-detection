@@ -5,7 +5,7 @@
                                                             # from gitignored checkpoints/, then build
 
 The build reads only digest/* and digest/site/data/*. It fails when a digest/
-file has no row in scripts/digest_site/catalog.py. Generated output:
+file has no row in src/digest_site/catalog.py. Generated output:
 digest/site/index.html, pages/<slug>.html, docs/<name>.html. Hand-owned:
 digest/site/assets/*. Snapshots: digest/site/data/*.
 """
@@ -16,7 +16,7 @@ import argparse
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from digest_site import build, data  # noqa: E402
 
