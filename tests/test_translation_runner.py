@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-spec = importlib.util.spec_from_file_location('translation_runner', Path(__file__).resolve().parents[1] / 'scripts/translate_reports_claude.py')
+spec = importlib.util.spec_from_file_location('translation_runner', Path(__file__).resolve().parents[1] / 'scripts/data/translate_reports_claude.py')
 runner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(runner)
 

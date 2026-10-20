@@ -1,6 +1,6 @@
 """Lateral/synovitis rebalancing on u9-b1: (A) oversample + lateral label noise, (B) 2x loss weight.
 
-Source: digest/lateral-rebalance-v1.json, written by scripts/compare_lateral_rebalance.py
+Source: digest/lateral-rebalance-v1.json, written by scripts/analysis/compare_lateral_rebalance.py
 (branch t3code/fine-tune-weak-labels) at the end of checkpoints/finetune/lateral-rebalance/chain.sh.
 """
 

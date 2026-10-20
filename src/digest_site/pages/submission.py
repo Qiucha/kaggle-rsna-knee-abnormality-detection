@@ -183,7 +183,7 @@ def model_card_section(ctx) -> tuple[str, dict]:
 def pipeline_section(ctx) -> str:
     sid = "bundle"
     steps = [
-        ("Build bundle", "<code>scripts/build_kaggle_bundle.py</code> fits the heads, runs the OOF benchmark and exports "
+        ("Build bundle", "<code>scripts/submission/build_kaggle_bundle.py</code> fits the heads, runs the OOF benchmark and exports "
                          "backbone weights, LoRA parameters, heads, preprocessing and <code>predict_kaggle.py</code>."),
         ("Validate offline", "Run the bundle with Hugging Face offline mode; the CSV must match the sample's study order, "
                              "12 label columns, finite [0,1] probabilities. No reports or labels are read."),
@@ -572,7 +572,7 @@ def leaderboard_section(ctx) -> tuple[str, dict]:
     caption = ("Every recorded public-leaderboard submission, read from each bundle's leaderboard-submission.json. "
                "Public scores rest on the hidden test's public split; one submission per bundle, single seeds.")
     notes = (f'<p>Source: <a href="{ctx.raw(LB_HISTORY)}">{LB_HISTORY}</a>, built by '
-             '<code>scripts/build_leaderboard_digest.py</code>. The sections below describe the first (frozen-encoder) '
+             '<code>scripts/digests/build_leaderboard_digest.py</code>. The sections below describe the first (frozen-encoder) '
              'pipeline in detail; the fine-tuned bundles reuse its Kaggle packaging.</p>')
     return section(sid, claim, body, caption=caption, notes=notes, table_html=tbl,
                    table_summary="All submissions"), {f"data-{sid}": blob}

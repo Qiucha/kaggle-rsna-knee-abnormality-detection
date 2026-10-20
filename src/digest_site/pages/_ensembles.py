@@ -1,6 +1,6 @@
 """Phase 2 · ensembles: which fine-tuned runs to rank-average, and how to choose them.
 
-Four sections from digest/ensemble-selection-v1.json (scripts/build_ensemble_selection_digest.py):
+Four sections from digest/ensemble-selection-v1.json (scripts/digests/build_ensemble_selection_digest.py):
 combinations vs u9 alone, direct design comparisons, selection rules judged out of sample, per-label views.
 """
 

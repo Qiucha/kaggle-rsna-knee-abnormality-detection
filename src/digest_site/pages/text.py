@@ -794,7 +794,7 @@ def hubs_section(ctx, d):
         "<ul><li>Hubs appear in every run, including the multilingual-E5 baseline, but the hub studies differ per encoder. "
         "This is the follow-up that overturned finding 5 of the text-encoder error review (hubs are not PubMedBERT-specific).</li>"
         "<li>Consistency check: R@1 hits averaged over both directions divided by 441 reproduce each run's mean R@1.</li>"
-        "<li>Source: <code>digest/site/data/text-hubs.json</code>, exported by <code>scripts/analyze_text_screen_followups.py</code> "
+        "<li>Source: <code>digest/site/data/text-hubs.json</code>, exported by <code>scripts/analysis/analyze_text_screen_followups.py</code> "
         f"from saved rankings. Discussion: <a href=\"{ctx.doc('english-medical-text-error-review.md')}\">text-encoder error review</a>.</li></ul>")
     tbl = table(["Run / direction", "Queries", "R@1 hits", "Distinct rank-1 targets", "Biggest hub", "Top two"],
                 [[r["label"], r["queries"], r["hits"], r["distinct"], r["hub"], r["top2"]] for r in rows],

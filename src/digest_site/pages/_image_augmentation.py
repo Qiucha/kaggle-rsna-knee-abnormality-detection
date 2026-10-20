@@ -1,6 +1,6 @@
 """Training-time image augmentation on the 30-epoch lateral oversample arm (A30), vs A30 itself.
 
-Source: digest/finetune-image-augmentation-v1.json, written by scripts/compare_image_augmentation.py
+Source: digest/finetune-image-augmentation-v1.json, written by scripts/analysis/compare_image_augmentation.py
 (worktree t3code-8d0cbe1e, branch feat/label-image-augmentation, uncommitted).
 """
 

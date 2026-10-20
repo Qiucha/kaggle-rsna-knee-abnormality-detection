@@ -430,7 +430,7 @@ def run_experiment(config, output, prepared, *, device):
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
     )
     shutil.copyfile(
-        root / "scripts" / "predict_kaggle.py", bundle / "predict_kaggle.py"
+        root / "scripts" / "submission" / "predict_kaggle.py", bundle / "predict_kaggle.py"
     )
     shutil.copyfile(root / "requirements-kaggle.txt", bundle / "requirements.txt")
     shutil.copyfile(

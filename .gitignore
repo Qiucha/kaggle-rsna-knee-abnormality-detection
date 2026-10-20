@@ -55,7 +55,7 @@ digest/handoff/*
 data/lm_label/lm_labels_kaggle.csv
 
 # Run logs, agent tooling, and the locally served digest site (rebuilt by
-# scripts/build_digest_site.py)
+# scripts/digests/build_digest_site.py)
 logs/
 .agents/
 .claude/

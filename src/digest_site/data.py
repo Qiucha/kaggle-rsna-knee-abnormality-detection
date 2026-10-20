@@ -418,7 +418,7 @@ def export_text_hubs() -> None:
                 })
         null = monte_carlo_null(pool, pool)
         _write(DATA / "text-hubs.json", {
-            "source": "scripts/analyze_text_screen_followups.py hubs (saved rankings-validation-best.jsonl)",
+            "source": "scripts/analysis/analyze_text_screen_followups.py hubs (saved rankings-validation-best.jsonl)",
             "runs": runs,
             "random_null": {k: list(v) for k, v in null.items()},
         })

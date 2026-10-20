@@ -1,6 +1,6 @@
 """Wide slice band on the A30 recipe, vs A30; plus A30's inference-only probes (weight averaging, soups, TTA).
 
-Sources: digest/finetune-slice-band-v1.json, written by scripts/compare_slice_band.py (worktree t3code-d7aef637,
+Sources: digest/finetune-slice-band-v1.json, written by scripts/analysis/compare_slice_band.py (worktree t3code-d7aef637,
 branch t3code/fine-tune-weak-labels), and digest/a30-inference-probes-v1.json, exported from
 checkpoints/finetune/a30-inference-probes/compare.json (.scratch/leaderboard-next/scratch/a30_inference_*.py).
 """

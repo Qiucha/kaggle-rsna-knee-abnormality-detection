@@ -448,7 +448,7 @@ class WindowDataset(RandomSliceDataset):
 
     def _series(self, path: Path) -> Path:
         # The mirror holds only training series. Evaluation reads fall back to the
-        # source once, since their windows are then cached (see scripts/build_window_cache.py).
+        # source once, since their windows are then cached (see scripts/data/build_window_cache.py).
         try:
             return super()._series(path)
         except FileNotFoundError:

@@ -19,4 +19,4 @@ Files in each folder:
 - `bundle.json` is the bundle manifest: members, ensemble rule, labels and file hashes.
 - `dataset-metadata.json` and `kernel-metadata.json` are the Kaggle dataset and kernel definitions. The kernel is pinned to the Python 3.12 image (`sha256:37c64f…`), because the cp312 codec wheels fail on the newer image.
 
-To rebuild a bundle, train the member runs from `configs/finetune/<run>.json`. Then pass each run directory to `scripts/export_finetune_bundle.py --run <dir> … --output checkpoints/kaggle/<name>`. The kernel runs `notebooks/kaggle_submission.ipynb`.
+To rebuild a bundle, train the member runs from `configs/finetune/<run>.json`. Then pass each run directory to `scripts/submission/export_finetune_bundle.py --run <dir> … --output checkpoints/kaggle/<name>`. The kernel runs `notebooks/kaggle_submission.ipynb`.

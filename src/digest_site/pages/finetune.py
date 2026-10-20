@@ -4,7 +4,7 @@ Every step is shown against the step it was built from (its "parent"), not the r
 again against the fixed R0 baseline.
 Sections: the step-by-step deltas, training curves, per-label heatmaps (gold-58 and LM-test,
 Δ vs R0 or raw AUROC), and R4's window masking. Source: digest/finetune-ladder-v1.json, written by
-scripts/build_finetune_ladder_digest.py from checkpoints/finetune/.
+scripts/digests/build_finetune_ladder_digest.py from checkpoints/finetune/.
 """
 
 from __future__ import annotations

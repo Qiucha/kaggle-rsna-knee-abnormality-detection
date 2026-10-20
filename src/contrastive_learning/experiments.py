@@ -119,7 +119,7 @@ def run_matrix(
     for experiment in selected:
         command = [
             sys.executable,
-            _script(repo_root, "train_contrastive.py"),
+            _script(repo_root, "training/train_contrastive.py"),
             *_replace_args(matrix["base_args"], experiment["args"]),
             "--output-dir",
             str(output_root / experiment["name"]),
@@ -193,7 +193,7 @@ def finalize_matrix(
         subprocess.run(
             [
                 sys.executable,
-                _script(repo_root, "evaluate_contrastive.py"),
+                _script(repo_root, "evaluation/evaluate_contrastive.py"),
                 selected["best_checkpoint"],
                 "--split",
                 "test",
@@ -234,7 +234,7 @@ def rescore_checkpoints(
         if not report_path.exists() or overwrite:
             command = [
                 sys.executable,
-                _script(repo_root, "evaluate_contrastive.py"),
+                _script(repo_root, "evaluation/evaluate_contrastive.py"),
                 str(checkpoint),
                 "--image-cache-dir",
                 str(image_cache_dir),

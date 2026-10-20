@@ -7,7 +7,7 @@ representations improve prediction of the dataset's pathology labels.
 
 Open the [interactive project digest](digest/project-state.html) for current results,
 the model architecture, and data limitations. It works offline; regenerate its
-artifact snapshot with `.venv/bin/python scripts/build_project_digest.py`.
+artifact snapshot with `.venv/bin/python scripts/digests/build_project_digest.py`.
 
 The current experiment contract is
 [full-multilingual-v1](configs/contrastive/full-multilingual-matrix.json); its
@@ -37,10 +37,10 @@ the two lines of work relate.
 | Best public score, 0.890 (A30, submission 57094902, 2026-10-12) | `configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30.json` (u9-b1 + lateral-label oversampling and noise, 30 epochs) |
 | Previous bests: 0.888 (u9-b1), 0.879 (run 5) | `configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json` (OmniRad-base, soft targets, 336 px, 9 blocks unfrozen); `r4a-k8-omnirad-base-soft-336.json` (3 blocks) |
 | Three-member candidate, not yet submitted | soft-target R4a (`r4a-soft-224-k8-mean.json`) + OmniRad-base + OmniRad-base soft 336 (`r4a-k8-omnirad-base-soft-336.json`), combined by per-label rank mean |
-| Train one member | `.venv-cuda/bin/python scripts/finetune_supervised.py --config configs/finetune/<rung>.json --output checkpoints/finetune/<rung>` |
-| Export members as one Kaggle bundle | `scripts/export_finetune_bundle.py --run <run dir> [--run ...] --output checkpoints/kaggle/<name>` |
-| Combine already-exported bundles | `scripts/assemble_ensemble_bundle.py` |
-| Run a bundle as Kaggle does | `scripts/predict_kaggle.py` and `notebooks/kaggle_submission.ipynb`; DICOM codecs are vendored in `kaggle/codecs/` |
+| Train one member | `.venv-cuda/bin/python scripts/training/finetune_supervised.py --config configs/finetune/<rung>.json --output checkpoints/finetune/<rung>` |
+| Export members as one Kaggle bundle | `scripts/submission/export_finetune_bundle.py --run <run dir> [--run ...] --output checkpoints/kaggle/<name>` |
+| Combine already-exported bundles | `scripts/submission/assemble_ensemble_bundle.py` |
+| Run a bundle as Kaggle does | `scripts/submission/predict_kaggle.py` and `notebooks/kaggle_submission.ipynb`; DICOM codecs are vendored in `kaggle/codecs/` |
 | Model code | `src/contrastive_learning/finetune.py` (training), `submission.py` (inference, ensembling), `timm_dinov2.py` / `timm_backbone.py` (OmniRad, RadioDino, CoAtNet) |
 | Results and decisions | `digest/` (open `digest/index.html`): `finetune-ladder-v1.json` for the R-rungs; `kaggle-submission-pipeline.md` covers the bundle format but its leaderboard table stops at the 0.788 LM-MLP bundle (R4a DINOv2-small later scored 0.826, OmniRad-base 0.839) |
 
@@ -69,7 +69,7 @@ series' `<study>/<series>` identity. Commit `084d086` (2026-09-29, exact-extent
 crop) changed the pixels of small field-of-view series without bumping
 `PREPROCESSING_VERSION`, so a cache written before it can serve the older pixels
 under the same key. The R4a window caches were all written after it. Rebuild an
-older image cache rather than migrating it with `scripts/migrate_cache_keys.py`.
+older image cache rather than migrating it with `scripts/data/migrate_cache_keys.py`.
 
 For the next image and text tower runs, read the prioritized
 [model candidate and comparison note](digest/next-model-candidates.md) before deploying an experiment.
@@ -286,7 +286,7 @@ Restore the artifacts listed with SHA-256 hashes in
 Building a new cohort instead of restoring one:
 
 ```bash
-.venv/bin/python scripts/build_contrastive_manifest.py \
+.venv/bin/python scripts/data/build_contrastive_manifest.py \
   --output data/processed/contrastive-cohort.jsonl \
   --text-policy multilingual_raw \
   --validate-pixels
@@ -307,7 +307,7 @@ summary, and stops before building a model:
 
 ```bash
 .venv-cuda/bin/python -c 'import torch; assert torch.cuda.is_available(); print(torch.cuda.get_device_name(0))'
-.venv-cuda/bin/python scripts/train_contrastive.py \
+.venv-cuda/bin/python scripts/training/train_contrastive.py \
   --cohort-manifest data/processed/contrastive-cohort.jsonl --prepare-only
 ```
 
@@ -315,7 +315,7 @@ summary, and stops before building a model:
 gets its own:
 
 ```bash
-.venv-cuda/bin/python scripts/train_contrastive.py \
+.venv-cuda/bin/python scripts/training/train_contrastive.py \
   --cohort-manifest data/processed/contrastive-cohort.jsonl \
   --text-model multilingual-e5 --text-pooling mean --text-prefix 'query: ' \
   --text-model-revision d128750597153bb5987e10b1c3493a34e5a4502a \
@@ -329,7 +329,7 @@ gets its own:
 ```
 
 Add `--local-files-only` whenever the host should not reach the network. Prefix with
-`scripts/run_measured_training.py --telemetry PATH --` to also record runtime and
+`scripts/training/run_measured_training.py --telemetry PATH --` to also record runtime and
 peak CUDA memory.
 
 **3. Read the output directory.** A completed run contains:
@@ -346,7 +346,7 @@ peak CUDA memory.
 and point at the run's own `last.pt`:
 
 ```bash
-.venv-cuda/bin/python scripts/train_contrastive.py <the same flags> --epochs 20 \
+.venv-cuda/bin/python scripts/training/train_contrastive.py <the same flags> --epochs 20 \
   --resume checkpoints/contrastive/my-run/last.pt
 ```
 
@@ -371,7 +371,7 @@ checksum, selection policy, experiment names — and prints the exact command fo
 experiment. It works on a CPU-only host:
 
 ```bash
-.venv/bin/python scripts/run_contrastive_matrix.py --dry-run
+.venv/bin/python scripts/training/run_contrastive_matrix.py --dry-run
 ```
 
 **2. GPU smoke and resume check.** Same pinned models and preprocessing, a separate
@@ -386,12 +386,12 @@ import torch
 assert torch.cuda.is_available()
 m = json.loads(Path('configs/contrastive/full-multilingual-matrix.json').read_text())
 out = 'checkpoints/contrastive/full-multilingual-v1-gpu-smoke'
-command = [sys.executable, 'scripts/train_contrastive.py', *m['base_args'],
+command = [sys.executable, 'scripts/training/train_contrastive.py', *m['base_args'],
            '--output-dir', out, '--max-studies', '64', '--batch-size', '32',
            '--num-workers', '0', '--local-files-only']
 subprocess.run([*command, '--epochs', '1'], check=True)
 subprocess.run([*command, '--epochs', '2', '--resume', out + '/last.pt'], check=True)
-subprocess.run([sys.executable, 'scripts/evaluate_contrastive.py', out + '/best.pt',
+subprocess.run([sys.executable, 'scripts/evaluation/evaluate_contrastive.py', out + '/best.pt',
                 '--split', 'validation', '--output', out + '/reload-validation.json'], check=True)
 PY
 ```
@@ -400,7 +400,7 @@ PY
 memory, and the validation diagnostics before committing to the rest of the grid:
 
 ```bash
-.venv-cuda/bin/python scripts/run_contrastive_matrix.py --experiment 00-projection-full-mean-512
+.venv-cuda/bin/python scripts/training/run_contrastive_matrix.py --experiment 00-projection-full-mean-512
 ```
 
 **4. Run the remaining experiments.** Omit `--experiment` to run the whole matrix in
@@ -408,7 +408,7 @@ order; each experiment trains in a fresh process, so GPU memory is released betw
 them. Repeat `--experiment` to select a subset:
 
 ```bash
-.venv-cuda/bin/python scripts/run_contrastive_matrix.py
+.venv-cuda/bin/python scripts/training/run_contrastive_matrix.py
 ```
 
 If one experiment is interrupted, resume it with the exact command printed by
@@ -419,7 +419,7 @@ original 20-epoch target.
 history and writes `validation-selection.json` under the matrix output root:
 
 ```bash
-.venv-cuda/bin/python scripts/finalize_contrastive_matrix.py
+.venv-cuda/bin/python scripts/evaluation/finalize_contrastive_matrix.py
 ```
 
 The selection file is immutable: re-running with different results is an error, not
@@ -429,7 +429,7 @@ an overwrite. Add `--allow-incomplete` only to inspect a partially finished grid
 when the experiment is genuinely finished:
 
 ```bash
-.venv-cuda/bin/python scripts/finalize_contrastive_matrix.py --evaluate-locked-test
+.venv-cuda/bin/python scripts/evaluation/finalize_contrastive_matrix.py --evaluate-locked-test
 ```
 
 Do not invoke `--evaluate-locked-test` during baseline development. Selection reads
@@ -443,7 +443,7 @@ selection file records.
 Score a saved checkpoint on any split:
 
 ```bash
-.venv-cuda/bin/python scripts/evaluate_contrastive.py \
+.venv-cuda/bin/python scripts/evaluation/evaluate_contrastive.py \
   checkpoints/contrastive/my-run/best.pt --split validation \
   --image-cache-dir checkpoints/contrastive/image-cache
 ```
@@ -460,14 +460,14 @@ never replaced without `--overwrite`.
 Re-score every saved checkpoint after a metric definition changes:
 
 ```bash
-.venv/bin/python scripts/rescore_contrastive_checkpoints.py \
+.venv/bin/python scripts/evaluation/rescore_contrastive_checkpoints.py \
   --checkpoint-root checkpoints/contrastive --summary digest/contrastive-checkpoint-rescore.json
 ```
 
 Rebuild the browsable project snapshot:
 
 ```bash
-.venv/bin/python scripts/build_project_digest.py
+.venv/bin/python scripts/digests/build_project_digest.py
 ```
 
 ---

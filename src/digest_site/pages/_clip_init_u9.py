@@ -1,6 +1,6 @@
 """CLIP-init u9: the A30 recipe started from the CLIP-adapted OmniRad-base, as a single run and as an ens4 member.
 
-Source: digest/finetune-clip-init-u9-v1.json, written by scripts/compare_clip_init_u9.py (worktree integrate-2026-10,
+Source: digest/finetune-clip-init-u9-v1.json, written by scripts/analysis/compare_clip_init_u9.py (worktree integrate-2026-10,
 branch exp/clip-init-u9). Ensembles are per-label rank means of the members' saved predictions.
 """
 
