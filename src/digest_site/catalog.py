@@ -107,6 +107,9 @@ ENTRIES: list[Entry] = [
     E("HOSTING.md", "library", "", "ops", "current",
       "How to serve the digest and the site locally."),
     # --- pipeline ------------------------------------------------------------
+    E("a30-reproduction-20261022.md", "pipeline", "", "audit", "current",
+      "Does the refactored code still train A30, epoch by epoch and on LM-test/gold?",
+      "Training not bit-deterministic"),
     E("architecture-parameter-audit.json", "pipeline", "", "audit", "historical",
       "Trainable vs frozen parameter counts, baseline vs one image block.",
       "Pre-LoRA arms only"),

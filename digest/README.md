@@ -107,6 +107,7 @@ same exposure. See [gold-holdout-v1](gold-holdout-v1.md).
 [english-medical-text-results.md](english-medical-text-results.md) ·
 [english-medical-text-error-review.md](english-medical-text-error-review.md) ·
 [translation-update-dfd07db.md](translation-update-dfd07db.md) ·
+[a30-reproduction-20261022.md](a30-reproduction-20261022.md) ·
 [cleanup-reproduction-20260908.md](cleanup-reproduction-20260908.md) ·
 [experiment-session-log.md](experiment-session-log.md) ·
 [config-translation-review.md](config-translation-review.md) ·
