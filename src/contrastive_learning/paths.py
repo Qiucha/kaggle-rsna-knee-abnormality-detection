@@ -61,6 +61,19 @@ def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+def repo_path(path: Path) -> str:
+    """``path`` relative to the repository when inside it, else absolute: portable provenance.
+
+    ``abspath`` rather than ``resolve``: ``checkpoints/`` may be a symlink to another
+    disk, and resolving it would record that host's location.
+    """
+    path = Path(os.path.abspath(path))
+    try:
+        return str(path.relative_to(repo_root()))
+    except ValueError:
+        return str(path)
+
+
 def template_path() -> Path:
     return repo_root() / TEMPLATE_RELATIVE_PATH
 

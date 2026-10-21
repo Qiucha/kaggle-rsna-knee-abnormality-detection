@@ -23,7 +23,6 @@ with study-bootstrap intervals, and per-label deltas; training histories alongsi
 import argparse
 import json
 import math
-import os
 import sys
 from pathlib import Path
 
@@ -36,24 +35,12 @@ from contrastive_learning import finetune
 from contrastive_learning.artifacts import read_json, write_json
 from contrastive_learning.lm_proxy import load_test_population, masked_macro_auroc
 from contrastive_learning.lm_supervision import load_population
+from contrastive_learning.paths import repo_path
 from contrastive_learning.submission import LABELS, score_predictions
 from contrastive_learning.supervised_head import masked_bce
 
 ARMS = ("A_primary_mean", "B_concat_secondary", "C_slot_mean", "D_label_attention")
 PLANES = 3
-
-
-def repo_path(path: Path) -> str:
-    """``path`` relative to the repository when inside it, else absolute: portable provenance.
-
-    ``abspath`` rather than ``resolve``: ``checkpoints/`` may be a symlink to another
-    disk, and resolving it would record that host's location.
-    """
-    path = Path(os.path.abspath(path))
-    try:
-        return str(path.relative_to(finetune.ROOT))
-    except ValueError:
-        return str(path)
 
 
 def load_shards(directory: Path, encoder: str) -> dict:

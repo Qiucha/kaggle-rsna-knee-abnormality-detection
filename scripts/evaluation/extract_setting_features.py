@@ -39,7 +39,7 @@ from contrastive_learning import finetune
 from contrastive_learning.artifacts import read_json
 from contrastive_learning.lm_proxy import load_test_population
 from contrastive_learning.lm_supervision import load_population
-from contrastive_learning.paths import host_data_root, host_series_root, series_csv
+from contrastive_learning.paths import host_data_root, host_series_root, repo_path, series_csv
 from contrastive_learning.preprocessing import (
     PLANES,
     apply_left_knee_windows,
@@ -49,19 +49,6 @@ from contrastive_learning.preprocessing import (
 
 SLOTS = [f"{role}/{plane}" for role in ("primary", "secondary") for plane in PLANES]
 ENCODERS = ("finetuned", "pretrained")
-
-
-def repo_path(path: Path) -> str:
-    """``path`` relative to the repository when inside it, else absolute: portable provenance.
-
-    ``abspath`` rather than ``resolve``: ``checkpoints/`` may be a symlink to another
-    disk, and resolving it would record that host's location.
-    """
-    path = Path(os.path.abspath(path))
-    try:
-        return str(path.relative_to(finetune.ROOT))
-    except ValueError:
-        return str(path)
 
 
 def series_flags(series_csv: Path) -> tuple[dict, dict]:
