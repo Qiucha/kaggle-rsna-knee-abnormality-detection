@@ -93,7 +93,7 @@ header reads are in `experiment_tools.dicom_series`.
 
 Each `build_*_digest.py` rewrites its own files in `digest/` from local, gitignored
 artifacts and touches nothing else. Shared pieces: `experiment_tools.curves` (metrics
-reader, static chart), `experiment_tools.digest_charts` (interactive chart),
+reader, run summary, static chart), `experiment_tools.digest_charts` (interactive chart),
 `experiment_tools.digest_arms` (arm-comparison helpers), and the page CSS and JavaScript
 in `templates/`.
 

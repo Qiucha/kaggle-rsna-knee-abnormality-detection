@@ -19,7 +19,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-from experiment_tools.curves import history  # noqa: E402
+from experiment_tools.curves import history, run_stat  # noqa: E402
 from experiment_tools.digest_charts import H, W, line_chart  # noqa: E402
 CK = ROOT / "checkpoints/contrastive"
 DIGEST_DIR = ROOT / "digest"
@@ -30,20 +30,6 @@ CHART_GROUPS = [
     ("baseline_lora", "Best LoRA Baseline", "#047857", "⚡ Previous Best LoRA Baseline (Emerald Hue)"),
     ("baseline_ft", "Best Full FT Baseline", "#2563eb", "🔄 Previous Best Full FT Baseline (Blue Hue)"),
 ]
-
-
-def get_run_stat(rel_path: str) -> tuple[str, str]:
-    mfile = CK / rel_path / "metrics.jsonl"
-    if not mfile.exists():
-        return ("—", "—")
-    rows = history(mfile)
-    if not rows:
-        return ("—", "—")
-    best_row = max(rows, key=lambda r: (r.get("mean_r@1", 0.0), -r.get("validation_loss", 999.0)))
-    min_loss_row = min(rows, key=lambda r: r.get("validation_loss", 999.0))
-    min_loss_str = f"{min_loss_row.get('validation_loss', 0):.3f} (ep {min_loss_row.get('epoch', 0)})"
-    best_r1_str = f"{best_row.get('mean_r@1', 0)*100:.2f}%"
-    return (min_loss_str, best_r1_str)
 
 
 @dataclass
@@ -234,7 +220,7 @@ def build_master_table_card(probe_results: dict) -> str:
             f'</tr>'
         )
         for r in cat_items:
-            min_loss_str, best_r1_str = get_run_stat(r.rel_path) if r.rel_path else ("—", "—")
+            min_loss_str, best_r1_str = run_stat(CK / r.rel_path / "metrics.jsonl") if r.rel_path else ("—", "—")
             p_data = probe_results.get(r.probe_key, {}) if r.probe_key else {}
             auroc = p_data.get("macro_auroc")
             auprc = p_data.get("macro_auprc")

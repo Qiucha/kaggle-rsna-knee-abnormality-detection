@@ -1,4 +1,4 @@
-"""Epoch curves for the static digest pages: a tolerant metrics.jsonl reader and an inline SVG line chart."""
+"""Epoch curves for the static digest pages: a tolerant metrics.jsonl reader, a one-run summary, and an inline SVG line chart."""
 
 import json
 from html import escape
@@ -15,6 +15,21 @@ def history(path):
             except json.JSONDecodeError:
                 continue  # A writer may be midway through the final line.
     return rows
+
+
+def run_stat(path):
+    """Lowest validation loss (with its epoch) and best mean R@1 of one contrastive run.
+
+    ``path`` is the run's ``metrics.jsonl``. Returns two table cells, dashes until it has rows.
+    """
+    rows = history(path)
+    if not rows:
+        return ("—", "—")
+    best_row = max(rows, key=lambda r: (r.get("mean_r@1", 0.0), -r.get("validation_loss", 999.0)))
+    min_loss_row = min(rows, key=lambda r: r.get("validation_loss", 999.0))
+    min_loss_str = f"{min_loss_row.get('validation_loss', 0):.3f} (ep {min_loss_row.get('epoch', 0)})"
+    best_r1_str = f"{best_row.get('mean_r@1', 0)*100:.2f}%"
+    return (min_loss_str, best_r1_str)
 
 
 def line_chart(series, key, title, ylabel, yfmt='{:.2f}'):
