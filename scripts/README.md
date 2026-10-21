@@ -62,6 +62,7 @@ the tower-size scripts read their four pinned runs from `experiment_tools.tower_
 | `compare_image_augmentation.py` | Paired deltas for the image-augmentation trial against its matched run. |
 | `compare_lateral_rebalance.py` | Paired deltas for the lateral/synovitis rebalancing arms against u9-b1. |
 | `compare_slice_band.py` | Paired deltas for the wide slice-band trial against its matched run. |
+| `compare_run_history.py` | A rerun of a fine-tuning rung against its recorded run, epoch by epoch; fails when the training loss drifts past a tolerance. |
 | `compare_tower_size_factorial.py` | The four pinned tower-size arms on identical gold out-of-fold folds. |
 | `plot_tower_size_factorial.py` | Training curves of the tower-size arms as `digest/tower-size-factorial-curves.svg`. |
 | `render_tower_size_factorial_html.py` | Render `digest/tower-size-factorial-v1.md` to HTML. |
