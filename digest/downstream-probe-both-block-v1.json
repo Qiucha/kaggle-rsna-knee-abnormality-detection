@@ -2718,7 +2718,7 @@
           "projection_256"
         ],
         "name": "both-block adaptation (--image-unfreeze-last 1 --text-unfreeze-last 1) alongside the image-block arm it is paired against",
-        "note": "Both arms sit in this slot so the script extracts their features under one identical pass. The seed-matched both-block versus image-block contrast is NOT produced by evaluate_downstream_probe.py, which only compares against before_cl; it is computed by scripts/compare_downstream_arms.py from the same cached features, folds and bootstrap."
+        "note": "Both arms sit in this slot so the script extracts their features under one identical pass. The seed-matched both-block versus image-block contrast is NOT produced by evaluate_downstream_probe.py, which only compares against before_cl; it is computed by scripts/analysis/compare_downstream_arms.py from the same cached features, folds and bootstrap."
       },
       "before_cl": {
         "features": [
@@ -2754,7 +2754,7 @@
     "comparisons": {
       "anchor": "before_cl/uniform_mean_768 versus each adapted arm -- reproduces and extends the gold-probe-v1 table, and places both arms on the same scale as the published +0.0249 to +0.0271 image-block result",
       "confounded": "projection_256 is a learned 768->256 linear-plus-GELU compression; a linear probe cannot gain from compression, so this arm is reported but is not evidence against contrastive learning",
-      "primary": "after_cl/both-block-seed<N>/uniform_mean_768 versus after_cl/image-block-seed<N>/uniform_mean_768 at matched seed -- matched pooling, matched dimensionality, matched seed, so the only difference is whether the final text block was also unfrozen. Computed by scripts/compare_downstream_arms.py.",
+      "primary": "after_cl/both-block-seed<N>/uniform_mean_768 versus after_cl/image-block-seed<N>/uniform_mean_768 at matched seed -- matched pooling, matched dimensionality, matched seed, so the only difference is whether the final text block was also unfrozen. Computed by scripts/analysis/compare_downstream_arms.py.",
       "secondary": "plane_attention_768 adds the learned plane pooling; per-arm, against the same arm's uniform_mean_768"
     },
     "derived_from": {

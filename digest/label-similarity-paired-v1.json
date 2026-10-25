@@ -41,7 +41,7 @@
     "cohort_manifest": "data/processed/contrastive-cohort-gold-holdout-v1.jsonl",
     "comparisons": {
       "pre_registered_reading": "A difference inside +/-0.01 macro AUROC is a null at this sample size and should be reported as one. A difference beyond that is a lead worth a three-seed replication, not a finding.",
-      "primary": "lambda03/uniform_mean_768 versus lambda00/uniform_mean_768, paired over the same 56 studies, via scripts/compare_downstream_arms.py.",
+      "primary": "lambda03/uniform_mean_768 versus lambda00/uniform_mean_768, paired over the same 56 studies, via scripts/analysis/compare_downstream_arms.py.",
       "reference": "before_cl/uniform_mean_768 (unadapted DINOv2, 0.6438) is the floor both arms are read against. An arm that fails to clear it has not learned anything the backbone did not already have."
     },
     "estimand": "Paired difference in macro out-of-fold AUROC, lambda03 minus lambda00, over the same 56 studies, the same folds and the same study resamples. Both arms are single-seed, so the interval reflects study sampling ONLY and carries no seed-to-seed variance; the three-seed runs elsewhere in this project put that at roughly +/-0.01 macro AUROC, which is the yardstick any difference here has to clear before it means anything.",

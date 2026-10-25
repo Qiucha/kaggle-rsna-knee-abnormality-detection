@@ -241,7 +241,7 @@ def test_a_two_stage_config_runs_its_pipeline_in_process_with_the_host_paths(tmp
     import json
     from contrastive_learning import clip_pipeline
 
-    script = Path(__file__).resolve().parents[1] / "scripts/finetune_supervised.py"
+    script = Path(__file__).resolve().parents[1] / "scripts/training/finetune_supervised.py"
     spec = importlib.util.spec_from_file_location("finetune_supervised_script", script)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

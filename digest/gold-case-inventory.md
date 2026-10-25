@@ -7,7 +7,7 @@ fourth, an estimand and fold plan, **for sign-off rather than as a decision**.
 
 Nothing is fitted. No probe was trained, no representation was scored, no label was
 selected on. Evidence: [`gold-case-inventory.json`](gold-case-inventory.json). Script:
-`scripts/audit_gold_case_inventory.py`.
+`scripts/audits/audit_gold_case_inventory.py`.
 
 **Test gate.** Gold studies in the locked test are counted and nothing more: their
 labels are not tabulated, their text is not compared, and they are excluded from every

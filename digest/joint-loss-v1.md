@@ -37,4 +37,4 @@ Only one joint seed and λ=0.1 were tested. LM-test measures agreement with LM v
 
 The source run is `checkpoints/joint/omnirad-base-k8-soft-336-u9-b1-bank-l0.1/`. Its `comparison.json`, `report.json`, `config.json`, `run_manifest.json` and `metrics.jsonl`, plus each comparator's report/history, are hashed in [joint-loss-v1.json](joint-loss-v1.json). The recorded training source was a dirty `joint/text-bank` tree; the snapshot preserves its commit and source-tree hash.
 
-Refresh with `.venv/bin/python scripts/build_joint_loss_digest.py`, then `.venv/bin/python scripts/build_digest_site.py`. The site's `export` command also refreshes this snapshot when the source comparison exists. A regular build needs only the saved digest snapshot.
+Refresh with `.venv/bin/python scripts/digests/build_joint_loss_digest.py`, then `.venv/bin/python scripts/digests/build_digest_site.py`. The site's `export` command also refreshes this snapshot when the source comparison exists. A regular build needs only the saved digest snapshot.

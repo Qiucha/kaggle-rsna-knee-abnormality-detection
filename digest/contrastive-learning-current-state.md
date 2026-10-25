@@ -54,7 +54,7 @@ Relevant implementation:
 - [`preprocessing.py`](../src/contrastive_learning/preprocessing.py) orders and decodes DICOMs, crops/normalizes images, normalizes laterality, and augments training tensors.
 - [`model.py`](../src/contrastive_learning/model.py) implements the two towers, projection heads, three-plane fusion, and symmetric InfoNCE.
 - [`training.py`](../src/contrastive_learning/training.py) implements loaders, optimization, retrieval evaluation, and best/last checkpoints.
-- [`train_contrastive.py`](../scripts/train_contrastive.py) is the executable entry point.
+- [`train_contrastive.py`](../scripts/training/train_contrastive.py) is the executable entry point.
 
 Default code settings are DINOv2-small plus UCSD/VA RadBERT, 256-dimensional embeddings, batch size 16, 20 epochs, and partial unfreezing of the last three image blocks and last two text blocks. The saved experiments do **not** use those training defaults: they use 58 translated studies, batch size 8, five epochs, and usually frozen backbones.
 

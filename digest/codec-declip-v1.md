@@ -154,12 +154,12 @@ Shared by every arm (the reference settings): 2.5D input, 3 planes × 3 slices a
 
 ```bash
 # from the codec worktree (data/processed, lm_labels_kaggle.csv and checkpoints symlinked to the main checkout)
-.venv/bin/python scripts/run_contrastive_matrix.py --matrix configs/contrastive/codec-declip-v1.json --dry-run
-# each arm under scripts/run_measured_training.py, then per arm:
-.venv-cuda/bin/python scripts/train_lm_head.py --config configs/kaggle/lm-mlp-codec-declip-58-<arm>.json \
+.venv/bin/python scripts/training/run_contrastive_matrix.py --matrix configs/contrastive/codec-declip-v1.json --dry-run
+# each arm under scripts/training/run_measured_training.py, then per arm:
+.venv-cuda/bin/python scripts/training/train_lm_head.py --config configs/kaggle/lm-mlp-codec-declip-58-<arm>.json \
   --features checkpoints/kaggle/lm-mlp-codec-declip-58-<arm>-features.npz \
   --output checkpoints/kaggle/lm-mlp-codec-declip-58-<arm> --device cuda
 # unadapted anchors: the same command with <arm> = unadapted-dinov2-small, unadapted-rad-dino (image_baseline configs)
 # this page, its JSON and figures
-.venv/bin/python scripts/build_codec_declip_digest.py
+.venv/bin/python scripts/digests/build_codec_declip_digest.py
 ```

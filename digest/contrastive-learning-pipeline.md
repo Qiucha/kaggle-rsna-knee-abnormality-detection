@@ -193,13 +193,13 @@ python -m pip install -r requirements.txt
 Validate pairing and DICOM decoding without downloading model weights or training:
 
 ```bash
-python scripts/train_contrastive.py --prepare-only
+python scripts/training/train_contrastive.py --prepare-only
 ```
 
 Run the default baseline-compatible experiment:
 
 ```bash
-python scripts/train_contrastive.py \
+python scripts/training/train_contrastive.py \
   --text-model radbert-va \
   --output-dir checkpoints/contrastive/radbert-va-dinov2-small
 ```
@@ -207,7 +207,7 @@ python scripts/train_contrastive.py \
 Run a cheap integration check before a full job:
 
 ```bash
-python scripts/train_contrastive.py \
+python scripts/training/train_contrastive.py \
   --max-studies 64 \
   --epochs 1 \
   --batch-size 4 \
@@ -218,7 +218,7 @@ python scripts/train_contrastive.py \
 Run the higher-capacity image configuration recommended by the model research:
 
 ```bash
-python scripts/train_contrastive.py \
+python scripts/training/train_contrastive.py \
   --image-model facebook/dinov2-base \
   --text-model radbert-va \
   --image-unfreeze-last 0 \
@@ -232,7 +232,7 @@ For text-model comparison, keep every other flag and the seed fixed and change o
 
 | File | Responsibility |
 |---|---|
-| `scripts/train_contrastive.py` | Repository-local executable entry point |
+| `scripts/training/train_contrastive.py` | Repository-local executable entry point |
 | `src/contrastive_learning/cli.py` | CLI parsing, model aliases, input checks |
 | `src/contrastive_learning/config.py` | Serializable defaults and model registry |
 | `src/contrastive_learning/data.py` | CSV join, series selection, study split, dataset, tokenizing collator |

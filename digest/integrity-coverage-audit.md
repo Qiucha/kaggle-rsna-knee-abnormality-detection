@@ -10,8 +10,8 @@ Cohort: `data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl`, 4,407 st
 [`integrity-coverage-audit.json`](integrity-coverage-audit.json),
 [`acquisition-duplicate-screen.json`](acquisition-duplicate-screen.json),
 [`duplicate-group-pixel-verification.json`](duplicate-group-pixel-verification.json).
-Scripts: `scripts/audit_integrity_coverage.py`,
-`scripts/audit_acquisition_duplicates.py`, `scripts/verify_duplicate_groups.py`.
+Scripts: `scripts/audits/audit_integrity_coverage.py`,
+`scripts/audits/audit_acquisition_duplicates.py`, `scripts/audits/verify_duplicate_groups.py`.
 
 No pixel of the locked test was decoded and no test label or report was read. Test
 studies appear here only as split names and counts.
@@ -148,7 +148,7 @@ is one integrity verdict, and nothing that could inform model selection.
 differ too. Same scanner, same protocol, same slice geometry, different patient encounter.
 The test split is unaffected, and **no candidate group remains gated**. Evidence:
 [`gated-duplicate-resolution.json`](gated-duplicate-resolution.json). Script:
-`scripts/decode_gated_duplicate_candidate.py`.
+`scripts/audits/decode_gated_duplicate_candidate.py`.
 
 ## Join coverage
 

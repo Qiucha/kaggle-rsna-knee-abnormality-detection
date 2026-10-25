@@ -270,7 +270,7 @@ confirming it would require looking at the images, which this review does not do
 Two of the open threads above were closed from saved artifacts. Neither required a
 model run: no checkpoint was loaded, no evaluation was launched, the test split was not
 touched, and no protocol, cohort or selection decision changed. Reproduce both with
-`.venv/bin/python scripts/analyze_text_screen_followups.py`.
+`.venv/bin/python scripts/analysis/analyze_text_screen_followups.py`.
 
 ### The mojibake is in the supplied source data, not in the pipeline
 

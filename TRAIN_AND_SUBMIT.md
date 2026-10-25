@@ -70,7 +70,7 @@ before any training starts. Commit the new config: it is the record of the varia
 ### 1.2 Train
 
 ```bash
-python scripts/finetune_supervised.py \
+python scripts/training/finetune_supervised.py \
   --config configs/finetune/<new-name>.json \
   --output checkpoints/finetune/<new-name>
 ```
@@ -94,11 +94,11 @@ python -c "import json; r = json.load(open('checkpoints/finetune/<new-name>/repo
 ```
 
 Compare against the base with **paired** bootstrap intervals over the same LM-test
-studies. `scripts/compare_lateral_rebalance.py` is the current template: add the
+studies. `scripts/analysis/compare_lateral_rebalance.py` is the current template: add the
 run to its `RUNS` registry and the comparison to `PAIRS`, then run:
 
 ```bash
-python scripts/compare_lateral_rebalance.py --output digest/<study>-v1.json
+python scripts/analysis/compare_lateral_rebalance.py --output digest/<study>-v1.json
 ```
 
 Decision rule (see the README's "How candidates are judged"):
@@ -108,8 +108,8 @@ Decision rule (see the README's "How candidates are judged"):
 - A single seed cannot resolve a difference under about 0.024. Replicate first.
 
 Record the result as `digest/<study>-v1.md` with its JSON. Add both to
-`scripts/digest_site/catalog.py` (the site build fails on uncatalogued files), then
-run `python scripts/build_digest_site.py`.
+`src/digest_site/catalog.py` (the site build fails on uncatalogued files), then
+run `python scripts/digests/build_digest_site.py`.
 
 ---
 
@@ -122,7 +122,7 @@ dataset, push a notebook that predicts offline, and submit the notebook's output
 
 ```bash
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
-python scripts/export_finetune_bundle.py \
+python scripts/submission/export_finetune_bundle.py \
   --run checkpoints/finetune/<new-name> \
   --output checkpoints/kaggle/<bundle-name>
 ```
@@ -131,7 +131,7 @@ python scripts/export_finetune_bundle.py \
   its own saved gold predictions before packaging.
 - Pass several `--run` flags for an ensemble (per-label rank average).
 - To combine bundles already exported on their own, use
-  `scripts/assemble_ensemble_bundle.py --member <bundle dir> ...`.
+  `scripts/submission/assemble_ensemble_bundle.py --member <bundle dir> ...`.
 - The export also scores the bundle on LM-test unless `--skip-lm-test` is given.
 - Add `--device cpu` if the GPU is busy.
 
@@ -199,12 +199,12 @@ Submissions are limited, so each one is an experiment. Write
 - `public_score` and `recorded_at_utc` once scored.
 
 A30's file is the template. Add a title for the new bundle to `TITLES` in
-`scripts/build_leaderboard_digest.py`, then regenerate the leaderboard history and
+`scripts/digests/build_leaderboard_digest.py`, then regenerate the leaderboard history and
 the site:
 
 ```bash
-python scripts/build_leaderboard_digest.py      # rewrites digest/leaderboard-history-v1.json
-python scripts/build_digest_site.py
+python scripts/digests/build_leaderboard_digest.py      # rewrites digest/leaderboard-history-v1.json
+python scripts/digests/build_digest_site.py
 ```
 
 Commit the updated `digest/leaderboard-history-v1.json` together with the title.

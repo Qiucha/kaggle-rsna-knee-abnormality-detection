@@ -3,7 +3,7 @@
 **Status (2026-10-13): not adopted.** Image augmentation on the A30 recipe gives no gain. A30 (0.8917 LM-test,
 0.890 public) remains the best single model.
 
-Code: branch `feat/label-image-augmentation`. Comparison: `scripts/compare_image_augmentation.py`, which writes
+Code: branch `feat/label-image-augmentation`. Comparison: `scripts/analysis/compare_image_augmentation.py`, which writes
 `finetune-image-augmentation-v1.json` in the same format as the lateral-rebalance comparison.
 
 ## Trial: A30 + image augmentation
@@ -86,18 +86,18 @@ leaves the sampling, dropout and target-noise random streams untouched. `last.pt
 From the repository root, with the GPU environment:
 
 ```bash
-python scripts/finetune_supervised.py \
+python scripts/training/finetune_supervised.py \
   --config configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-aug-ep30.json \
   --output checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-aug-ep30
-python scripts/compare_image_augmentation.py --output digest/finetune-image-augmentation-v1.json
-python scripts/build_digest_site.py
+python scripts/analysis/compare_image_augmentation.py --output digest/finetune-image-augmentation-v1.json
+python scripts/digests/build_digest_site.py
 ```
 
 - Inputs not in git: `data_root` (and optionally `train_series_mirror`) in `paths.json`, the cohort manifest and LM
   labels CSV named in the config, and, for the comparison, the finished run directories (`predictions.npz`,
   `report.json`, `config.json`) of run 5 (both seeds), u9-b1 and A30 under `checkpoints/finetune/`.
 - To try another strength, copy the config and change `name` and the `image_augmentation` magnitudes; then point
-  the `AUG` entry of `RUNS` in `scripts/compare_image_augmentation.py` at the new run directory.
+  the `AUG` entry of `RUNS` in `scripts/analysis/compare_image_augmentation.py` at the new run directory.
 
 ## Validation
 

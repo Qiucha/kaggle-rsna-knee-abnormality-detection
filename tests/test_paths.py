@@ -89,3 +89,15 @@ def test_an_unconfigured_mount_is_reported_where_it_is_needed(tmp_path):
 def test_the_template_lists_exactly_the_supported_settings():
     template = json.loads(paths.template_path().read_text(encoding="utf-8"))
     assert {key for key in template if not key.startswith("_")} == set(paths.PATH_SETTINGS)
+
+
+def test_repo_path_is_relative_inside_the_checkout_and_absolute_outside(monkeypatch, tmp_path):
+    root = tmp_path / "repo"
+    (root / "checkpoints").mkdir(parents=True)
+    elsewhere = tmp_path / "other-disk"
+    elsewhere.mkdir()
+    (root / "checkpoints" / "run").symlink_to(elsewhere)
+    monkeypatch.setattr(paths, "repo_root", lambda: root)
+
+    assert paths.repo_path(root / "checkpoints" / "run" / "best.pt") == "checkpoints/run/best.pt"
+    assert paths.repo_path(elsewhere / "best.pt") == str(elsewhere / "best.pt")

@@ -25,7 +25,7 @@ would fail with a type error.
 
 ### CoAtNet (timm) runs cannot be exported yet
 
-`scripts/export_finetune_bundle.py` refuses runs with `image_model_format: "timm"`,
+`scripts/submission/export_finetune_bundle.py` refuses runs with `image_model_format: "timm"`,
 because `submission.load_member` rebuilds only Hugging Face `AutoModel` backbones and
 has no path for a timm model behind `TimmBackbone`.
 
@@ -49,10 +49,10 @@ together.
 
 ### Assembling a bundle checks less than exporting one
 
-`scripts/assemble_ensemble_bundle.py` copies already-exported members byte for byte
+`scripts/submission/assemble_ensemble_bundle.py` copies already-exported members byte for byte
 and re-checks their SHA-256. It then copies the current `src/` into the bundle and
 compares only the overall LM-test macro AUROC with the saved predictions (tolerance
-1e-3). Unlike `scripts/export_finetune_bundle.py`, it does not compare predictions
+1e-3). Unlike `scripts/submission/export_finetune_bundle.py`, it does not compare predictions
 study by study, and it does not check that the members share the cohort manifest
 and label files.
 

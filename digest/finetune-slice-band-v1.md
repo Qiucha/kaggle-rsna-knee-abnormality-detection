@@ -12,7 +12,7 @@ the meniscal bodies and the collateral ligaments (leaderboard-next ticket 17, it
 and selected epoch 25.
 
 Config commit `71209ce` on `t3code/fine-tune-weak-labels` (worktree t3code-d7aef637). Comparison:
-`scripts/compare_slice_band.py` in the same worktree (a copy of the image-augmentation comparison with the
+`scripts/analysis/compare_slice_band.py` in the same worktree (a copy of the image-augmentation comparison with the
 edge-structure labels as targets), run with `CONTRASTIVE_PATHS_CONFIG` pointing at
 `checkpoints/finetune/a30-inference-probes/paths-d7aef637.json`, because main's `paths.json` has a
 `train_series_mirror` key that this worktree's `paths.py` rejects.

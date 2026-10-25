@@ -5,9 +5,9 @@ a synthesis of public RSNA-knee work by earlier teams. **Every claim below was r
 this project's own data rather than taken from the notebook.**
 
 Evidence: [`crop-retention.json`](crop-retention.json), [`fov-and-depth-audit.json`](fov-and-depth-audit.json).
-Scripts: [`scripts/audit_fov_and_depth.py`](../scripts/audit_fov_and_depth.py),
-[`measure_crop_retention.py`](../scripts/measure_crop_retention.py),
-[`check_slice_grouping.py`](../scripts/check_slice_grouping.py).
+Scripts: [`scripts/audits/audit_fov_and_depth.py`](../scripts/audits/audit_fov_and_depth.py),
+[`measure_crop_retention.py`](../scripts/audits/measure_crop_retention.py),
+[`check_slice_grouping.py`](../scripts/audits/check_slice_grouping.py).
 
 ## 1. `Fluid_Sensitive` and `Fat_Suppression` are one bit, not two
 
@@ -92,7 +92,7 @@ something, so **series count may leak label information** — which would re-inf
 figures the gold-holdout work deflated.
 
 **Checked 2026-09-14** ([`protocol-leak-check.json`](protocol-leak-check.json),
-[`scripts/check_protocol_leak.py`](../scripts/check_protocol_leak.py)). Series counts read from
+[`scripts/audits/check_protocol_leak.py`](../scripts/audits/check_protocol_leak.py)). Series counts read from
 **disk**, not from the CSV. Median 5 per study, range **3–14**, across all 4,407 studies.
 
 **Primary — series count → each gold label, n=58, permutation test.** **0 of 12 labels flagged at
@@ -120,7 +120,7 @@ word character, so separators must be normalised before `\bwe\b` can fire), and 
 (GE's *spatial* saturation; `ScanOptions` is matched token-wise, never as a substring).
 
 Full pass ([`acquisition-slots.json`](acquisition-slots.json),
-[`scripts/audit_acquisition_slots.py`](../scripts/audit_acquisition_slots.py)):
+[`scripts/audits/audit_acquisition_slots.py`](../scripts/audits/audit_acquisition_slots.py)):
 **PD 13,646, T1 5,383, T2 5,114, GRE 226, UNK 2.** Weighting is decided by the description for
 18,777 series and by the **TR/TE fallback for 5,594 (23%)** — so roughly a quarter of the corpus
 rests on the timing rule, which is worth remembering before trusting it as ground truth.

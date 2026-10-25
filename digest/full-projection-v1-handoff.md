@@ -30,7 +30,7 @@ run manifest. Setup and GPU smoke commands: [README](../README.md).
 Command:
 
 ```bash
-.venv/bin/python scripts/run_contrastive_matrix.py --experiment 00-projection-full-mean-512
+.venv/bin/python scripts/training/run_contrastive_matrix.py --experiment 00-projection-full-mean-512
 ```
 
 Exit status 1: `This matrix requires CUDA; use --dry-run on a CPU-only host`.

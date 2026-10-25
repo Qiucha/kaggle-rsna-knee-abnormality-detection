@@ -210,7 +210,7 @@ def train_bundle(
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
     )
     shutil.copyfile(
-        root / "scripts" / "predict_kaggle.py", bundle_dir / "predict_kaggle.py"
+        root / "scripts" / "submission" / "predict_kaggle.py", bundle_dir / "predict_kaggle.py"
     )
     shutil.copyfile(root / "requirements-kaggle.txt", bundle_dir / "requirements.txt")
     shutil.copyfile(

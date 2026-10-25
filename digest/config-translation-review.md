@@ -83,7 +83,7 @@ prove repeated patients, but label agreement does not eliminate false negatives.
 
 ## Using the same Claude workflow in parallel
 
-Added `scripts/translate_reports_claude.py` with Python standard-library dependencies.
+Added `scripts/data/translate_reports_claude.py` with Python standard-library dependencies.
 It extracts the original prompt/model/timeout/retry constants from the pinned
 notebook using AST literal parsing, without executing notebook cells. Requests
 use the same original text, prompt prefix and CLI flags. It does not introduce
@@ -103,15 +103,15 @@ observed capacity, rather than launching many independent processes immediately.
 Offline setup and example dry runs (the ranges are illustrative, **not assigned**):
 
 ```bash
-.venv/bin/python scripts/translate_reports_claude.py prepare
+.venv/bin/python scripts/data/translate_reports_claude.py prepare
 
 # Teammate's example range: rows 0–2203
-.venv/bin/python scripts/translate_reports_claude.py run \
+.venv/bin/python scripts/data/translate_reports_claude.py run \
   --start 0 --stop 2204 --workers 2 \
   --output checkpoints/translations/config-8e3bd68/teammate.jsonl
 
 # Our example range: rows 2204–4406
-.venv/bin/python scripts/translate_reports_claude.py run \
+.venv/bin/python scripts/data/translate_reports_claude.py run \
   --start 2204 --stop 4407 --workers 2 \
   --output checkpoints/translations/config-8e3bd68/ours.jsonl
 ```
@@ -132,7 +132,7 @@ guaranteed to match across repeated stochastic calls.
 After collecting the runner's complete JSONL shards locally:
 
 ```bash
-.venv/bin/python scripts/translate_reports_claude.py merge \
+.venv/bin/python scripts/data/translate_reports_claude.py merge \
   --results checkpoints/translations/config-8e3bd68/teammate.jsonl \
             checkpoints/translations/config-8e3bd68/ours.jsonl \
   --output data/processed/claude-translated-v1.csv

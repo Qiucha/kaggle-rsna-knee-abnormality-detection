@@ -102,13 +102,13 @@ Local AUC is the 3-seed LM-MLP head on the 58 gold studies. BGE-M3 uses mean poo
 
 ```bash
 # contrastive arms, one at a time (each under run_measured_training.py for time/memory telemetry)
-.venv-cuda/bin/python scripts/run_contrastive_matrix.py --matrix configs/contrastive/next-model-pairs-v1.json --dry-run
+.venv-cuda/bin/python scripts/training/run_contrastive_matrix.py --matrix configs/contrastive/next-model-pairs-v1.json --dry-run
 # LM heads (linear + MLP, 3 seeds) and LM-test score, per arm
-.venv-cuda/bin/python scripts/train_lm_head.py --config configs/kaggle/lm-mlp-next-pairs-58-<arm>.json \
+.venv-cuda/bin/python scripts/training/train_lm_head.py --config configs/kaggle/lm-mlp-next-pairs-58-<arm>.json \
   --features checkpoints/kaggle/lm-mlp-next-pairs-58-<arm>-features.npz \
   --output checkpoints/kaggle/lm-mlp-next-pairs-58-<arm> --device cuda
 # this page, its JSON and figures
-.venv/bin/python scripts/build_next_model_pairs_digest.py
+.venv/bin/python scripts/digests/build_next_model_pairs_digest.py
 ```
 
-Run artifacts are under `checkpoints/contrastive/next-model-pairs-v1/` and `checkpoints/kaggle/lm-mlp-next-pairs-58-*/`. The encoder page of the digest site plots the same contrastive curves after `scripts/build_digest_site.py export`.
+Run artifacts are under `checkpoints/contrastive/next-model-pairs-v1/` and `checkpoints/kaggle/lm-mlp-next-pairs-58-*/`. The encoder page of the digest site plots the same contrastive curves after `scripts/digests/build_digest_site.py export`.

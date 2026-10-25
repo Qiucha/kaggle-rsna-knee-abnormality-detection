@@ -5,7 +5,7 @@ Measured 2026-09-16 (Asia/Taipei). Evidence: [`label-similarity-v1.json`](label-
 [`label-similarity-paired-v1.json`](label-similarity-paired-v1.json).
 Frozen config: [`../configs/contrastive/label-similarity-v1.json`](../configs/contrastive/label-similarity-v1.json) ·
 Probe config: [`../configs/downstream/gold-probe-label-similarity-v1.json`](../configs/downstream/gold-probe-label-similarity-v1.json) ·
-Analysis: [`../scripts/analyze_label_similarity.py`](../scripts/analyze_label_similarity.py).
+Analysis: [`../scripts/analysis/analyze_label_similarity.py`](../scripts/analysis/analyze_label_similarity.py).
 
 ## The idea
 

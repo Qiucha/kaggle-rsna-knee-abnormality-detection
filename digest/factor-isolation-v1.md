@@ -26,9 +26,9 @@ bundle checksums and existing LM-test feature caches. Predictions are checked ag
 
 From the repository root on a CUDA host, with `paths.json` naming `data_root` (and `train_series_mirror` for the K8 arm):
 
-1. Train one arm: `python scripts/run_contrastive_matrix.py --matrix configs/contrastive/factor-isolation-v1.json --experiment <arm>`.
-2. Fit its heads, once per config the arm lists under `lm_head_configs`: `python scripts/train_lm_head.py --config configs/kaggle/<head>.json --features checkpoints/kaggle/<head>-features.npz --output checkpoints/kaggle/<head> --device cuda`.
-3. Rebuild this digest: `python scripts/build_factor_isolation_digest.py`. It also reads the chain's off-repo `summary.json` (see its docstring).
+1. Train one arm: `python scripts/training/run_contrastive_matrix.py --matrix configs/contrastive/factor-isolation-v1.json --experiment <arm>`.
+2. Fit its heads, once per config the arm lists under `lm_head_configs`: `python scripts/training/train_lm_head.py --config configs/kaggle/<head>.json --features checkpoints/kaggle/<head>-features.npz --output checkpoints/kaggle/<head> --device cuda`.
+3. Rebuild this digest: `python scripts/digests/build_factor_isolation_digest.py`. It also reads the chain's off-repo `summary.json` (see its docstring).
 
 A new arm is a new matrix entry. Its `args` override the base recipe. Copy a head config and point `checkpoint` at the new run's `best.pt`.
 Not in git: the cohort manifest (checked against `manifest_sha256`), `data/lm_label/lm_labels_kaggle.csv`, and the pinned Hugging Face snapshots.

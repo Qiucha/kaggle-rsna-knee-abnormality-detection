@@ -13,7 +13,7 @@
           "projection_256"
         ],
         "name": "image-block adaptation (--image-unfreeze-last 1) under two report policies",
-        "note": "Both arms sit in this slot so one identical feature-extraction pass serves them. The original-versus-translated contrast is NOT produced by evaluate_downstream_probe.py, which only compares each arm against before_cl; it is computed by scripts/compare_downstream_arms.py from these same cached features, folds and bootstrap."
+        "note": "Both arms sit in this slot so one identical feature-extraction pass serves them. The original-versus-translated contrast is NOT produced by evaluate_downstream_probe.py, which only compares each arm against before_cl; it is computed by scripts/analysis/compare_downstream_arms.py from these same cached features, folds and bootstrap."
       },
       "before_cl": {
         "features": [
@@ -47,7 +47,7 @@
     "cohort_manifest": "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl",
     "cohort_note": "The cohort manifest pinned here defines the study population and the preprocessed images only. The two arms were trained on two manifests whose images and splits are identical; they differ in report text, and the base multilingual manifest additionally retains two studies the translated manifest quarantines. The 56-study gold population resolves identically under both, verified before training.",
     "comparisons": {
-      "cohort_contrast": "after_cl/original-multilingual-seed2026/uniform_mean_768 versus after_cl/translated-english-seed2026/uniform_mean_768, paired over the same studies, folds and study resamples, via scripts/compare_downstream_arms.py",
+      "cohort_contrast": "after_cl/original-multilingual-seed2026/uniform_mean_768 versus after_cl/translated-english-seed2026/uniform_mean_768, paired over the same studies, folds and study resamples, via scripts/analysis/compare_downstream_arms.py",
       "confounded": "projection_256 is a learned 768->256 linear-plus-GELU compression; a linear probe cannot gain from compression, so this arm is reported but is not evidence against contrastive learning",
       "primary": "before_cl/uniform_mean_768 versus each after_cl arm's uniform_mean_768 -- matched pooling and dimensionality, so the only difference is the adapted DINOv2 block"
     },

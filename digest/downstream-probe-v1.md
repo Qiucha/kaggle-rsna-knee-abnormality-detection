@@ -3,7 +3,7 @@
 Read-only probe evaluation, 2026-09-11 (Asia/Taipei). Config:
 [`configs/downstream/gold-probe-v1.json`](../configs/downstream/gold-probe-v1.json).
 Evidence: [`downstream-probe-v1.json`](downstream-probe-v1.json). Script:
-`scripts/evaluate_downstream_probe.py`. No training was run, no locked-test study was
+`scripts/evaluation/evaluate_downstream_probe.py`. No training was run, no locked-test study was
 loaded, and nothing was written into an existing run directory.
 
 ## The question, and the two answers
@@ -331,7 +331,7 @@ launched:
    readout statistic on a cohort the representation has already seen.
 
 Evidence: [`plane-pooling-analysis.json`](plane-pooling-analysis.json). Reproduce with
-`.venv/bin/python scripts/analyze_plane_pooling.py`.
+`.venv/bin/python scripts/analysis/analyze_plane_pooling.py`.
 
 ## How this was computed
 
@@ -356,7 +356,7 @@ Two implementation notes, since this repository's numbers are usually checkable:
 Reproduce with:
 
 ```bash
-.venv/bin/python scripts/evaluate_downstream_probe.py --device cpu
+.venv/bin/python scripts/evaluation/evaluate_downstream_probe.py --device cpu
 ```
 
 ## What follows
