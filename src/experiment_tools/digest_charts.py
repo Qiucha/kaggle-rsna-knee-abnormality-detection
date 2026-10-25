@@ -62,7 +62,7 @@ def line_chart(
         f'<svg id="{chart_id}" class="interactive-chart" viewBox="0 0 {W} {H}" '
         f'role="img" aria-label="{escape(title)}" data-chart-id="{chart_id}">'
     ]
-    
+
     # Background hover capture rect
     svg_parts.append(f'<rect x="{PAD_L}" y="{PAD_T}" width="{W - PAD_L - PAD_R}" height="{H - PAD_T - PAD_B}" fill="#fafbfc" rx="4"/>')
 

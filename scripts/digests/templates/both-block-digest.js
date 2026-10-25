@@ -33,7 +33,7 @@ document.querySelectorAll('.chart-wrapper').forEach(wrapper => {
 
   function highlightSeries(seriesId) {
     if (soloSeriesId && soloSeriesId !== seriesId) return;
-    
+
     allSeries.forEach(s => {
       if (s.getAttribute('data-series-id') === seriesId) {
         s.classList.remove('dimmed');
