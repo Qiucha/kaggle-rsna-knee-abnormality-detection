@@ -28,7 +28,7 @@ Thanks to RSNA, the annotators and Kaggle for hosting this competition, and to e
   3. **Targets:** the LM soft values (`YES` = 0.68 / 0.82 / 0.94, `NO` = 0.08) instead of 0/1 labels.
   4. **A30 only:** studies positive for Lateral Meniscus, Lateral OA or Synovitis are sampled twice per epoch, small noise is added to the lateral targets, and training runs 30 epochs.
   5. **Ensemble:** per-label rank average of three models, all with 9 trained blocks.
-* **Did not help:** contrastive (image–report) losses, image augmentation, attention pooling, weight averaging, TTA. See [What Did Not Work](#what-did-not-work).
+* **Did not help:** image–report matching losses, image augmentation, learned window weights, weight averaging, test-time shifts. See [What Did Not Work](#what-did-not-work).
 
 ---
 
@@ -194,50 +194,53 @@ Translation did not help overall. Retrieval went up on reports that were already
 
 ## What Did Not Work
 
-All differences are against the parent model. "Null" means the CI crosses zero. "Vetoed" means Gold-58 dropped by more than 0.024. Rows marked *frozen* used frozen features with MLP heads, so their numbers are not directly comparable with the fine-tuned rows.
+Each idea is compared with the model in the "Compared with" column. "DINOv2-S" there means the fine-tuned DINOv2-S step. "Null" means the CI crosses zero. "Vetoed" means Gold-58 dropped by more than 0.024. Rows marked *frozen* used frozen features with MLP heads, so their numbers are not directly comparable with the fine-tuned rows.
 
 ### Training and pretraining
 
-| Idea | Δ LM-test [95% CI] | Δ Gold-58 | Verdict |
-|:---|:---|:---|:---|
-| Joint loss: BCE + 0.1 × image–report InfoNCE (9 blocks) | −0.0025 [−0.0135, +0.0084] | **−0.0281** | Vetoed. Gold-58 Lateral Meniscus −0.117, Medial Meniscus −0.110 |
-| CLIP init, 9 blocks, A30 recipe (single model) | −0.0052 [−0.0144, +0.0046] | −0.0046 | Null alone; kept as a Deep Three member |
-| Report-similarity soft targets in contrastive training (*frozen*, gold probe) | +0.0040 [−0.010, +0.017] | — | Null |
-| DeCLIP loss on DINOv2-S (*frozen*) | −0.0021 [−0.0101, +0.0056] | +0.0027 | Null |
-| RAD-DINO image encoder with DeCLIP (*frozen*, vs DINOv2-S) | **−0.031** [−0.046, −0.016] | −0.047 | Worse |
-| Other backbones, fine-tuned (RadioDino, CoAtNet) | −0.019 / −0.058 | −0.044 / −0.080 | Worse |
+| Idea | Compared with | Δ LM-test [95% CI] | Δ Gold-58 | Verdict |
+|:---|:---|:---|:---|:---|
+| Add an image–report matching loss (label loss + 0.1 × CLIP-style loss) | u9 | −0.0025 [−0.0135, +0.0084] | **−0.0281** | Vetoed. Gold-58 Lateral Meniscus −0.117, Medial Meniscus −0.110 |
+| Start from CLIP-trained weights (A30-CLIP) | A30 | −0.0052 [−0.0144, +0.0046] | −0.0046 | Null alone; kept as a Deep Three member |
+| Match similar reports, not only exact pairs (*frozen*) | Plain CLIP | +0.0040 [−0.010, +0.017] | — | Null |
+| DeCLIP loss instead of the CLIP loss (*frozen*) | Plain CLIP | −0.0021 [−0.0101, +0.0056] | +0.0027 | Null |
+| RAD-DINO as the image encoder, DeCLIP loss (*frozen*) | DINOv2-S | **−0.031** [−0.046, −0.016] | −0.047 | Worse |
+| RadioDino backbone (3 blocks, 0/1 labels) | DINOv2-S | −0.0187 [−0.0305, −0.0062] | −0.0437 | Worse |
+| CoAtNet backbone (CoAtNet-rmlp-2, 384 px) | Soft + 336 px | −0.0583 [−0.0752, −0.0425] | −0.0802 | Worse |
 
 ### Data and inputs
 
-| Idea | Δ LM-test [95% CI] | Δ Gold-58 | Verdict |
-|:---|:---|:---|:---|
-| Image augmentation (rotation ±8°, zoom 1.08, shift, intensity ±10%) | −0.0028 [−0.0111, +0.0055] | −0.0166 | Null |
-| 384 px input instead of 336 px (Soft + 336 px recipe) | +0.0019 [−0.0051, +0.0087] | +0.013 | Null |
-| Wider slice range (0.05–0.95 instead of 0.2–0.8) | −0.0068 [−0.0156, +0.0025] | −0.0062 | Null |
-| Adding the non-fat-suppressed series (6 series per study; *frozen* heads on u9 features) | −0.0044 [−0.0095, +0.0011] | −0.0009 | Null |
-| 16 windows per plane instead of 8 | +0.0032 [+0.0001, +0.0063] | −0.0067 | Small gain; not kept (21% of planes got empty windows) |
-| Inference-only: 5 overlapping slice groups (*frozen*) | +0.0154 [+0.004, +0.026] | −0.018 | Failed our rule that Gold-58 must not drop |
+| Idea | Compared with | Δ LM-test [95% CI] | Δ Gold-58 | Verdict |
+|:---|:---|:---|:---|:---|
+| Random rotation, zoom and brightness (rotation ±8°, zoom up to 1.08, shift, intensity ±10%) | A30 | −0.0028 [−0.0111, +0.0055] | −0.0166 | Null |
+| 384 px images, not 336 px | Soft + 336 px | +0.0019 [−0.0051, +0.0087] | +0.013 | Null |
+| Central 90% of slices, not 60% (positions 0.05–0.95 instead of 0.2–0.8) | A30 | −0.0068 [−0.0156, +0.0025] | −0.0062 | Null |
+| Add the non-fat-suppressed scans: 6 series instead of 3 (*frozen* heads on u9 features) | u9 | −0.0044 [−0.0095, +0.0011] | −0.0009 | Null |
+| 16 windows per plane, not 8 | DINOv2-S | +0.0032 [+0.0001, +0.0063] | −0.0067 | Small gain; not kept (21% of planes got empty windows) |
+| 5 overlapping slice groups, at test time only (*frozen*) | Frozen CLIP | +0.0154 [+0.004, +0.026] | −0.018 | Failed our rule that Gold-58 must not drop |
 
 ### Architecture and loss
 
-| Idea | Δ LM-test [95% CI] | Δ Gold-58 | Verdict |
-|:---|:---|:---|:---|
-| 2× loss weight on the 3 lateral labels | −0.0111 [−0.0243, +0.0015] | **−0.0250** | Vetoed |
-| Per-label attention over windows | −0.0080 [−0.0160, −0.0005] | −0.0071 | Worse |
-| Separate pooling for medial and lateral halves | −0.0150 [−0.0267, −0.0033] | −0.0154 | Worse |
-| Training `UNK` toward 0.28 instead of masking it | −0.0037 [−0.0153, +0.0072] | −0.0131 | Null |
-| Hard labels instead of soft, at 336 px | −0.0191 [−0.0346, −0.0043] | — | Worse |
+| Idea | Compared with | Δ LM-test [95% CI] | Δ Gold-58 | Verdict |
+|:---|:---|:---|:---|:---|
+| Double loss weight on the 3 lateral findings (Lateral Meniscus, Lateral OA, Synovitis) | u9 | −0.0111 [−0.0243, +0.0015] | **−0.0250** | Vetoed |
+| Learned window weights per finding, instead of a plain average | DINOv2-S | −0.0080 [−0.0160, −0.0005] | −0.0071 | Worse |
+| Pool the inner and outer halves of the knee separately | DINOv2-S + soft | −0.0150 [−0.0267, −0.0033] | −0.0154 | Worse |
+| Train unknown (`UNK`) labels as 0.28, instead of leaving them out of the loss | DINOv2-S + soft | −0.0037 [−0.0153, +0.0072] | −0.0131 | Null |
+| 0/1 labels instead of soft targets | Soft + 336 px | −0.0191 [−0.0346, −0.0043] | — | Worse |
 
-### Post-processing (A30, inference only)
+### After training (A30, no retraining)
+
+Each row is compared with A30 alone.
 
 | Idea | Δ LM-test [95% CI] | Δ Gold-58 [95% CI] |
 |:---|---:|---:|
-| Weight average: A30 + A30-augmented | +0.0034 [−0.0028, +0.0096] | −0.0052 [−0.0213, +0.0108] |
-| Weight average: A30 + u9 | −0.0030 [−0.0095, +0.0035] | −0.0111 [−0.0305, +0.0079] |
-| Average of epoch-22 and epoch-30 weights | +0.0012 [−0.0004, +0.0030] | +0.0014 [−0.0033, +0.0061] |
-| TTA: centre + 1 shifted pass | +0.0010 [−0.0014, +0.0037] | +0.0025 [−0.0033, +0.0086] |
-| TTA: centre + 4 shifted passes | +0.0019 [−0.0007, +0.0047] | +0.0017 [−0.0046, +0.0085] |
-| Best model per label (held-out half of LM-test) | +0.0020 [−0.0141, +0.0180] | — |
+| Average weights: A30 + augmented A30 | +0.0034 [−0.0028, +0.0096] | −0.0052 [−0.0213, +0.0108] |
+| Average weights: A30 + u9 | −0.0030 [−0.0095, +0.0035] | −0.0111 [−0.0305, +0.0079] |
+| Average weights: epochs 22 + 30 | +0.0012 [−0.0004, +0.0030] | +0.0014 [−0.0033, +0.0061] |
+| Test-time shifts: 1 extra pass | +0.0010 [−0.0014, +0.0037] | +0.0025 [−0.0033, +0.0086] |
+| Test-time shifts: 4 extra passes | +0.0019 [−0.0007, +0.0047] | +0.0017 [−0.0046, +0.0085] |
+| Best model for each finding (chosen on one half of LM-test, scored on the other) | +0.0020 [−0.0141, +0.0180] | — |
 
 All of these are null.
 

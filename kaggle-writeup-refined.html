@@ -168,7 +168,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
       <li><b>Ensemble:</b> per-label rank average of three models, all with 9 trained blocks.</li>
     </ol>
   </li>
-  <li><b>Did not help:</b> contrastive (image–report) losses, image augmentation, attention pooling, weight averaging, TTA. See <a href="#nulls">What Did Not Work</a>.</li>
+  <li><b>Did not help:</b> image–report matching losses, image augmentation, learned window weights, weight averaging, test-time shifts. See <a href="#nulls">What Did Not Work</a>.</li>
 </ul>
 
 <h2>Labels and Validation</h2>
@@ -296,7 +296,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
 
 
 <h2 id="nulls">What Did Not Work</h2>
-<p>All differences are against the parent model, with 95% CI. <b>Null</b> = CI crosses zero. <b>Vetoed</b> = Gold-58 dropped by more than 0.024 (red line). Each idea was tried with one setting only.</p>
+<p>Each idea is compared with the model named after it in grey (rows without one are compared with A30), with 95% CI. “DINOv2-S” is the fine-tuned DINOv2-S step. <b>Null</b> = CI crosses zero. <b>Vetoed</b> = Gold-58 dropped by more than 0.024 (red line). Each idea was tried with one setting only.</p>
 <div class="fig">
   <div class="legend"><span><i class="sw" style="background:var(--ink2)"></i>CI excludes 0</span><span><i class="sw hollow"></i>CI crosses 0, or no CI recorded</span><span><i class="sw ln" style="background:var(--critical)"></i>Gold-58 veto at −0.024</span></div>
   <div class="scroll"><div class="chart" id="nullplot" style="min-width:640px"></div></div>
@@ -304,11 +304,11 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
 </div>
 <h3>Frozen-feature experiments (not on the same scale as the chart)</h3>
 <table>
-  <tr><th>Idea</th><th class="n">Δ LM-test [95% CI]</th><th class="n">Δ Gold-58</th><th>Verdict</th></tr>
-  <tr><td>Report-similarity soft targets in contrastive training (gold probe)</td><td class="n">+0.0040 [−0.010, +0.017]</td><td class="n">—</td><td>Null</td></tr>
-  <tr><td>DeCLIP loss on DINOv2-S</td><td class="n">−0.0021 [−0.0101, +0.0056]</td><td class="n">+0.0027</td><td>Null</td></tr>
-  <tr><td>RAD-DINO image encoder with DeCLIP (vs DINOv2-S)</td><td class="n">−0.031 [−0.046, −0.016]</td><td class="n">−0.047</td><td>Worse</td></tr>
-  <tr><td>Inference-only: 5 overlapping slice groups</td><td class="n">+0.0154 [+0.004, +0.026]</td><td class="n">−0.018</td><td>Failed our rule that Gold-58 must not drop</td></tr>
+  <tr><th>Idea</th><th>Compared with</th><th class="n">Δ LM-test [95% CI]</th><th class="n">Δ Gold-58</th><th>Verdict</th></tr>
+  <tr><td>Match similar reports, not only exact pairs</td><td>Plain CLIP</td><td class="n">+0.0040 [−0.010, +0.017]</td><td class="n">—</td><td>Null</td></tr>
+  <tr><td>DeCLIP loss instead of the CLIP loss</td><td>Plain CLIP</td><td class="n">−0.0021 [−0.0101, +0.0056]</td><td class="n">+0.0027</td><td>Null</td></tr>
+  <tr><td>RAD-DINO as the image encoder (DeCLIP loss)</td><td>DINOv2-S</td><td class="n">−0.031 [−0.046, −0.016]</td><td class="n">−0.047</td><td>Worse</td></tr>
+  <tr><td>5 overlapping slice groups, at test time only</td><td>Frozen CLIP</td><td class="n">+0.0154 [+0.004, +0.026]</td><td class="n">−0.018</td><td>Failed our rule that Gold-58 must not drop</td></tr>
 </table>
 
 <h2>Kaggle Engineering</h2>
@@ -708,7 +708,7 @@ function forest(el, rows, panels, opts = {}) {
     rows.forEach((r, i) => {
       if (r.group) return;
       const hit = S('rect', { x: 0, y: ys[i] - rowH / 2, width: W, height: rowH, class: 'rowhit' }, svg);
-      hover(hit, () => `<b>${r.label}</b>${r.note ? `<div class="m">${r.note}</div>` : ''}` +
+      hover(hit, () => `<b>${r.label}</b>${r.base ? ` <span class="m">vs ${r.base}</span>` : ''}${r.note ? `<div class="m">${r.note}</div>` : ''}` +
         panels.map(p => trow(p.title, opts.abs ? (r[p.key] ? r[p.key][0].toFixed(p.dp || 3) : '—') : ci(r[p.key]), p.color)).join('') +
         (r.verdict ? trow('Verdict', r.verdict) : ''));
     });
@@ -744,7 +744,15 @@ function forest(el, rows, panels, opts = {}) {
         S('line', { x1: 0, x2: W, y1: gy + 25, y2: gy + 25, class: 'grid' }, svg);
         return;
       }
-      S('text', { x: 0, y: ys[i] + 4, class: r.bold ? 't-strong' : 't-ink', text: r.label }, svg);
+      const lt = S('text', { x: 0, y: ys[i] + 4, class: r.bold ? 't-strong' : 't-ink', text: r.label }, svg);
+      if (r.base) {
+        const bt = S('tspan', { dx: 6, class: 't-muted', text: `vs ${r.base}` }, lt);
+        // too wide for the label column (print, narrow screens): put the baseline on a second line
+        if (lt.getComputedTextLength() > labelW - 6) {
+          lt.setAttribute('y', ys[i] - 1);
+          bt.setAttribute('x', 0); bt.setAttribute('dx', 0); bt.setAttribute('dy', 11.5); bt.setAttribute('style', 'font-size:10px');
+        }
+      }
       if (opts.verdict && r.verdict) S('text', { x: W, y: ys[i] + 4, 'text-anchor': 'end', class: r.verdict === 'Vetoed' || r.verdict === 'Worse' ? 't-strong' : 't-muted', text: r.verdict }, svg);
     });
     if (opts.verdict) S('text', { x: W, y: 14, 'text-anchor': 'end', class: 't-strong', text: 'Verdict' }, svg);
@@ -817,33 +825,33 @@ table(document.getElementById('t-ens'), ['Ensemble', 'LM-test', 'Gold-58 Lateral
 // null results
 const NULLS = [
   { group: 'Training and pretraining' },
-  { label: 'Joint loss: BCE + 0.1 × image–report InfoNCE', lm: [-.0025, -.0135, .0084], gold: [-.0281, -.0542, -.0035], verdict: 'Vetoed', note: 'Gold-58 Lateral Meniscus −0.117, Medial Meniscus −0.110' },
-  { label: 'CLIP init, 9 blocks (single model)', lm: [-.0052, -.0144, .0046], gold: [-.0046, -.0240, .0147], verdict: 'Null', note: 'Kept as a Deep Three member' },
-  { label: 'Hard labels instead of soft, 336 px', lm: [-.0191, -.0346, -.0043], gold: null, verdict: 'Worse' },
-  { label: 'RadioDino backbone (vs DINOv2-S)', lm: [-.0187, -.0305, -.0062], gold: [-.0437, -.0761, -.0103], verdict: 'Worse' },
-  { label: 'CoAtNet backbone (vs Soft + 336 px)', lm: [-.0583, -.0752, -.0425], gold: [-.0802, -.1237, -.0356], verdict: 'Worse' },
+  { label: 'Add an image–report matching loss', base: 'u9', lm: [-.0025, -.0135, .0084], gold: [-.0281, -.0542, -.0035], verdict: 'Vetoed', note: 'Label loss + 0.1 × CLIP-style loss. Gold-58 Lateral Meniscus −0.117, Medial Meniscus −0.110' },
+  { label: 'Start from CLIP-trained weights', base: 'A30', lm: [-.0052, -.0144, .0046], gold: [-.0046, -.0240, .0147], verdict: 'Null', note: 'This model, A30-CLIP, is kept as a Deep Three member' },
+  { label: '0/1 labels instead of soft targets', base: 'Soft + 336 px', lm: [-.0191, -.0346, -.0043], gold: null, verdict: 'Worse' },
+  { label: 'RadioDino backbone', base: 'DINOv2-S', lm: [-.0187, -.0305, -.0062], gold: [-.0437, -.0761, -.0103], verdict: 'Worse', note: 'Both fine-tuned with 3 blocks and 0/1 labels' },
+  { label: 'CoAtNet backbone', base: 'Soft + 336 px', lm: [-.0583, -.0752, -.0425], gold: [-.0802, -.1237, -.0356], verdict: 'Worse', note: 'CoAtNet-rmlp-2 at 384 px, ImageNet pretrained' },
   { group: 'Data and inputs' },
-  { label: 'Image augmentation', lm: [-.0028, -.0111, .0055], gold: [-.0166, -.0380, .0050], verdict: 'Null', note: 'Rotation ±8°, zoom 1.08, shift, intensity ±10%' },
-  { label: 'Wider slice range (0.05–0.95)', lm: [-.0068, -.0156, .0025], gold: [-.0062, -.0233, .0105], verdict: 'Null' },
-  { label: '384 px instead of 336 px', lm: [.0019, -.0051, .0087], gold: [.0126], verdict: 'Null', note: 'Soft + 336 px recipe. Gold-58 CI not recorded.' },
-  { label: '16 windows per plane instead of 8', lm: [.0032, .0001, .0063], gold: [-.0067, -.0192, .0056], verdict: 'Not kept', note: '21% of planes got empty windows' },
-  { label: 'Add non-fat-suppressed series', lm: [-.0044, -.0095, .0011], gold: [-.0009, -.0113, .0122], verdict: 'Null', note: '6 series per study; frozen heads on u9 features' },
+  { label: 'Random rotation, zoom and brightness', base: 'A30', lm: [-.0028, -.0111, .0055], gold: [-.0166, -.0380, .0050], verdict: 'Null', note: 'Rotation ±8°, zoom up to 1.08, shift, intensity ±10%' },
+  { label: 'Central 90% of slices, not 60%', base: 'A30', lm: [-.0068, -.0156, .0025], gold: [-.0062, -.0233, .0105], verdict: 'Null', note: 'Slice positions 0.05–0.95 instead of 0.2–0.8' },
+  { label: '384 px images, not 336 px', base: 'Soft + 336 px', lm: [.0019, -.0051, .0087], gold: [.0126], verdict: 'Null', note: 'Gold-58 CI not recorded' },
+  { label: '16 windows per plane, not 8', base: 'DINOv2-S', lm: [.0032, .0001, .0063], gold: [-.0067, -.0192, .0056], verdict: 'Not kept', note: '21% of planes got empty windows' },
+  { label: 'Add the non-fat-suppressed scans', base: 'u9', lm: [-.0044, -.0095, .0011], gold: [-.0009, -.0113, .0122], verdict: 'Null', note: '6 series per study instead of 3; frozen heads on u9 features' },
   { group: 'Architecture and loss' },
-  { label: '2× loss weight on 3 lateral labels', lm: [-.0111, -.0243, .0015], gold: [-.0250, -.0470, -.0007], verdict: 'Vetoed' },
-  { label: 'Per-label attention over windows', lm: [-.0080, -.0160, -.0005], gold: [-.0071, -.0303, .0170], verdict: 'Worse' },
-  { label: 'Separate medial / lateral pooling', lm: [-.0150, -.0267, -.0033], gold: [-.0154, -.0388, .0063], verdict: 'Worse' },
-  { label: 'Train UNK toward 0.28 (not masked)', lm: [-.0037, -.0153, .0072], gold: [-.0131, -.0394, .0133], verdict: 'Null' },
-  { group: 'Post-processing (A30, inference only)' },
-  { label: 'Weight average: A30 + A30-augmented', lm: [.0034, -.0028, .0096], gold: [-.0052, -.0213, .0108], verdict: 'Null' },
-  { label: 'Weight average: A30 + u9', lm: [-.0030, -.0095, .0035], gold: [-.0111, -.0305, .0079], verdict: 'Null' },
-  { label: 'Average of epoch-22 and epoch-30 weights', lm: [.0012, -.0004, .0030], gold: [.0014, -.0033, .0061], verdict: 'Null' },
-  { label: 'TTA: centre + 1 shifted pass', lm: [.0010, -.0014, .0037], gold: [.0025, -.0033, .0086], verdict: 'Null' },
-  { label: 'TTA: centre + 4 shifted passes', lm: [.0019, -.0007, .0047], gold: [.0017, -.0046, .0085], verdict: 'Null' },
-  { label: 'Best model per label (held-out half)', lm: [.0020, -.0141, .0180], gold: null, verdict: 'Null' },
+  { label: 'Double loss weight on lateral findings', base: 'u9', lm: [-.0111, -.0243, .0015], gold: [-.0250, -.0470, -.0007], verdict: 'Vetoed', note: 'Lateral Meniscus, Lateral OA, Synovitis' },
+  { label: 'Learned window weights per finding', base: 'DINOv2-S', lm: [-.0080, -.0160, -.0005], gold: [-.0071, -.0303, .0170], verdict: 'Worse', note: 'Attention over the 24 windows instead of a plain average' },
+  { label: 'Pool inner and outer knee separately', base: 'DINOv2-S + soft', lm: [-.0150, -.0267, -.0033], gold: [-.0154, -.0388, .0063], verdict: 'Worse', note: 'Medial and lateral halves averaged on their own' },
+  { label: 'Train unknown labels as 0.28', base: 'DINOv2-S + soft', lm: [-.0037, -.0153, .0072], gold: [-.0131, -.0394, .0133], verdict: 'Null', note: 'Instead of leaving UNK out of the loss' },
+  { group: 'After training (A30, no retraining)' },
+  { label: 'Average weights: A30 + augmented A30', lm: [.0034, -.0028, .0096], gold: [-.0052, -.0213, .0108], verdict: 'Null' },
+  { label: 'Average weights: A30 + u9', lm: [-.0030, -.0095, .0035], gold: [-.0111, -.0305, .0079], verdict: 'Null' },
+  { label: 'Average weights: epochs 22 + 30', lm: [.0012, -.0004, .0030], gold: [.0014, -.0033, .0061], verdict: 'Null' },
+  { label: 'Test-time shifts: 1 extra pass', lm: [.0010, -.0014, .0037], gold: [.0025, -.0033, .0086], verdict: 'Null', note: 'Average of the centre pass and shifted windows' },
+  { label: 'Test-time shifts: 4 extra passes', lm: [.0019, -.0007, .0047], gold: [.0017, -.0046, .0085], verdict: 'Null' },
+  { label: 'Best model for each finding', lm: [.0020, -.0141, .0180], gold: null, verdict: 'Null', note: 'Chosen on one half of LM-test, scored on the other' },
 ];
-forest(document.getElementById('nullplot'), NULLS, [{ ...LMP, domain: [-.07, .025], tickVals: [-0.06, -0.03, 0, 0.02] }, { ...GP, domain: [-.13, .07], tickVals: [-0.10, -0.05, 0, 0.05] }], { verdict: true, labelW: 260 });
-table(document.getElementById('t-null'), ['Idea', 'Δ LM-test [95% CI]', 'Δ Gold-58 [95% CI]', 'Verdict'],
-  NULLS.filter(r => !r.group).map(r => [r.label + (r.note ? ` <span class="note">· ${r.note}</span>` : ''), ci(r.lm), ci(r.gold), r.verdict]));
+forest(document.getElementById('nullplot'), NULLS, [{ ...LMP, domain: [-.07, .025], tickVals: [-0.06, -0.03, 0, 0.02] }, { ...GP, domain: [-.13, .07], tickVals: [-0.10, -0.05, 0, 0.05] }], { verdict: true, labelW: 300 });
+table(document.getElementById('t-null'), ['Idea', 'Compared with', 'Δ LM-test [95% CI]', 'Δ Gold-58 [95% CI]', 'Verdict'],
+  NULLS.filter(r => !r.group).map(r => [r.label + (r.note ? ` <span class="note">· ${r.note}</span>` : ''), r.base || 'A30', ci(r.lm), ci(r.gold), r.verdict]));
 
 /* ---------- inline math fallback (no MathJax offline) ---------- */
 /* PDF export: print in light mode with the data tables open */
