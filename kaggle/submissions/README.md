@@ -2,10 +2,10 @@
 
 The two submissions chosen for the private leaderboard (decided 2026-10-20). Each folder holds the path-free records of one Kaggle bundle. The weights and the exported bundle themselves stay in git-ignored `checkpoints/kaggle/<name>/`.
 
-| Folder | What | Submission | Public | LM-test | Gold-58 |
-|---|---|---|---|---|---|
-| `a30-deep3-rank/` | Per-label rank mean of A30 + u9-b1 + CLIP-init u9 | 57296356 | 0.902 | 0.9017 | 0.8897 |
-| `r4a-k8-omb-soft-336-u9-a30/` | A30 alone: OmniRad-base, K8 windows, soft labels, 336 px, 9 blocks unfrozen, lateral oversampling + label noise, 30 epochs | 57094902 | 0.890 | 0.8917 | 0.8814 |
+| Folder | What | Submission | Public | Private | LM-test | Gold-58 |
+|---|---|---|---|---|---|---|
+| `a30-deep3-rank/` | Per-label rank mean of A30 + u9-b1 + CLIP-init u9 | 57296356 | 0.902 | 0.889 | 0.9017 | 0.8897 |
+| `r4a-k8-omb-soft-336-u9-a30/` | A30 alone: OmniRad-base, K8 windows, soft labels, 336 px, 9 blocks unfrozen, lateral oversampling + label noise, 30 epochs | 57094902 | 0.890 | 0.878 | 0.8917 | 0.8814 |
 
 Member runs. Each run's config is `configs/finetune/<run>.json`, and its run directory is `checkpoints/finetune/<run>/`. The order is the bundle's `member-NN.pt` order:
 

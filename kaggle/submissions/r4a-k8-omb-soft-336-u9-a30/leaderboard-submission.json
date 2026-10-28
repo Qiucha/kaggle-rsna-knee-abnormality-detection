@@ -23,6 +23,6 @@
   "bundle_sha256": "c2b804507b259b501df30d5bfc5bc0e188547ae4010ceb70be691d8ea62d7e03",
   "output_file": "submission.csv",
   "public_score": 0.89,
-  "private_score": null,
+  "private_score": 0.878,
   "outcome": "+0.002 over u9-b1 (0.888): new best public single model by a hair, but below both predictions (about 0.896 from LM-test, 0.892 from gold-58). Public moved about a quarter of the LM-test gain; within what single-seed noise can produce, and the extra-training-draws confound is unresolved."
 }
