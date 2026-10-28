@@ -814,8 +814,8 @@ const GP = { key: 'gold', title: 'Δ Gold-58', color: 'var(--c-gold)', ref: 0, v
 // step deltas
 const stepRows = STEPS.filter(s => s.lm).flatMap(s => s.s === 'OmniRad backbone' ? [SOFT, s] : [s]).map(s => ({ label: s.s, lm: s.lm, gold: s.gold, note: s.d + (s.lm.length === 1 ? ' · no CI recorded in the submission record' : ''), bold: s.s === 'A30' || s.s === 'Deep Three' }));
 forest(document.getElementById('stepdeltas'), stepRows, [{ ...LMP, tickVals: [-0.01, 0, 0.01, 0.02, 0.03] }, { ...GP, veto: undefined }], { labelW: 150 });
-table(document.getElementById('t-steps'), ['Stage', 'Step', 'Private', 'Public', 'Δ LM-test [95% CI]', 'Δ Gold-58 [95% CI]'],
-  STEPS.flatMap(s => s.s === 'OmniRad backbone' ? [SOFT, s] : [s]).map(s => [s.lm ? '2' : '1', `<b>${s.s}</b> · ${s.d}`, s.prv.toFixed(3), s.pub.toFixed(3), ci(s.lm), ci(s.gold)]));
+table(document.getElementById('t-steps'), ['Step', 'Stage', 'Private', 'Public', 'Δ LM-test [95% CI]', 'Δ Gold-58 [95% CI]'],
+  STEPS.flatMap(s => s.s === 'OmniRad backbone' ? [SOFT, s] : [s]).map(s => [`<b>${s.s}</b> · ${s.d}`, s.lm ? '2' : '1', s.prv.toFixed(3), s.pub.toFixed(3), ci(s.lm), ci(s.gold)]));
 
 // depth
 const DEPTH = [
