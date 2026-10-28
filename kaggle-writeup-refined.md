@@ -113,30 +113,30 @@ Missing or unreadable planes are filled with zeros and masked, so they don't aff
 
 ## Step-by-Step Progress
 
-Each row is one Kaggle submission. Δ is measured against the row above unless noted. R4a, u9-b1, A30 and ens4 are our internal run names.
+Each row is one Kaggle submission. Δ is measured against the row above unless noted. **u9** (9 trained blocks), **A30** (u9 + lateral oversampling, 30 epochs) and **A30-CLIP** (the A30 recipe started from the CLIP-trained weights) are the three models in the final ensemble. The other steps are named by what they changed.
 
 | Step | Change | Δ LM-test [95% CI] | Δ Gold-58 [95% CI] | Public | Private |
 |:---|:---|---:|---:|---:|---:|
-| R0 | Frozen contrastive encoder (DINOv2-S + E5-base) + MLP heads | — | — | 0.788 | 0.756 |
-| R4a K8 | Fine-tune the last 3 blocks of DINOv2-S, 8 windows per plane, hard labels | +0.036 | +0.018 | 0.826 | 0.801 |
-| *R4a soft* | *Side branch: soft targets on DINOv2-S (vs R4a K8)* | *+0.0001 [−0.0104, +0.0103]* | *+0.0389 [+0.0151, +0.0637]* | *0.834* | *0.813* |
-| OmniRad-B | Backbone DINOv2-S → OmniRad-base (vs R4a K8) | +0.0003 | +0.030 | 0.839 | 0.829 |
-| Run 5 | OmniRad-base + soft targets + 336 px | +0.0073 [−0.0033, +0.0180] | +0.0130 [−0.0168, +0.0412] | 0.879 | 0.865 |
-| u9-b1 | Train 9 blocks instead of 3 | +0.0059 [−0.0045, +0.0153] | +0.0508 [+0.0217, +0.0819] | 0.888 | 0.869 |
-| A30 | Lateral oversampling + target noise, 30 epochs | +0.0083 [−0.0025, +0.0202] | +0.0040 [−0.0149, +0.0218] | **0.890** | **0.878** |
-| ens4 | Rank ensemble: A30 + u9-b1 + CLIP-init 3-block + DINOv2-S 336 (vs A30) | +0.0130 [+0.0062, +0.0203] | −0.0091 [−0.0245, +0.0059] | 0.894 | 0.880 |
-| ens4 swap | Replace the CLIP-init 3-block model with a CLIP-init 9-block model (vs ens4) | −0.0001 [−0.0031, +0.0029] | +0.0135 [+0.0042, +0.0230] | 0.899 | 0.887 |
-| Deep Three | Drop DINOv2-S too: A30 + u9-b1 + CLIP-init u9 (vs ens4) | −0.0031 [−0.0084, +0.0019] | +0.0173 [+0.0051, +0.0301] | **0.902** | **0.889** |
+| Frozen CLIP | Frozen CLIP-trained encoder (DINOv2-S + E5-base) + MLP heads on the LM labels | — | — | 0.788 | 0.756 |
+| Fine-tune DINOv2-S | Train the last 3 blocks of DINOv2-S on the LM labels; 8 windows per plane; 0/1 labels | +0.036 | +0.018 | 0.826 | 0.801 |
+| *DINOv2-S + soft* | *Side branch: soft targets on DINOv2-S (vs Fine-tune DINOv2-S)* | *+0.0001 [−0.0104, +0.0103]* | *+0.0389 [+0.0151, +0.0637]* | *0.834* | *0.813* |
+| OmniRad backbone | Swap DINOv2-S for OmniRad-base (vs Fine-tune DINOv2-S) | +0.0003 | +0.030 | 0.839 | 0.829 |
+| Soft + 336 px | OmniRad-base with soft targets and 336 px input | +0.0073 [−0.0033, +0.0180] | +0.0130 [−0.0168, +0.0412] | 0.879 | 0.865 |
+| **u9** | Train 9 blocks instead of 3 | +0.0059 [−0.0045, +0.0153] | +0.0508 [+0.0217, +0.0819] | 0.888 | 0.869 |
+| **A30** | u9 + lateral oversampling + target noise, 30 epochs | +0.0083 [−0.0025, +0.0202] | +0.0040 [−0.0149, +0.0218] | **0.890** | **0.878** |
+| 4-model ensemble | Rank ensemble: A30 + u9 + 3-block CLIP-start model + DINOv2-S at 336 px (vs A30) | +0.0130 [+0.0062, +0.0203] | −0.0091 [−0.0245, +0.0059] | 0.894 | 0.880 |
+| Swap in A30-CLIP | Replace the 3-block CLIP-start model with **A30-CLIP** (vs 4-model ensemble) | −0.0001 [−0.0031, +0.0029] | +0.0135 [+0.0042, +0.0230] | 0.899 | 0.887 |
+| **Deep Three** | Drop DINOv2-S too: A30 + u9 + A30-CLIP (vs 4-model ensemble) | −0.0031 [−0.0084, +0.0019] | +0.0173 [+0.0051, +0.0301] | **0.902** | **0.889** |
 
-The R0 → R4a K8 and OmniRad-B deltas come from the submission records, which store no CI.
+The deltas for Fine-tune DINOv2-S and OmniRad backbone come from the submission records, which store no CI.
 
 ### Takeaways
 
 1. **Fine-tuning gave the largest gain.** Going from frozen features to fine-tuning on the LM labels added +0.036 on LM-test and +0.038 on public.
-2. **Most single-model steps were within noise on LM-test.** For OmniRad-base, Run 5, u9-b1 and A30, the LM-test CI crosses zero. We adopted them on the point estimate plus Gold-58, and public went up each time.
+2. **Most single-model steps were within noise on LM-test.** For the OmniRad backbone, Soft + 336 px, u9 and A30, the LM-test CI crosses zero. We adopted them on the point estimate plus Gold-58, and public went up each time.
 3. **Gold-58 was a useful but imperfect tiebreaker.**
    * It agreed with public on the last two ensemble steps.
-   * It disagreed twice. For A30 → ens4, Gold-58 fell while public rose. Gold-58 also preferred R4a soft over OmniRad-B (0.8223 vs 0.8137), but public preferred OmniRad-B (0.839 vs 0.834).
+   * It disagreed twice. From A30 to the 4-model ensemble, Gold-58 fell while public rose. Gold-58 also preferred DINOv2-S + soft over the OmniRad backbone (0.8223 vs 0.8137), but public preferred the OmniRad backbone (0.839 vs 0.834).
 4. **Training more blocks helped Gold-58 most.**
 
    | Blocks trained | 1 | 3 | 6 | 9 | 12 |
@@ -153,10 +153,10 @@ We average the per-label ranks of each model's predictions:
 
 $$\hat{y}_{i,c} = \frac{1}{M} \sum_{m=1}^{M} \text{rank}(p_{m,i,c})$$
 
-* **LM-test liked mixed ensembles.** Adding the shallower models (DINOv2-S, the CLIP-init 3-block model) gave the best LM-test score (0.905).
+* **LM-test liked mixed ensembles.** Adding the shallower models (DINOv2-S, the 3-block CLIP-start model) gave the best LM-test score (0.905).
 * **Gold-58 did not.** The mixed ensembles lowered Gold-58 Lateral Meniscus AUROC:
 
-  | Model | A30 alone | ens4 | ens4 swap | Deep Three |
+  | Model | A30 alone | 4-model ensemble | Swap in A30-CLIP | Deep Three |
   |---|---:|---:|---:|---:|
   | Gold-58 Lateral Meniscus AUROC | 0.834 | 0.755 | 0.778 | 0.831 |
 
@@ -169,10 +169,10 @@ $$\hat{y}_{i,c} = \frac{1}{M} \sum_{m=1}^{M} \text{rank}(p_{m,i,c})$$
 Before fine-tuning, we trained a CLIP-style image–report model:
 * **Image encoder:** DINOv2-small with LoRA.
 * **Text encoder:** multilingual E5-base.
-* **Readout:** frozen features with MLP heads trained on the LM labels (R0). That scored 0.788 public.
+* **Readout:** frozen features with MLP heads trained on the LM labels. That scored 0.756 private (0.788 public).
 
 We stopped this line of work for three reasons:
-1. **Fine-tuning was much stronger.** Fine-tuning on the LM labels (R4a K8) gave +0.036 LM-test and +0.038 public over R0.
+1. **Fine-tuning was much stronger.** Fine-tuning DINOv2-S on the LM labels gave +0.036 LM-test, +0.045 private and +0.038 public over the frozen CLIP model.
 2. **Frozen heads fell behind on Gold-58.** On OmniRad-base, a frozen CLIP-adapted encoder with an MLP head matched full fine-tuning on LM-test (+0.0072 [−0.0047, +0.0191]). On Gold-58 it was lower by −0.0433 [−0.0778, −0.0115].
 3. **CLIP init added nothing once fine-tuning was strong.** Starting fine-tuning from the CLIP weights changed LM-test by:
    * +0.0026 [−0.0089, +0.0142] with 3 trained blocks;
@@ -212,9 +212,9 @@ All differences are against the parent model. "Null" means the CI crosses zero. 
 | Idea | Δ LM-test [95% CI] | Δ Gold-58 | Verdict |
 |:---|:---|:---|:---|
 | Image augmentation (rotation ±8°, zoom 1.08, shift, intensity ±10%) | −0.0028 [−0.0111, +0.0055] | −0.0166 | Null |
-| 384 px input instead of 336 px (Run 5 recipe) | +0.0019 [−0.0051, +0.0087] | +0.013 | Null |
+| 384 px input instead of 336 px (Soft + 336 px recipe) | +0.0019 [−0.0051, +0.0087] | +0.013 | Null |
 | Wider slice range (0.05–0.95 instead of 0.2–0.8) | −0.0068 [−0.0156, +0.0025] | −0.0062 | Null |
-| Adding the non-fat-suppressed series (6 series per study; *frozen* heads on u9-b1 features) | −0.0044 [−0.0095, +0.0011] | −0.0009 | Null |
+| Adding the non-fat-suppressed series (6 series per study; *frozen* heads on u9 features) | −0.0044 [−0.0095, +0.0011] | −0.0009 | Null |
 | 16 windows per plane instead of 8 | +0.0032 [+0.0001, +0.0063] | −0.0067 | Small gain; not kept (21% of planes got empty windows) |
 | Inference-only: 5 overlapping slice groups (*frozen*) | +0.0154 [+0.004, +0.026] | −0.018 | Failed our rule that Gold-58 must not drop |
 
@@ -233,7 +233,7 @@ All differences are against the parent model. "Null" means the CI crosses zero. 
 | Idea | Δ LM-test [95% CI] | Δ Gold-58 [95% CI] |
 |:---|---:|---:|
 | Weight average: A30 + A30-augmented | +0.0034 [−0.0028, +0.0096] | −0.0052 [−0.0213, +0.0108] |
-| Weight average: A30 + u9-b1 | −0.0030 [−0.0095, +0.0035] | −0.0111 [−0.0305, +0.0079] |
+| Weight average: A30 + u9 | −0.0030 [−0.0095, +0.0035] | −0.0111 [−0.0305, +0.0079] |
 | Average of epoch-22 and epoch-30 weights | +0.0012 [−0.0004, +0.0030] | +0.0014 [−0.0033, +0.0061] |
 | TTA: centre + 1 shifted pass | +0.0010 [−0.0014, +0.0037] | +0.0025 [−0.0033, +0.0086] |
 | TTA: centre + 4 shifted passes | +0.0019 [−0.0007, +0.0047] | +0.0017 [−0.0046, +0.0085] |
@@ -263,7 +263,7 @@ All of these are null.
 
 ## If We Had More Time
 
-* **A30 control:** train u9-b1 for the same number of samples as A30, to separate the effect of oversampling from that of longer training.
+* **A30 control:** train u9 for the same number of samples as A30, to separate the effect of oversampling from that of longer training.
 * **More seeds:** train each deep model with 3 or more seeds, to tell small gains from noise.
 * **DINOv2-base control:** OmniRad-base differs from DINOv2-S in both pretraining data and model size. A DINOv2-base run would separate the two.
 
@@ -271,8 +271,8 @@ All of these are null.
 
 ## Limitations
 
-1. **Single seed.** Every model was trained once. Retraining Run 5 with a new seed changed LM-test by −0.0029 and Gold-58 by +0.0066. Several adopted steps are about that size.
-2. **A30 is confounded.** It saw about 2.5× more training samples than u9-b1 (30 × 4,946 vs 17 × 3,438). We never ran the control with the same number of samples.
+1. **Single seed.** Every model was trained once. Retraining the Soft + 336 px model with a new seed changed LM-test by −0.0029 and Gold-58 by +0.0066. Several adopted steps are about that size.
+2. **A30 is confounded.** It saw about 2.5× more training samples than u9 (30 × 4,946 vs 17 × 3,438). We never ran the control with the same number of samples.
 3. **LM-test is optimistic.** We picked models and ensembles on the same 432 studies. A split-half check puts the bias at about 0.004 for the ensemble picks.
 4. **LM-test uses the training labeller.** It measures agreement with the same LM that made the training labels.
 5. **Gold-58 is small and was reused many times.** Single-model CIs are about ±0.02–0.03.
@@ -291,8 +291,8 @@ Repository: [github.com/Qiucha/novo-project](https://github.com/Qiucha/novo-proj
 * **Inference notebook:** `notebooks/kaggle_submission.ipynb`
 * **Configs:**
   * A30: `configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30.json`
-  * u9-b1: `configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json`
-  * CLIP-init u9: `configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30-from-clip.json`
+  * u9: `configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json`
+  * A30-CLIP: `configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30-from-clip.json`
 
 ## Team and Contributions
 

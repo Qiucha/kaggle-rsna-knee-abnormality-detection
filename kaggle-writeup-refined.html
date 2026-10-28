@@ -241,12 +241,12 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
   <p class="fig-title">Leaderboard score per submission</p>
   <div class="legend"><span><i class="sw" style="background:var(--c-pub)"></i>Public</span><span><i class="sw" style="background:var(--c-priv)"></i>Private</span></div>
   <div class="chart" id="progress"></div>
-  <p class="note">A side branch is not shown: soft targets on DINOv2-S (R4a soft) scored 0.834 public / 0.813 private. R4a, u9-b1, A30 and ens4 are our internal run names.</p>
+  <p class="note">A side branch is not shown: soft targets on DINOv2-S scored 0.813 private / 0.834 public. <b>u9</b> (9 trained blocks), <b>A30</b> (u9 + lateral oversampling, 30 epochs) and <b>A30-CLIP</b> (the A30 recipe started from the CLIP-trained weights) are the three models in the final ensemble. The other steps are named by what they changed.</p>
 </div>
 
 <div class="fig">
   <p class="fig-title">Local change at each step, with 95% CI</p>
-  <p class="fig-sub">Δ against the step before, except: R4a soft and OmniRad-B vs R4a K8; ens4 vs A30; ens4 swap and Deep Three vs ens4. A filled dot means the CI excludes zero.</p>
+  <p class="fig-sub">Δ against the step before, except: DINOv2-S + soft and OmniRad backbone vs Fine-tune DINOv2-S; 4-model ensemble vs A30; Swap in A30-CLIP and Deep Three vs 4-model ensemble. A filled dot means the CI excludes zero.</p>
   <div class="legend"><span><i class="sw" style="background:var(--ink2)"></i>CI excludes 0</span><span><i class="sw hollow"></i>CI crosses 0, or no CI recorded</span></div>
   <div class="scroll"><div class="chart" id="stepdeltas" style="min-width:600px"></div></div>
   <details><summary>Show table</summary><div id="t-steps"></div></details>
@@ -255,20 +255,20 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
 <h3>Takeaways</h3>
 <ol>
   <li><b>Fine-tuning gave the largest gain.</b> Going from frozen features to fine-tuning on the LM labels added +0.036 on LM-test and +0.038 on public.</li>
-  <li><b>Most single-model steps were within noise on LM-test.</b> For OmniRad-base, Run 5, u9-b1 and A30, the LM-test CI crosses zero. We adopted them on the point estimate plus Gold-58, and public went up each time.</li>
-  <li><b>Gold-58 was a useful but imperfect tiebreaker.</b> It agreed with public on the last two ensemble steps. It disagreed twice: for A30 → ens4, Gold-58 fell while public rose; and Gold-58 preferred R4a soft over OmniRad-B (0.8223 vs 0.8137), but public preferred OmniRad-B (0.839 vs 0.834).</li>
+  <li><b>Most single-model steps were within noise on LM-test.</b> For the OmniRad backbone, Soft + 336 px, u9 and A30, the LM-test CI crosses zero. We adopted them on the point estimate plus Gold-58, and public went up each time.</li>
+  <li><b>Gold-58 was a useful but imperfect tiebreaker.</b> It agreed with public on the last two ensemble steps. It disagreed twice: from A30 to the 4-model ensemble, Gold-58 fell while public rose; and Gold-58 preferred DINOv2-S + soft over the OmniRad backbone (0.8223 vs 0.8137), but public preferred the OmniRad backbone (0.839 vs 0.834).</li>
   <li><b>Training more blocks helped Gold-58 most</b> (below).</li>
 </ol>
 
 <div class="fig">
-  <p class="fig-title">How many blocks to train (Run 5 recipe), Δ vs 3 blocks with 95% CI</p>
+  <p class="fig-title">How many blocks to train (Soft + 336 px recipe), Δ vs 3 blocks with 95% CI</p>
   <p class="fig-sub">On LM-test no depth's CI excludes zero. We chose 9 blocks for the highest LM-test point estimate; Gold-58 gains from 6 blocks up.</p>
   <div class="chart" id="depth"></div>
   <details><summary>Show table</summary><div id="t-depth"></div></details>
 </div>
 
 <h2>Ensembling</h2>
-<p>Adding the shallower models (DINOv2-S, the CLIP-init 3-block model) gave the best LM-test score. Gold-58 Lateral Meniscus and the public leaderboard both preferred the all-deep ensemble. Deep Three is also better than A30 alone on LM-test: +0.0100 [+0.0048, +0.0155].</p>
+<p>Adding the shallower models (DINOv2-S, the 3-block CLIP-start model) gave the best LM-test score. Gold-58 Lateral Meniscus and the public leaderboard both preferred the all-deep ensemble. Deep Three is also better than A30 alone on LM-test: +0.0100 [+0.0048, +0.0155].</p>
 <div class="fig">
   <p class="fig-title">Same four candidates, three yardsticks</p>
   <p class="fig-sub">Each panel has its own axis. Shallow members raise LM-test, but lower Gold-58 Lateral Meniscus AUROC.</p>
@@ -277,9 +277,9 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
 </div>
 
 <h2>Earlier Phase: Contrastive Pretraining</h2>
-<p>Before fine-tuning, we trained a CLIP-style image–report model: DINOv2-small with LoRA for images, multilingual E5-base for text. Frozen features with MLP heads trained on the LM labels (R0) scored 0.788 public. We stopped this line of work for three reasons:</p>
+<p>Before fine-tuning, we trained a CLIP-style image–report model: DINOv2-small with LoRA for images, multilingual E5-base for text. Frozen features with MLP heads trained on the LM labels scored 0.756 private (0.788 public). We stopped this line of work for three reasons:</p>
 <ol>
-  <li><b>Fine-tuning was much stronger.</b> Fine-tuning on the LM labels (R4a K8) gave +0.036 LM-test and +0.038 public over R0.</li>
+  <li><b>Fine-tuning was much stronger.</b> Fine-tuning DINOv2-S on the LM labels gave +0.036 LM-test, +0.045 private and +0.038 public over the frozen CLIP model.</li>
   <li><b>Frozen heads fell behind on Gold-58.</b> On OmniRad-base, a frozen CLIP-adapted encoder with an MLP head matched full fine-tuning on LM-test (+0.0072 [−0.0047, +0.0191]), but was lower on Gold-58 by −0.0433 [−0.0778, −0.0115].</li>
   <li><b>CLIP init added nothing once fine-tuning was strong:</b> +0.0026 [−0.0089, +0.0142] LM-test with 3 trained blocks; −0.0052 [−0.0144, +0.0046] with 9.</li>
 </ol>
@@ -324,15 +324,15 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
 
 <h2>If We Had More Time</h2>
 <ul>
-  <li><b>A30 control:</b> train u9-b1 for the same number of samples as A30, to separate the effect of oversampling from that of longer training.</li>
+  <li><b>A30 control:</b> train u9 for the same number of samples as A30, to separate the effect of oversampling from that of longer training.</li>
   <li><b>More seeds:</b> train each deep model with 3 or more seeds, to tell small gains from noise.</li>
   <li><b>DINOv2-base control:</b> OmniRad-base differs from DINOv2-S in both pretraining data and model size. A DINOv2-base run would separate the two.</li>
 </ul>
 
 <h2>Limitations</h2>
 <ol>
-  <li><b>Single seed.</b> Every model was trained once. Retraining Run 5 with a new seed changed LM-test by −0.0029 and Gold-58 by +0.0066. Several adopted steps are about that size.</li>
-  <li><b>A30 is confounded.</b> It saw about 2.5× more training samples than u9-b1 (30 × 4,946 vs 17 × 3,438). We never ran the control with the same number of samples.</li>
+  <li><b>Single seed.</b> Every model was trained once. Retraining the Soft + 336 px model with a new seed changed LM-test by −0.0029 and Gold-58 by +0.0066. Several adopted steps are about that size.</li>
+  <li><b>A30 is confounded.</b> It saw about 2.5× more training samples than u9 (30 × 4,946 vs 17 × 3,438). We never ran the control with the same number of samples.</li>
   <li><b>LM-test is optimistic.</b> We picked models and ensembles on the same 432 studies. A split-half check puts the bias at about 0.004 for the ensemble picks.</li>
   <li><b>LM-test uses the training labeller.</b> It measures agreement with the same LM that made the training labels.</li>
   <li><b>Gold-58 is small and was reused many times.</b> Single-model CIs are about ±0.02–0.03.</li>
@@ -346,7 +346,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
   <li><b>Training:</b> <code>scripts/finetune_supervised.py --config configs/finetune/&lt;run&gt;.json</code></li>
   <li><b>Export:</b> <code>scripts/export_finetune_bundle.py</code></li>
   <li><b>Inference notebook:</b> <code>notebooks/kaggle_submission.ipynb</code></li>
-  <li><b>Configs:</b> A30 <code>r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30.json</code> · u9-b1 <code>r4a-k8-omnirad-base-soft-336-u9-b1.json</code> · CLIP-init u9 <code>r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30-from-clip.json</code> (all in <code>configs/finetune/</code>)</li>
+  <li><b>Configs:</b> A30 <code>r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30.json</code> · u9 <code>r4a-k8-omnirad-base-soft-336-u9-b1.json</code> · A30-CLIP <code>r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30-from-clip.json</code> (all in <code>configs/finetune/</code>)</li>
 </ul>
 
 <h2>Team and Contributions</h2>
@@ -596,7 +596,7 @@ onResize(modelEl, W => {
 const osEl = document.getElementById('oversample');
 onResize(osEl, W => {
   const H = 92, svg = svgIn(osEl, W, H), lw = 70, x = lin(0, 5200, lw, W - 110);
-  const rows = [['u9-b1', 3438, 0], ['A30', 3438, 1508]];
+  const rows = [['u9', 3438, 0], ['A30', 3438, 1508]];
   rows.forEach(([k, a, b], i) => {
     const y = 10 + i * 40;
     S('text', { x: 0, y: y + 15, class: 't-ink', text: k }, svg);
@@ -615,7 +615,7 @@ onResize(osEl, W => {
 const edEl = document.getElementById('ensdiag');
 onResize(edEl, W => {
   const H = 150, svg = svgIn(edEl, W, H);
-  const models = [['A30', 'oversampling + noise, 30 ep'], ['u9-b1', '9 blocks, 17 ep'], ['CLIP-init u9', 'A30 recipe, CLIP start']];
+  const models = [['A30', 'oversampling + noise, 30 ep'], ['u9', '9 blocks, 17 ep'], ['A30-CLIP', 'A30 recipe, CLIP start']];
   const mw = Math.min(200, W * 0.3), bh = 36;
   models.forEach(([n, d], i) => {
     const y = 6 + i * (bh + 10);
@@ -637,20 +637,20 @@ onResize(edEl, W => {
 
 /* ---------- progress line chart ---------- */
 const STEPS = [
-  { s: 'R0', d: 'Frozen contrastive encoder (DINOv2-S + E5-base) + MLP heads', pub: .788, prv: .756 },
-  { s: 'R4a K8', d: 'Fine-tune the last 3 blocks of DINOv2-S, 8 windows per plane, hard labels', pub: .826, prv: .801, lm: [.036], gold: [.018] },
-  { s: 'OmniRad-B', d: 'Backbone DINOv2-S → OmniRad-base (vs R4a K8)', pub: .839, prv: .829, lm: [.0003], gold: [.030] },
-  { s: 'Run 5', d: 'OmniRad-base + soft targets + 336 px', pub: .879, prv: .865, lm: [.0073, -.0033, .0180], gold: [.0130, -.0168, .0412] },
-  { s: 'u9-b1', d: 'Train 9 blocks instead of 3', pub: .888, prv: .869, lm: [.0059, -.0045, .0153], gold: [.0508, .0217, .0819] },
-  { s: 'A30', d: 'Lateral oversampling + target noise, 30 epochs', pub: .890, prv: .878, lm: [.0083, -.0025, .0202], gold: [.0040, -.0149, .0218] },
-  { s: 'ens4', d: 'Rank ensemble: A30 + u9-b1 + CLIP-init 3-block + DINOv2-S 336 (vs A30)', pub: .894, prv: .880, lm: [.0130, .0062, .0203], gold: [-.0091, -.0245, .0059] },
-  { s: 'ens4 swap', d: 'CLIP-init 3-block → CLIP-init 9-block (vs ens4)', pub: .899, prv: .887, lm: [-.0001, -.0031, .0029], gold: [.0135, .0042, .0230] },
-  { s: 'Deep Three', d: 'Drop DINOv2-S too: A30 + u9-b1 + CLIP-init u9 (vs ens4)', pub: .902, prv: .889, lm: [-.0031, -.0084, .0019], gold: [.0173, .0051, .0301] },
+  { s: 'Frozen CLIP', d: 'Frozen CLIP-trained encoder (DINOv2-S + E5-base) + MLP heads on the LM labels', pub: .788, prv: .756 },
+  { s: 'Fine-tune DINOv2-S', d: 'Train the last 3 blocks of DINOv2-S on the LM labels; 8 windows per plane; 0/1 labels', pub: .826, prv: .801, lm: [.036], gold: [.018] },
+  { s: 'OmniRad backbone', d: 'Swap DINOv2-S for OmniRad-base (vs Fine-tune DINOv2-S)', pub: .839, prv: .829, lm: [.0003], gold: [.030] },
+  { s: 'Soft + 336 px', d: 'OmniRad-base with soft targets and 336 px input', pub: .879, prv: .865, lm: [.0073, -.0033, .0180], gold: [.0130, -.0168, .0412] },
+  { s: 'u9', d: 'Train 9 blocks instead of 3', pub: .888, prv: .869, lm: [.0059, -.0045, .0153], gold: [.0508, .0217, .0819] },
+  { s: 'A30', d: 'u9 + lateral oversampling + target noise, 30 epochs', pub: .890, prv: .878, lm: [.0083, -.0025, .0202], gold: [.0040, -.0149, .0218] },
+  { s: '4-model ensemble', d: 'Rank ensemble: A30 + u9 + 3-block CLIP-start model + DINOv2-S at 336 px (vs A30)', pub: .894, prv: .880, lm: [.0130, .0062, .0203], gold: [-.0091, -.0245, .0059] },
+  { s: 'Swap in A30-CLIP', d: 'Replace the 3-block CLIP-start model with A30-CLIP (vs 4-model ensemble)', pub: .899, prv: .887, lm: [-.0001, -.0031, .0029], gold: [.0135, .0042, .0230] },
+  { s: 'Deep Three', d: 'Drop DINOv2-S too: A30 + u9 + A30-CLIP (vs 4-model ensemble)', pub: .902, prv: .889, lm: [-.0031, -.0084, .0019], gold: [.0173, .0051, .0301] },
 ];
-const SOFT = { s: 'R4a soft', d: 'Side branch: soft targets on DINOv2-S (vs R4a K8)', pub: .834, prv: .813, lm: [.0001, -.0104, .0103], gold: [.0389, .0151, .0637] };
+const SOFT = { s: 'DINOv2-S + soft', d: 'Side branch: soft targets on DINOv2-S (vs Fine-tune DINOv2-S)', pub: .834, prv: .813, lm: [.0001, -.0104, .0103], gold: [.0389, .0151, .0637] };
 const progEl = document.getElementById('progress');
 onResize(progEl, W => {
-  const narrow = W < 780, H = narrow ? 330 : 300, m = { l: 40, r: 92, t: 26, b: narrow ? 74 : 44 }, svg = svgIn(progEl, W, H);
+  const H = 350, m = { l: 40, r: 92, t: 26, b: 98 }, svg = svgIn(progEl, W, H);
   const n = STEPS.length, x = i => m.l + (i + 0.5) * (W - m.l - m.r) / n, y = lin(.74, .91, H - m.b, m.t);
   // phase bands
   const bands = [[0, 0, 'Frozen'], [1, 5, 'Single fine-tuned models'], [6, 8, 'Ensembles']];
@@ -664,8 +664,8 @@ onResize(progEl, W => {
     S('text', { x: m.l - 6, y: y(v) + 4, 'text-anchor': 'end', class: 't-muted', style: 'font-variant-numeric:tabular-nums', text: v.toFixed(2) }, svg);
   });
   STEPS.forEach((s, i) => {
-    const t = S('text', { x: x(i), y: H - m.b + 18, 'text-anchor': narrow ? 'end' : 'middle', class: 't-muted', text: s.s,
-      transform: narrow ? `rotate(-35 ${x(i)} ${H - m.b + 18})` : '' }, svg);
+    const t = S('text', { x: x(i), y: H - m.b + 18, 'text-anchor': 'end', class: 't-muted', text: s.s,
+      transform: `rotate(-35 ${x(i)} ${H - m.b + 18})` }, svg);
   });
   const series = [['pub', 'var(--c-pub)', 'Public'], ['prv', 'var(--c-priv)', 'Private']];
   series.forEach(([k, c, lab]) => {
@@ -754,8 +754,8 @@ const LMP = { key: 'lm', title: 'Δ LM-test', color: 'var(--c-lm)', ref: 0 };
 const GP = { key: 'gold', title: 'Δ Gold-58', color: 'var(--c-gold)', ref: 0, veto: -0.024 };
 
 // step deltas
-const stepRows = STEPS.slice(1).flatMap(s => s.s === 'OmniRad-B' ? [SOFT, s] : [s]).map(s => ({ label: s.s, lm: s.lm, gold: s.gold, note: s.d + (s.lm.length === 1 ? ' · no CI recorded in the submission record' : ''), bold: s.s === 'A30' || s.s === 'Deep Three' }));
-forest(document.getElementById('stepdeltas'), stepRows, [{ ...LMP, tickVals: [-0.01, 0, 0.01, 0.02, 0.03] }, { ...GP, veto: undefined }], { labelW: 120 });
+const stepRows = STEPS.slice(1).flatMap(s => s.s === 'OmniRad backbone' ? [SOFT, s] : [s]).map(s => ({ label: s.s, lm: s.lm, gold: s.gold, note: s.d + (s.lm.length === 1 ? ' · no CI recorded in the submission record' : ''), bold: s.s === 'A30' || s.s === 'Deep Three' }));
+forest(document.getElementById('stepdeltas'), stepRows, [{ ...LMP, tickVals: [-0.01, 0, 0.01, 0.02, 0.03] }, { ...GP, veto: undefined }], { labelW: 150 });
 table(document.getElementById('t-steps'), ['Step', 'Public', 'Private', 'Δ LM-test [95% CI]', 'Δ Gold-58 [95% CI]'],
   [STEPS[0], STEPS[1], SOFT, ...STEPS.slice(2)].map(s => [`<b>${s.s}</b> · ${s.d}`, s.pub.toFixed(3), s.prv.toFixed(3), ci(s.lm), ci(s.gold)]));
 
@@ -790,27 +790,27 @@ onResize(depthEl, W => {
       const sig = a.length === 3 && (a[1] > 0 || a[2] < 0);
       const dot = S('circle', { cx: x(d.b), cy: y(a[0]), r: d.b === 9 ? 6 : 4.5, style: `fill:${sig ? c : 'var(--surface)'};stroke:${c};stroke-width:2` }, svg);
       if (d.b === 9) S('text', k === 'lm' ? { x: x(9), y: y(a[2]) - 8, 'text-anchor': 'middle', class: 't-ink', text: `chosen ${fmt(a[0], 3)}` } : { x: x(9) - 10, y: y(a[0]) + 4, 'text-anchor': 'end', class: 't-ink', text: `chosen ${fmt(a[0], 3)}` }, svg);
-      if (d.b === 3) S('text', { x: x(3), y: y(0) - 9, 'text-anchor': 'middle', class: 't-muted', text: 'Run 5' }, svg);
+      if (d.b === 3) S('text', { x: x(3), y: y(0) - 9, 'text-anchor': 'middle', class: 't-muted', text: 'Soft + 336 px' }, svg);
       const hit = S('rect', { x: x(d.b) - 16, y: oy + m.t, width: 32, height: ph - m.t - m.b, class: 'rowhit' }, svg);
       hover(hit, `<b>${d.b} blocks trained</b>` + trow(t.replace('Δ ', '') + ' AUROC', d[absK].toFixed(4), c) + trow('Δ vs 3 blocks', d.b === 3 ? 'reference' : ci(a)));
     });
   });
 });
 table(document.getElementById('t-depth'), ['Blocks trained', 'LM-test', 'Δ vs 3 [95% CI]', 'Gold-58', 'Δ gold [95% CI]'],
-  DEPTH.map(d => [String(d.b) + (d.b === 9 ? ' (u9-b1)' : d.b === 3 ? ' (Run 5)' : ''), d.lmA.toFixed(4), d.b === 3 ? '—' : ci(d.lm), d.gA.toFixed(4), d.b === 3 ? '—' : ci(d.gold)]));
+  DEPTH.map(d => [String(d.b) + (d.b === 9 ? ' (u9)' : d.b === 3 ? ' (Soft + 336 px)' : ''), d.lmA.toFixed(4), d.b === 3 ? '—' : ci(d.lm), d.gA.toFixed(4), d.b === 3 ? '—' : ci(d.gold)]));
 
 // ensembles
 const ENS = [
   { label: 'A30 alone', lm: [.8917], gold: [.834], pub: [.890], note: '1 model' },
-  { label: 'ens4', lm: [.9047], gold: [.755], pub: [.894], note: 'A30 + u9-b1 + CLIP-init 3-block + DINOv2-S 336' },
-  { label: 'ens4 swap', lm: [.9047], gold: [.778], pub: [.899], note: 'A30 + u9-b1 + CLIP-init u9 + DINOv2-S 336' },
-  { label: 'Deep Three', lm: [.9017], gold: [.831], pub: [.902], note: 'A30 + u9-b1 + CLIP-init u9 (all 9-block)', bold: true },
+  { label: '4-model ensemble', lm: [.9047], gold: [.755], pub: [.894], note: 'A30 + u9 + 3-block CLIP-start model + DINOv2-S at 336 px' },
+  { label: 'Swap in A30-CLIP', lm: [.9047], gold: [.778], pub: [.899], note: 'A30 + u9 + A30-CLIP + DINOv2-S at 336 px' },
+  { label: 'Deep Three', lm: [.9017], gold: [.831], pub: [.902], note: 'A30 + u9 + A30-CLIP (all 9-block)', bold: true },
 ];
 forest(document.getElementById('ens'), ENS, [
   { key: 'lm', title: 'LM-test macro AUROC', color: 'var(--c-lm)', domain: [.885, .912], dp: 4, tickVals: [.89, .90, .91] },
   { key: 'gold', title: 'Gold-58 Lateral Meniscus', color: 'var(--c-gold)', domain: [.74, .86], tickVals: [.75, .80, .85] },
   { key: 'pub', title: 'Public score', color: 'var(--c-pub)', domain: [.886, .910], tickVals: [.89, .90] },
-], { abs: true, labelW: 100 });
+], { abs: true, labelW: 130 });
 table(document.getElementById('t-ens'), ['Ensemble', 'LM-test', 'Gold-58 Lateral Meniscus', 'Public'],
   ENS.map(e => [`<b>${e.label}</b> · ${e.note}`, e.lm[0].toFixed(4), e.gold[0].toFixed(3), e.pub[0].toFixed(3)]));
 
@@ -821,13 +821,13 @@ const NULLS = [
   { label: 'CLIP init, 9 blocks (single model)', lm: [-.0052, -.0144, .0046], gold: [-.0046, -.0240, .0147], verdict: 'Null', note: 'Kept as a Deep Three member' },
   { label: 'Hard labels instead of soft, 336 px', lm: [-.0191, -.0346, -.0043], gold: null, verdict: 'Worse' },
   { label: 'RadioDino backbone (vs DINOv2-S)', lm: [-.0187, -.0305, -.0062], gold: [-.0437, -.0761, -.0103], verdict: 'Worse' },
-  { label: 'CoAtNet backbone (vs Run 5)', lm: [-.0583, -.0752, -.0425], gold: [-.0802, -.1237, -.0356], verdict: 'Worse' },
+  { label: 'CoAtNet backbone (vs Soft + 336 px)', lm: [-.0583, -.0752, -.0425], gold: [-.0802, -.1237, -.0356], verdict: 'Worse' },
   { group: 'Data and inputs' },
   { label: 'Image augmentation', lm: [-.0028, -.0111, .0055], gold: [-.0166, -.0380, .0050], verdict: 'Null', note: 'Rotation ±8°, zoom 1.08, shift, intensity ±10%' },
   { label: 'Wider slice range (0.05–0.95)', lm: [-.0068, -.0156, .0025], gold: [-.0062, -.0233, .0105], verdict: 'Null' },
-  { label: '384 px instead of 336 px', lm: [.0019, -.0051, .0087], gold: [.0126], verdict: 'Null', note: 'Run 5 recipe. Gold-58 CI not recorded.' },
+  { label: '384 px instead of 336 px', lm: [.0019, -.0051, .0087], gold: [.0126], verdict: 'Null', note: 'Soft + 336 px recipe. Gold-58 CI not recorded.' },
   { label: '16 windows per plane instead of 8', lm: [.0032, .0001, .0063], gold: [-.0067, -.0192, .0056], verdict: 'Not kept', note: '21% of planes got empty windows' },
-  { label: 'Add non-fat-suppressed series', lm: [-.0044, -.0095, .0011], gold: [-.0009, -.0113, .0122], verdict: 'Null', note: '6 series per study; frozen heads on u9-b1 features' },
+  { label: 'Add non-fat-suppressed series', lm: [-.0044, -.0095, .0011], gold: [-.0009, -.0113, .0122], verdict: 'Null', note: '6 series per study; frozen heads on u9 features' },
   { group: 'Architecture and loss' },
   { label: '2× loss weight on 3 lateral labels', lm: [-.0111, -.0243, .0015], gold: [-.0250, -.0470, -.0007], verdict: 'Vetoed' },
   { label: 'Per-label attention over windows', lm: [-.0080, -.0160, -.0005], gold: [-.0071, -.0303, .0170], verdict: 'Worse' },
@@ -835,7 +835,7 @@ const NULLS = [
   { label: 'Train UNK toward 0.28 (not masked)', lm: [-.0037, -.0153, .0072], gold: [-.0131, -.0394, .0133], verdict: 'Null' },
   { group: 'Post-processing (A30, inference only)' },
   { label: 'Weight average: A30 + A30-augmented', lm: [.0034, -.0028, .0096], gold: [-.0052, -.0213, .0108], verdict: 'Null' },
-  { label: 'Weight average: A30 + u9-b1', lm: [-.0030, -.0095, .0035], gold: [-.0111, -.0305, .0079], verdict: 'Null' },
+  { label: 'Weight average: A30 + u9', lm: [-.0030, -.0095, .0035], gold: [-.0111, -.0305, .0079], verdict: 'Null' },
   { label: 'Average of epoch-22 and epoch-30 weights', lm: [.0012, -.0004, .0030], gold: [.0014, -.0033, .0061], verdict: 'Null' },
   { label: 'TTA: centre + 1 shifted pass', lm: [.0010, -.0014, .0037], gold: [.0025, -.0033, .0086], verdict: 'Null' },
   { label: 'TTA: centre + 4 shifted passes', lm: [.0019, -.0007, .0047], gold: [.0017, -.0046, .0085], verdict: 'Null' },
