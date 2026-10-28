@@ -336,12 +336,17 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
 <p><b>Python version.</b> Kaggle's default image moved to Python 3.13 during the competition, and our Python 3.12 wheels failed to install. We pinned the kernels to the Python 3.12 image <code style="word-break:break-all">gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461</code>.</p>
 <p><b>Runtime.</b> Deep Three took 1.98 s per study, summed over the three models, in our local export test. The submission runs on a Kaggle T4, offline.</p>
 
-<h2>If We Had More Time</h2>
-<ul>
-  <li><b>A30 control:</b> train u9 for the same number of samples as A30, to separate the effect of oversampling from that of longer training.</li>
-  <li><b>More seeds:</b> train each deep model with 3 or more seeds, to tell small gains from noise.</li>
-  <li><b>DINOv2-base control:</b> OmniRad-base differs from DINOv2-S in both pretraining data and model size. A DINOv2-base run would separate the two.</li>
-</ul>
+<h2>If We Could Do It Again</h2>
+<ol>
+  <li><b>Test precision first.</b> We trained every model with mixed precision (FP16) but never measured its effect. A quick early comparison of FP16, BF16 and FP32 would have shown the best trade-off between speed and score.</li>
+  <li><b>More data for CLIP-style training.</b> Image–report training is weak supervision and usually needs much more data than we had. We would add other image–report data and use stronger augmentation in this stage.</li>
+  <li><b>Explore architecture changes with a clear reason,</b> like the 3D RoPE idea from the <a href="https://www.kaggle.com/competitions/rsna-knee-abnormality-detection/writeups/33rd-place-silver-solution-no-external-data">32nd-place team</a>, which tells the model where each image sits in 3D. Some potential ideas in our head are expert systems:
+    <ul>
+      <li><b>Slot-specific experts:</b> one expert network per slot (plane × scan setting), possibly with attention between the experts. This mimics a radiologist comparing MRI scans taken with different settings.</li>
+    </ul>
+  </li>
+  <li><b>Download only the cache.</b> We downloaded the full dataset (500+ GB). Building the preprocessed cache on Kaggle and downloading only that would have saved disk space and time.</li>
+</ol>
 
 <h2>Limitations</h2>
 <ol>
