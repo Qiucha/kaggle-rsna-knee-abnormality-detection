@@ -311,8 +311,8 @@ All of these are null.
 Repository: [github.com/Qiucha/novo-project](https://github.com/Qiucha/novo-project)
 
 
-* **Training:** `scripts/finetune_supervised.py --config configs/finetune/<run>.json`
-* **Export:** `scripts/export_finetune_bundle.py`
+* **Training:** `scripts/training/finetune_supervised.py --config configs/finetune/<run>.json`
+* **Export:** `scripts/submission/export_finetune_bundle.py`
 * **Inference notebook:** `notebooks/kaggle_submission.ipynb`
 * **Configs:**
   * A30: `configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30.json`

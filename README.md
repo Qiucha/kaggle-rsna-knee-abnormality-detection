@@ -149,7 +149,7 @@ Each model is one config in `configs/finetune/`:
 **1. Train each model.** A30 takes about 26 min per epoch on one GPU.
 
 ```bash
-.venv-cuda/bin/python scripts/finetune_supervised.py \
+.venv-cuda/bin/python scripts/training/finetune_supervised.py \
   --config configs/finetune/<config>.json \
   --output checkpoints/finetune/<config-name>
 ```
@@ -162,7 +162,7 @@ A30-CLIP starts from a CLIP checkpoint (its `init_checkpoint`), which is not in 
 
 ```bash
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
-.venv-cuda/bin/python scripts/export_finetune_bundle.py \
+.venv-cuda/bin/python scripts/submission/export_finetune_bundle.py \
   --run checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30 \
   --run checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1 \
   --run checkpoints/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30-from-clip \
@@ -179,9 +179,9 @@ The export checks each model against its saved predictions and scores the bundle
 
 ## Code
 
-* [Training script](scripts/finetune_supervised.py) and [bundle exporter](scripts/export_finetune_bundle.py)
+* [Training script](scripts/training/finetune_supervised.py) and [bundle exporter](scripts/submission/export_finetune_bundle.py)
 * [Inference notebook](notebooks/kaggle_submission.ipynb) and [DICOM codecs](kaggle/codecs/README.md)
-* [Pipeline guide](src/contrastive_learning/README.md) and [known limitations](KNOWN_LIMITATIONS.md)
+* [Script index](scripts/README.md), [pipeline guide](src/contrastive_learning/README.md) and [known limitations](KNOWN_LIMITATIONS.md)
 
 ## Team and Acknowledgements
 
