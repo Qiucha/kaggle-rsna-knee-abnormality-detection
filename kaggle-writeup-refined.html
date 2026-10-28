@@ -238,10 +238,11 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
 
 <h2>Step-by-Step Progress</h2>
 <div class="fig">
-  <p class="fig-title">Leaderboard score per submission</p>
+  <p class="fig-title">Leaderboard score per submission, in two stages</p>
+  <p class="fig-sub"><b>Stage 1</b> trained a CLIP-style image–report model and put small heads on its frozen features. <b>Stage 2</b> fine-tuned the image encoder directly on the LM labels, then ensembled the best models.</p>
   <div class="legend"><span><i class="sw" style="background:var(--c-pub)"></i>Public</span><span><i class="sw" style="background:var(--c-priv)"></i>Private</span></div>
   <div class="chart" id="progress"></div>
-  <p class="note">A side branch is not shown: soft targets on DINOv2-S scored 0.813 private / 0.834 public. <b>u9</b> (9 trained blocks), <b>A30</b> (u9 + lateral oversampling, 30 epochs) and <b>A30-CLIP</b> (the A30 recipe started from the CLIP-trained weights) are the three models in the final ensemble. The other steps are named by what they changed.</p>
+  <p class="note">Not shown: a third stage-1 submission with the smaller E5-small text encoder (0.745 private / 0.774 public), and a stage-2 side branch with soft targets on DINOv2-S (0.813 private / 0.834 public). <b>u9</b> (9 trained blocks), <b>A30</b> (u9 + lateral oversampling, 30 epochs) and <b>A30-CLIP</b> (the A30 recipe started from the CLIP-trained weights) are the three models in the final ensemble. The other steps are named by what they changed.</p>
 </div>
 
 <div class="fig">
@@ -254,7 +255,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
 
 <h3>Takeaways</h3>
 <ol>
-  <li><b>Fine-tuning gave the largest gain.</b> Going from frozen features to fine-tuning on the LM labels added +0.036 on LM-test and +0.038 on public.</li>
+  <li><b>Fine-tuning gave the largest gain.</b> Going from frozen CLIP features (stage 1) to fine-tuning on the LM labels (stage 2) added +0.036 on LM-test, +0.045 on private and +0.038 on public.</li>
   <li><b>Most single-model steps were within noise on LM-test.</b> For the OmniRad backbone, Soft + 336 px, u9 and A30, the LM-test CI crosses zero. We adopted them on the point estimate plus Gold-58, and public went up each time.</li>
   <li><b>Gold-58 was a useful but imperfect tiebreaker.</b> It agreed with public on the last two ensemble steps. It disagreed twice: from A30 to the 4-model ensemble, Gold-58 fell while public rose; and Gold-58 preferred DINOv2-S + soft over the OmniRad backbone (0.8223 vs 0.8137), but public preferred the OmniRad backbone (0.839 vs 0.834).</li>
   <li><b>Training more blocks helped Gold-58 most</b> (below).</li>
@@ -276,7 +277,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
   <details><summary>Show table</summary><div id="t-ens"></div></details>
 </div>
 
-<h2>Earlier Phase: Contrastive Pretraining</h2>
+<h2>Stage 1: Contrastive (CLIP) Pretraining</h2>
 <p>Before fine-tuning, we trained a CLIP-style image–report model: DINOv2-small with LoRA for images, multilingual E5-base for text. Frozen features with MLP heads trained on the LM labels scored 0.756 private (0.788 public). We stopped this line of work for three reasons:</p>
 <ol>
   <li><b>Fine-tuning was much stronger.</b> Fine-tuning DINOv2-S on the LM labels gave +0.036 LM-test, +0.045 private and +0.038 public over the frozen CLIP model.</li>
@@ -308,7 +309,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
   <tr><td>Match similar reports, not only exact pairs</td><td>Plain CLIP</td><td class="n">+0.0040 [−0.010, +0.017]</td><td class="n">—</td><td>Null</td></tr>
   <tr><td>DeCLIP loss instead of the CLIP loss</td><td>Plain CLIP</td><td class="n">−0.0021 [−0.0101, +0.0056]</td><td class="n">+0.0027</td><td>Null</td></tr>
   <tr><td>RAD-DINO as the image encoder (DeCLIP loss)</td><td>DINOv2-S</td><td class="n">−0.031 [−0.046, −0.016]</td><td class="n">−0.047</td><td>Worse</td></tr>
-  <tr><td>5 overlapping slice groups, at test time only</td><td>Frozen CLIP</td><td class="n">+0.0154 [+0.004, +0.026]</td><td class="n">−0.018</td><td>Failed our rule that Gold-58 must not drop</td></tr>
+  <tr><td>5 overlapping slice groups, at test time only</td><td>CLIP + LM heads</td><td class="n">+0.0154 [+0.004, +0.026]</td><td class="n">−0.018</td><td>Failed our rule that Gold-58 must not drop</td></tr>
 </table>
 
 <h2>Kaggle Engineering</h2>
@@ -637,7 +638,8 @@ onResize(edEl, W => {
 
 /* ---------- progress line chart ---------- */
 const STEPS = [
-  { s: 'Frozen CLIP', d: 'Frozen CLIP-trained encoder (DINOv2-S + E5-base) + MLP heads on the LM labels', pub: .788, prv: .756 },
+  { s: 'CLIP + gold heads', d: 'First submission: CLIP-trained encoder (DINOv2-S with LoRA + E5-base), frozen, with logistic heads trained on the 58 human-labelled studies', pub: .717, prv: .690 },
+  { s: 'CLIP + LM heads', d: 'Frozen CLIP-trained encoder (DINOv2-S + E5-base) with MLP heads trained on the LM labels', pub: .788, prv: .756 },
   { s: 'Fine-tune DINOv2-S', d: 'Train the last 3 blocks of DINOv2-S on the LM labels; 8 windows per plane; 0/1 labels', pub: .826, prv: .801, lm: [.036], gold: [.018] },
   { s: 'OmniRad backbone', d: 'Swap DINOv2-S for OmniRad-base (vs Fine-tune DINOv2-S)', pub: .839, prv: .829, lm: [.0003], gold: [.030] },
   { s: 'Soft + 336 px', d: 'OmniRad-base with soft targets and 336 px input', pub: .879, prv: .865, lm: [.0073, -.0033, .0180], gold: [.0130, -.0168, .0412] },
@@ -650,16 +652,18 @@ const STEPS = [
 const SOFT = { s: 'DINOv2-S + soft', d: 'Side branch: soft targets on DINOv2-S (vs Fine-tune DINOv2-S)', pub: .834, prv: .813, lm: [.0001, -.0104, .0103], gold: [.0389, .0151, .0637] };
 const progEl = document.getElementById('progress');
 onResize(progEl, W => {
-  const H = 350, m = { l: 40, r: 92, t: 26, b: 98 }, svg = svgIn(progEl, W, H);
-  const n = STEPS.length, x = i => m.l + (i + 0.5) * (W - m.l - m.r) / n, y = lin(.74, .91, H - m.b, m.t);
-  // phase bands
-  const bands = [[0, 0, 'Frozen'], [1, 5, 'Single fine-tuned models'], [6, 8, 'Ensembles']];
-  const half = (W - m.l - m.r) / n / 2;
-  bands.forEach(([a, b, t], i) => {
-    if (i === 1) S('rect', { x: x(a) - half, y: m.t - 8, width: x(b) - x(a) + 2 * half, height: H - m.b - m.t + 8, style: 'fill:var(--wash)' }, svg);
-    S('text', { x: (x(a) + x(b)) / 2, y: m.t - 12, 'text-anchor': 'middle', class: 't-muted', text: t }, svg);
-  });
-  niceTicks(.74, .91, 6).forEach(v => {
+  const H = 380, m = { l: 72, r: 92, t: 48, b: 98 }, svg = svgIn(progEl, W, H);
+  const n = STEPS.length, x = i => m.l + (i + 0.5) * (W - m.l - m.r) / n, y = lin(.67, .91, H - m.b, m.t);
+  // two stages: stage 2 is shaded; its single models and ensembles are labelled underneath the stage title
+  const half = (W - m.l - m.r) / n / 2, s2 = STEPS.findIndex(s => s.lm), ens = STEPS.findIndex(s => s.s === '4-model ensemble');
+  S('rect', { x: x(s2) - half, y: m.t - 36, width: x(n - 1) - x(s2) + 2 * half, height: H - m.b - m.t + 36, style: 'fill:var(--wash)' }, svg);
+  S('line', { x1: x(s2) - half, x2: x(s2) - half, y1: m.t - 36, y2: H - m.b, style: 'stroke:var(--ink2);stroke-width:1;stroke-dasharray:3 3' }, svg);
+  S('line', { x1: x(ens) - half, x2: x(ens) - half, y1: m.t - 14, y2: H - m.b, style: 'stroke:var(--ink2);stroke-opacity:.35;stroke-width:1' }, svg);
+  [[0, s2 - 1, 'Stage 1 · CLIP'], [s2, n - 1, 'Stage 2 · fine-tuning on LM labels']].forEach(([a, b, t]) =>
+    S('text', { x: (x(a) + x(b)) / 2, y: m.t - 22, 'text-anchor': 'middle', class: 't-strong', style: 'font-size:12px', text: t }, svg));
+  [[0, s2 - 1, 'frozen encoder'], [s2, ens - 1, 'single models'], [ens, n - 1, 'ensembles']].forEach(([a, b, t]) =>
+    S('text', { x: (x(a) + x(b)) / 2, y: m.t - 6, 'text-anchor': 'middle', class: 't-muted', text: t }, svg));
+  niceTicks(.67, .91, 6).forEach(v => {
     S('line', { x1: m.l, x2: W - m.r + 6, y1: y(v), y2: y(v), class: 'grid' }, svg);
     S('text', { x: m.l - 6, y: y(v) + 4, 'text-anchor': 'end', class: 't-muted', style: 'font-variant-numeric:tabular-nums', text: v.toFixed(2) }, svg);
   });
@@ -676,7 +680,7 @@ onResize(progEl, W => {
   S('text', { x: x(n - 1) + 10, y: y(.902) + 0, class: 't-ink', text: 'Public 0.902' }, svg);
   S('text', { x: x(n - 1) + 10, y: y(.889) + 12, class: 't-ink', text: 'Private 0.889' }, svg);
   // callout for the big jump
-  S('text', { x: (x(0) + x(1)) / 2, y: y(.85), 'text-anchor': 'middle', class: 't-muted', text: 'fine-tuning: +0.038' }, svg);
+  S('text', { x: x(s2) - half + 6, y: y(.70), class: 't-muted', text: 'fine-tuning: +0.045 private' }, svg);
   // hover columns
   const cross = S('line', { x1: 0, x2: 0, y1: m.t - 8, y2: H - m.b, class: 'axis', style: 'opacity:0' }, svg);
   STEPS.forEach((s, i) => {
@@ -762,10 +766,10 @@ const LMP = { key: 'lm', title: 'Δ LM-test', color: 'var(--c-lm)', ref: 0 };
 const GP = { key: 'gold', title: 'Δ Gold-58', color: 'var(--c-gold)', ref: 0, veto: -0.024 };
 
 // step deltas
-const stepRows = STEPS.slice(1).flatMap(s => s.s === 'OmniRad backbone' ? [SOFT, s] : [s]).map(s => ({ label: s.s, lm: s.lm, gold: s.gold, note: s.d + (s.lm.length === 1 ? ' · no CI recorded in the submission record' : ''), bold: s.s === 'A30' || s.s === 'Deep Three' }));
+const stepRows = STEPS.filter(s => s.lm).flatMap(s => s.s === 'OmniRad backbone' ? [SOFT, s] : [s]).map(s => ({ label: s.s, lm: s.lm, gold: s.gold, note: s.d + (s.lm.length === 1 ? ' · no CI recorded in the submission record' : ''), bold: s.s === 'A30' || s.s === 'Deep Three' }));
 forest(document.getElementById('stepdeltas'), stepRows, [{ ...LMP, tickVals: [-0.01, 0, 0.01, 0.02, 0.03] }, { ...GP, veto: undefined }], { labelW: 150 });
-table(document.getElementById('t-steps'), ['Step', 'Public', 'Private', 'Δ LM-test [95% CI]', 'Δ Gold-58 [95% CI]'],
-  [STEPS[0], STEPS[1], SOFT, ...STEPS.slice(2)].map(s => [`<b>${s.s}</b> · ${s.d}`, s.pub.toFixed(3), s.prv.toFixed(3), ci(s.lm), ci(s.gold)]));
+table(document.getElementById('t-steps'), ['Stage', 'Step', 'Private', 'Public', 'Δ LM-test [95% CI]', 'Δ Gold-58 [95% CI]'],
+  STEPS.flatMap(s => s.s === 'OmniRad backbone' ? [SOFT, s] : [s]).map(s => [s.lm ? '2' : '1', `<b>${s.s}</b> · ${s.d}`, s.prv.toFixed(3), s.pub.toFixed(3), ci(s.lm), ci(s.gold)]));
 
 // depth
 const DEPTH = [

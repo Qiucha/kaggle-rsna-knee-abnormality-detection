@@ -115,24 +115,25 @@ Missing or unreadable planes are filled with zeros and masked, so they don't aff
 
 Each row is one Kaggle submission. Δ is measured against the row above unless noted. **u9** (9 trained blocks), **A30** (u9 + lateral oversampling, 30 epochs) and **A30-CLIP** (the A30 recipe started from the CLIP-trained weights) are the three models in the final ensemble. The other steps are named by what they changed.
 
-| Step | Change | Δ LM-test [95% CI] | Δ Gold-58 [95% CI] | Public | Private |
-|:---|:---|---:|---:|---:|---:|
-| Frozen CLIP | Frozen CLIP-trained encoder (DINOv2-S + E5-base) + MLP heads on the LM labels | — | — | 0.788 | 0.756 |
-| Fine-tune DINOv2-S | Train the last 3 blocks of DINOv2-S on the LM labels; 8 windows per plane; 0/1 labels | +0.036 | +0.018 | 0.826 | 0.801 |
-| *DINOv2-S + soft* | *Side branch: soft targets on DINOv2-S (vs Fine-tune DINOv2-S)* | *+0.0001 [−0.0104, +0.0103]* | *+0.0389 [+0.0151, +0.0637]* | *0.834* | *0.813* |
-| OmniRad backbone | Swap DINOv2-S for OmniRad-base (vs Fine-tune DINOv2-S) | +0.0003 | +0.030 | 0.839 | 0.829 |
-| Soft + 336 px | OmniRad-base with soft targets and 336 px input | +0.0073 [−0.0033, +0.0180] | +0.0130 [−0.0168, +0.0412] | 0.879 | 0.865 |
-| **u9** | Train 9 blocks instead of 3 | +0.0059 [−0.0045, +0.0153] | +0.0508 [+0.0217, +0.0819] | 0.888 | 0.869 |
-| **A30** | u9 + lateral oversampling + target noise, 30 epochs | +0.0083 [−0.0025, +0.0202] | +0.0040 [−0.0149, +0.0218] | **0.890** | **0.878** |
-| 4-model ensemble | Rank ensemble: A30 + u9 + 3-block CLIP-start model + DINOv2-S at 336 px (vs A30) | +0.0130 [+0.0062, +0.0203] | −0.0091 [−0.0245, +0.0059] | 0.894 | 0.880 |
-| Swap in A30-CLIP | Replace the 3-block CLIP-start model with **A30-CLIP** (vs 4-model ensemble) | −0.0001 [−0.0031, +0.0029] | +0.0135 [+0.0042, +0.0230] | 0.899 | 0.887 |
-| **Deep Three** | Drop DINOv2-S too: A30 + u9 + A30-CLIP (vs 4-model ensemble) | −0.0031 [−0.0084, +0.0019] | +0.0173 [+0.0051, +0.0301] | **0.902** | **0.889** |
+| Stage | Step | Change | Δ LM-test [95% CI] | Δ Gold-58 [95% CI] | Private | Public |
+|:---|:---|:---|---:|---:|---:|---:|
+| 1 | CLIP + gold heads | First submission: CLIP-trained encoder (DINOv2-S with LoRA + E5-base), frozen, with logistic heads trained on the 58 human-labelled studies | — | — | 0.690 | 0.717 |
+| 1 | CLIP + LM heads | Same idea, but MLP heads trained on the LM labels instead of the 58 human labels | — | — | 0.756 | 0.788 |
+| 2 | Fine-tune DINOv2-S | Train the last 3 blocks of DINOv2-S on the LM labels; 8 windows per plane; 0/1 labels | +0.036 | +0.018 | 0.801 | 0.826 |
+| *2* | *DINOv2-S + soft* | *Side branch: soft targets on DINOv2-S (vs Fine-tune DINOv2-S)* | *+0.0001 [−0.0104, +0.0103]* | *+0.0389 [+0.0151, +0.0637]* | *0.813* | *0.834* |
+| 2 | OmniRad backbone | Swap DINOv2-S for OmniRad-base (vs Fine-tune DINOv2-S) | +0.0003 | +0.030 | 0.829 | 0.839 |
+| 2 | Soft + 336 px | OmniRad-base with soft targets and 336 px input | +0.0073 [−0.0033, +0.0180] | +0.0130 [−0.0168, +0.0412] | 0.865 | 0.879 |
+| 2 | **u9** | Train 9 blocks instead of 3 | +0.0059 [−0.0045, +0.0153] | +0.0508 [+0.0217, +0.0819] | 0.869 | 0.888 |
+| 2 | **A30** | u9 + lateral oversampling + target noise, 30 epochs | +0.0083 [−0.0025, +0.0202] | +0.0040 [−0.0149, +0.0218] | **0.878** | **0.890** |
+| 2 | 4-model ensemble | Rank ensemble: A30 + u9 + 3-block CLIP-start model + DINOv2-S at 336 px (vs A30) | +0.0130 [+0.0062, +0.0203] | −0.0091 [−0.0245, +0.0059] | 0.880 | 0.894 |
+| 2 | Swap in A30-CLIP | Replace the 3-block CLIP-start model with **A30-CLIP** (vs 4-model ensemble) | −0.0001 [−0.0031, +0.0029] | +0.0135 [+0.0042, +0.0230] | 0.887 | 0.899 |
+| 2 | **Deep Three** | Drop DINOv2-S too: A30 + u9 + A30-CLIP (vs 4-model ensemble) | −0.0031 [−0.0084, +0.0019] | +0.0173 [+0.0051, +0.0301] | **0.889** | **0.902** |
 
-The deltas for Fine-tune DINOv2-S and OmniRad backbone come from the submission records, which store no CI.
+**Stage 1** trained a CLIP-style image–report model and put small heads on its frozen features. **Stage 2** fine-tuned the image encoder directly on the LM labels, then ensembled the best models. Stage-1 rows have no LM-test score. A third stage-1 submission, with the smaller E5-small text encoder, scored 0.745 private / 0.774 public. The deltas for Fine-tune DINOv2-S and OmniRad backbone come from the submission records, which store no CI.
 
 ### Takeaways
 
-1. **Fine-tuning gave the largest gain.** Going from frozen features to fine-tuning on the LM labels added +0.036 on LM-test and +0.038 on public.
+1. **Fine-tuning gave the largest gain.** Going from frozen CLIP features (stage 1) to fine-tuning on the LM labels (stage 2) added +0.036 on LM-test, +0.045 on private and +0.038 on public.
 2. **Most single-model steps were within noise on LM-test.** For the OmniRad backbone, Soft + 336 px, u9 and A30, the LM-test CI crosses zero. We adopted them on the point estimate plus Gold-58, and public went up each time.
 3. **Gold-58 was a useful but imperfect tiebreaker.**
    * It agreed with public on the last two ensemble steps.
@@ -164,7 +165,7 @@ $$\hat{y}_{i,c} = \frac{1}{M} \sum_{m=1}^{M} \text{rank}(p_{m,i,c})$$
 
 ---
 
-## Earlier Phase: Contrastive Pretraining
+## Stage 1: Contrastive (CLIP) Pretraining
 
 Before fine-tuning, we trained a CLIP-style image–report model:
 * **Image encoder:** DINOv2-small with LoRA.
@@ -217,7 +218,7 @@ Each idea is compared with the model in the "Compared with" column. "DINOv2-S" t
 | Central 90% of slices, not 60% (positions 0.05–0.95 instead of 0.2–0.8) | A30 | −0.0068 [−0.0156, +0.0025] | −0.0062 | Null |
 | Add the non-fat-suppressed scans: 6 series instead of 3 (*frozen* heads on u9 features) | u9 | −0.0044 [−0.0095, +0.0011] | −0.0009 | Null |
 | 16 windows per plane, not 8 | DINOv2-S | +0.0032 [+0.0001, +0.0063] | −0.0067 | Small gain; not kept (21% of planes got empty windows) |
-| 5 overlapping slice groups, at test time only (*frozen*) | Frozen CLIP | +0.0154 [+0.004, +0.026] | −0.018 | Failed our rule that Gold-58 must not drop |
+| 5 overlapping slice groups, at test time only (*frozen*) | CLIP + LM heads | +0.0154 [+0.004, +0.026] | −0.018 | Failed our rule that Gold-58 must not drop |
 
 ### Architecture and loss
 
