@@ -1,497 +1,99 @@
-# Knee MRI contrastive experiments
+# RSNA Knee Abnormality Detection
 
-This project learns shared representations of knee MRI studies and their radiology
-reports, so that a study retrieves its own report and vice versa. Retrieval is the
-intermediate check; the working goal in [ROADMAP.md](ROADMAP.md) is whether those
-representations improve prediction of the dataset's pathology labels.
+We predict 12 knee MRI findings by fine-tuning OmniRad-base on labels extracted
+from radiology reports by a language model (LM). Our final model averages the
+prediction ranks of three fine-tuned models.
 
-Open the [interactive project digest](digest/project-state.html) for current results,
-the model architecture, and data limitations. It works offline; regenerate its
-artifact snapshot with `.venv/bin/python scripts/digests/build_project_digest.py`.
+This is a summary of the [refined report](kaggle-writeup-refined.md).
 
-The current experiment contract is
-[full-multilingual-v1](configs/contrastive/full-multilingual-matrix.json); its
-selection rules and stated limitations are in the
-[frozen protocol](configs/contrastive/full-multilingual-v1-protocol.md).
-The [pipeline code guide](src/contrastive_learning/README.md) explains the modules
-and what each one hides. Older translated-English pilot notes in `digest/` describe
-historical experiments and are not current instructions.
+## Results
 
-For offline Kaggle inference, supervised label-head fitting, and current checkpoint
-selection, see the [submission and benchmark guide](digest/kaggle-submission-pipeline.md).
+Scores are macro ROC-AUC. The private leaderboard determines the final ranking.
 
-**To train a variant of the best model or submit one to Kaggle, follow
-[TRAIN_AND_SUBMIT.md](TRAIN_AND_SUBMIT.md).**
+| Model | Private | Public | LM-test | Gold-58 |
+| --- | ---: | ---: | ---: | ---: |
+| Deep Three ensemble | **0.889** | **0.902** | 0.9017 | 0.8897 |
+| A30 single model | 0.878 | 0.890 | 0.8917 | 0.8814 |
 
-## Start here: the current best pipeline (updated 2026-10-13)
+[Final submission records](kaggle/submissions/README.md) include model configs,
+bundle hashes and kernel versions.
 
-The leaderboard models are no longer contrastive encoders with a fitted head. They
-are **image backbones fine-tuned end to end on LM-extracted labels** (the "R4a"
-rung: K=8 windows of 3 slices per plane, mean-pooled). The contrastive code
-remains as the source of the initial checkpoint for one member, and as a record of
-the experiments that led here. See [Experiment tracks](#experiment-tracks) for how
-the two lines of work relate.
+## Final method
 
-| What | Where |
-| --- | --- |
-| Best public score, 0.890 (A30, submission 57094902, 2026-10-12) | `configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30.json` (u9-b1 + lateral-label oversampling and noise, 30 epochs) |
-| Previous bests: 0.888 (u9-b1), 0.879 (run 5) | `configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1.json` (OmniRad-base, soft targets, 336 px, 9 blocks unfrozen); `r4a-k8-omnirad-base-soft-336.json` (3 blocks) |
-| Three-member candidate, not yet submitted | soft-target R4a (`r4a-soft-224-k8-mean.json`) + OmniRad-base + OmniRad-base soft 336 (`r4a-k8-omnirad-base-soft-336.json`), combined by per-label rank mean |
-| Train one member | `.venv-cuda/bin/python scripts/training/finetune_supervised.py --config configs/finetune/<rung>.json --output checkpoints/finetune/<rung>` |
-| Export members as one Kaggle bundle | `scripts/submission/export_finetune_bundle.py --run <run dir> [--run ...] --output checkpoints/kaggle/<name>` |
-| Combine already-exported bundles | `scripts/submission/assemble_ensemble_bundle.py` |
-| Run a bundle as Kaggle does | `scripts/submission/predict_kaggle.py` and `notebooks/kaggle_submission.ipynb`; DICOM codecs are vendored in `kaggle/codecs/` |
-| Model code | `src/contrastive_learning/finetune.py` (training), `submission.py` (inference, ensembling), `timm_dinov2.py` / `timm_backbone.py` (OmniRad, RadioDino, CoAtNet) |
-| Results and decisions | `digest/` (open `digest/index.html`): `finetune-ladder-v1.json` for the R-rungs; `kaggle-submission-pipeline.md` covers the bundle format but its leaderboard table stops at the 0.788 LM-MLP bundle (R4a DINOv2-small later scored 0.826, OmniRad-base 0.839) |
+- **Inputs:** competition DICOMs, with one series per plane. Prefer fat-suppressed
+  series, align knee orientation, crop to 130 mm and resize to 336 × 336.
+- **Slices:** take eight windows from the central 60% of each plane. Stack three
+  adjacent slices as RGB channels: 24 images per study. Sample random positions
+  during training and window centres at inference. Mask missing or unreadable planes.
+- **Backbone:** `Snarcy/OmniRad-base`, a ViT-B/14 pretrained on RadImageNet.
+  Fine-tune the last nine of its twelve blocks.
+- **Head:** concatenate the CLS token and mean patch features, average across valid
+  images, then use a 256-unit MLP to predict 12 findings.
+- **Loss:** binary cross-entropy with soft LM targets. Ignore `UNK` labels.
+- **A30:** train for 30 epochs. Sample studies positive for Lateral Meniscus,
+  Lateral OA or Synovitis twice per epoch. On extra copies, train only those labels.
+  Add target noise to Lateral Meniscus and Lateral OA. Keep epoch 22.
+- **Ensemble:** average per-label prediction ranks from A30, u9-b1 and CLIP-init u9.
+  All three use the backbone and inputs above.
 
-How candidates are judged: by the LM-test interval excluding zero. The 58 gold
-cases have been reused for prompt tuning, encoder selection and head fitting, so
-gold-58 is only a veto (−0.024 or worse) and a tiebreaker, never a selector on its
-own. Single-seed differences under about 0.024 are within run-to-run noise.
+Labels come from **@pilkwang**'s CC0 dataset
+[rsna-knee-llm-labels](https://www.kaggle.com/datasets/pilkwang/rsna-knee-llm-labels).
+We used no external training images beyond the backbone's pretraining.
 
-**Not in git, needed to train** (ask the team for copies):
+## Evaluation
 
-- `data/lm_label/lm_labels_kaggle.csv`: third-party LM labels, never commit it.
-- `data/processed/contrastive-cohort-gold-holdout-v1.jsonl`: the frozen cohort
-  manifest. Configs pin its SHA-256, and it has no committed builder yet.
-- The DICOM tree (set `data_root` in `paths.json`, see
-  `configs/paths.template.json`) and, for the soft R4a member, the contrastive
-  init checkpoint named in its config's `init_checkpoint`.
-- The Hugging Face model snapshots each config pins by `*_revision`. Configs that
-  set `local_files_only: true` never download, so fetch the pinned revisions into
-  the Hugging Face cache first (e.g. `huggingface-cli download <model> --revision <sha>`).
-- Optionally, a local copy of `train_series` for fine-tuning rungs that draw fresh
-  slices every epoch: set `train_series_mirror` in `paths.json`. Unset, they read
-  from `data_root`.
+The fixed cohort contains 4,354 studies:
 
-Image caches are keyed by `PREPROCESSING_VERSION`, the image settings and each
-series' `<study>/<series>` identity. Commit `084d086` (2026-09-29, exact-extent
-crop) changed the pixels of small field-of-view series without bumping
-`PREPROCESSING_VERSION`, so a cache written before it can serve the older pixels
-under the same key. The R4a window caches were all written after it. Rebuild an
-older image cache rather than migrating it with `scripts/data/migrate_cache_keys.py`.
+| Split | Studies | Purpose |
+| --- | ---: | --- |
+| Train | 3,438 | Fit model weights |
+| Validation | 426 | Select the lowest-loss checkpoint |
+| LM-test | 432 | Compare models against LM labels |
+| Gold-58 | 58 | Check performance against human labels |
 
-For the next image and text tower runs, read the prioritized
-[model candidate and comparison note](digest/next-model-candidates.md) before deploying an experiment.
+Comparisons use paired bootstrap 95% confidence intervals. Most single-model
+changes had LM-test intervals that crossed zero. We adopted them using point
+estimates and Gold-58 as a tiebreaker. Deep Three improved LM-test over A30 by
+0.0100, with a 95% interval of [0.0048, 0.0155].
 
 ## Experiment tracks
 
-Most experiments since 2026-09-29 do **not** train with the contrastive pipeline.
-They fine-tune an image backbone directly on LM-extracted labels. From here the
-work is split into two tracks, which share one data and evaluation core: the
-cohort manifest and its splits, DICOM preprocessing, the K-window input path,
-LM-test, and the gold-58 guard.
+We started with image–report contrastive learning and frozen prediction heads.
+Fine-tuning on LM labels raised public AUROC from 0.788 to 0.826. Later changes
+led to A30 and the final ensemble.
 
-**Track 1: supervised label training.** This track asks what kind of supervised
-label training to do: label form (hard verdicts or soft targets), UNK handling,
-resolution, slice sampling, multi-slice pooling and backbone. It has reached a
-stage we are satisfied with. The reference recipe is run 5,
-`r4a-k8-omnirad-base-soft-336`, at public 0.879. Its ladder and decisions are in
-`digest/finetune-ladder-v1.json`. Runs still queued against run 5 (a second seed,
-more epochs, deeper unfreezing, 384 px) will be reviewed before the next
-direction is set.
+Contrastive pretraining gave no clear single-model gain after strong fine-tuning,
+but a CLIP-initialized model helped the ensemble. Image augmentation, attention
+pooling, weight averaging and test-time augmentation gave no clear gains in the
+tested settings. The joint image–report loss hurt Gold-58.
 
-Supervised fine-tuning also supports optional training image augmentation through
-an `image_augmentation` config object. The [augmentation trial](digest/finetune-image-augmentation-v1.md)
-adds coherent rotation, zoom, translation and intensity gain to the u9-b1
-30-epoch oversampling-and-target-noise recipe. Omit the object to retain the
-existing behavior; evaluation and inference always use unaugmented images.
+## Limitations
 
-**Track 2: report-based representation learning.** The LM labels compress each
-report into twelve YES/NO/UNK verdicts, and weak supervision on those verdicts is
-limited by the size of the labelled cohort (about 3,400 training studies). Track 2
-asks whether image–report contrastive learning, which uses the full report text,
-adds to the Track-1 recipe when the two are combined. The combinations to test
-are:
+Most models used one seed. A30 also saw about 2.5 times as many training samples as
+u9-b1, so its gains cannot be attributed to oversampling alone.
 
-- (a) contrastive pretraining, then Track-1 fine-tuning from that checkpoint;
-- (b) a contrastive auxiliary loss trained jointly with the label loss.
-
-**What the earlier combined runs do and do not show.** The DINOv2-small R4a rungs
-(`r1c-*`, `r4a-hard/soft-224-k8-*`, `r4b-*`, among them the soft R4a ensemble
-member) start from the contrastive checkpoint `both-lora-holdout-v1`. That
-checkpoint was trained on a single 3-slice stack per plane, while R4a fine-tunes
-on K=8 jittered windows per plane. Pretraining and fine-tuning therefore saw
-different inputs. The matched-init comparisons below (configs differ only in
-`init_checkpoint`; paired study-bootstrap 95% intervals) are confounded by that
-mismatch. They should not be read as the size of the contrastive benefit:
-
-| Recipe (DINOv2-small, 224 px, hard targets) | LM-test Δ, contrastive − pretrained init | Gold-58 Δ |
-| --- | ---: | ---: |
-| R1, one 3-slice stack per plane (input matches pretraining) | +0.014 [+0.002, +0.027] | +0.010 [−0.020, +0.039] |
-| R4a K=8, seed 2026 (input does not match) | +0.007 [−0.003, +0.017] | −0.010 [−0.041, +0.020] |
-| R4a K=8, seed 2027 (input does not match) | +0.005 [−0.005, +0.015] | −0.011 [−0.038, +0.017] |
-
-The first matched test of (a) is
-`r4a-k8-omnirad-base-soft-336-from-clip`, which is in progress. It pretrains
-OmniRad-base + E5-base contrastively on the run-5 input path (K=8, 336 px), then
-fine-tunes with the run-5 recipe. Its comparator is run 5 together with run 5's
-second seed, which is queued directly after it.
-
-Open questions for Track 2:
-
-- **Measurement.** LM-test scores agreement with the LM verdicts, so it cannot
-  credit information beyond them. Gold-58 can, but it is small and has been reused.
-- **Checkpoint selection.** Contrastive checkpoints are still selected by
-  validation retrieval (mean R@1). That may not be the checkpoint that fine-tunes
-  best.
-
----
-
-## Contents
-
-- [What the code is](#what-the-code-is) — modules and scripts
-- [Setup](#setup) — CPU and GPU environments, restoring private artifacts
-- [Deploy a single training run](#deploy-a-single-training-run)
-- [Deploy the full experiment grid](#deploy-the-full-experiment-grid)
-- [Evaluating and reporting](#evaluating-and-reporting)
-- [Reproducibility rules](#reproducibility-rules)
-- [Known limitations](KNOWN_LIMITATIONS.md) — behaviour that is easy to trip over, and what to do instead
-
----
-
-## What the code is
-
-### Library — `src/contrastive_learning/`
-
-One package holds all pipeline logic; scripts are thin wrappers around it. Full
-detail is in the [pipeline code guide](src/contrastive_learning/README.md).
-
-| Module | Responsibility |
-| --- | --- |
-| `config.py` | `TrainConfig`: every setting of a run, its validation, saved-config loading |
-| `cli.py` | Training flags and their translation into a configuration |
-| `training.py` | Run lifecycle: optimizer groups, schedule, epoch loop, resume, checkpointing |
-| `inputs.py` | Cohort loading, split policy, and loaders shared by training and evaluation |
-| `data.py` | Study/report pairing, dataset, image caches, batch collation |
-| `manifest.py` | Building and reading frozen, study-grouped cohorts (the grouping key is one study per group — see the [integrity audit](digest/integrity-coverage-audit.md)) |
-| `preprocessing.py` | DICOM ordering, cropping, normalization, orientation, augmentation |
-| `text.py` | Report views: full, impression, findings+impression, impression-first |
-| `model.py` | Image and text towers, plane attention pooling, contrastive loss |
-| `evaluation.py` | Tie-aware retrieval metrics and checkpoint evaluation reports |
-| `checkpoints.py` | Checkpoint format, best-epoch selection, run provenance, resume |
-| `experiments.py` | Matrix execution, immutable validation selection, checkpoint rescoring |
-| `artifacts.py` | Atomic artifact writes and SHA-256 content hashes |
-
-### Shared script support — `src/experiment_tools/` and `src/digest_site/`
-
-Scripts never import each other. What more than one script needs lives in a
-package under `src/`:
-
-| Package | Holds |
-| --- | --- |
-| `experiment_tools/` | Probes and comparisons: `gold_probe.py` (the gold-58 probe contract: population, features, out-of-fold AUROC, bootstraps), `paired_runs.py` (paired LM-test/gold-58 trials of fine-tuning runs), `lm_heads.py` (reload and verify a finished LM head), `tower_size_runs.py`. Audits: `cohort_audit.py` (cohort sampling), `dicom_series.py` (series hashing, header reads). Digests: `curves.py`, `digest_charts.py`, `digest_arms.py`, and `joint_loss.py` / `text_hubs.py` (snapshots the digest site exports) |
-| `digest_site/` | The research-digest site builder: catalog, data export, page renderers |
-
-### Scripts — `scripts/`
-
-Every script is run from the repository root, so relative paths in matrices and
-configurations resolve consistently. They are grouped by what they do; the
-[script index](scripts/README.md) lists every file.
-
-| Folder | What lives there |
-| --- | --- |
-| `scripts/data/` | Build and maintain cohorts, caches and report translations |
-| `scripts/training/` | Train contrastive runs, fine-tuning rungs and LM heads, and the matrix runners |
-| `scripts/evaluation/` | Score checkpoints, run the gold-58 downstream probe, extract frozen features |
-| `scripts/analysis/` | Read-only paired comparisons and follow-up analyses of finished runs |
-| `scripts/audits/` | Read-only data and preprocessing audits |
-| `scripts/digests/` | Write `digest/` reports and build the digest site |
-| `scripts/submission/` | Export Kaggle bundles and run them as the kernel does |
-| `scripts/archive/` | Provenance only; not runnable from a fresh clone |
-
-One-off audit scripts for completed experiments have been removed; their outputs
-remain in `digest/` (for example `digest/full-projection-v1-data-audit.json`,
-`digest/english-medical-text-results.json`, `digest/full-manifest-migration.json`).
-
-### Tests
-
-```bash
-.venv/bin/python -m pytest -q
-```
-
-Covers report views, the image cache, cohort manifest invariants, retrieval metrics
-and tie handling, checkpoint selection and the run lifecycle, image tower shapes and
-gradients, experiment matrix handling, and the translation runner. Tests requiring
-`pydicom` skip when it is unavailable.
-
----
+LM-test shares the training labeller and was reused for model selection. Gold-58
+is small and was also reused. Splits are by study because usable patient IDs were
+unavailable. Small gains need more seeds and independent validation.
 
 ## Setup
 
-### CPU environment
-
-Use Python 3.13.12 and install `requirements-lock.txt` in a virtual environment:
-
-```bash
-python3.13 -m venv .venv
-.venv/bin/python -m pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-lock.txt
-.venv/bin/python -m pytest -q
-```
-
-### GPU environment
-
-The isolated GPU environment is `.venv-cuda`, using the same PyTorch 2.13.0 and
-torchvision 0.28.0 releases with CUDA 12.6 wheels. The supported pairing is listed in
-[PyTorch's version instructions](https://pytorch.org/get-started/previous-versions/).
-Restore it from the separately captured `requirements-cuda-lock.txt`:
+Run commands from the repository root. Use Python 3.13 and a CUDA-capable GPU:
 
 ```bash
 python3.13 -m venv .venv-cuda
 .venv-cuda/bin/python -m pip install --extra-index-url https://download.pytorch.org/whl/cu126 -r requirements-cuda-lock.txt
-.venv-cuda/bin/python -c 'import torch; assert torch.cuda.is_available(); print(torch.__version__, torch.cuda.get_device_name(0))'
+cp configs/paths.template.json paths.json
 ```
 
-Use `.venv-cuda/bin/python` for every GPU command below. On this WSL device CUDA is
-exposed through `/dev/dxg`; invoke `/usr/lib/wsl/lib/nvidia-smi` when it is absent
-from PATH. GPU commands must run with host device access — the agent sandbox can
-hide `/dev/dxg`. The installed Windows NVIDIA driver already supplies CUDA support
-to WSL; see [NVIDIA's WSL guide](https://docs.nvidia.com/cuda/wsl-user-guide/).
+Set `data_root` in `paths.json`. Restore the private LM labels, frozen cohort
+manifest and pinned model weights before training. See
+[Train and submit](TRAIN_AND_SUBMIT.md) for required files and full commands.
 
-### Machine directories
+## Code and guides
 
-No directory that differs between machines is written into the code. One JSON
-file assigns them:
-
-```bash
-cp configs/paths.template.json paths.json   # then edit data_root
-```
-
-`paths.json` is git-ignored and read from the repository root; set
-`CONTRASTIVE_PATHS_CONFIG` or pass `--paths-config` to keep it elsewhere. It may
-assign `data_root` (the DICOM mount, required by anything that reads DICOM data),
-`reports_csv`, `cohort_manifest`, `output_dir`, `image_cache_dir`, and
-`train_series_mirror` (an optional fast local copy of `train_series` for fine-tuning). Relative
-values resolve against the file's own directory, and a command-line flag always
-overrides the file, so a frozen experiment matrix runs unchanged on a new host.
-`run_contrastive_matrix.py` trains in subprocesses that inherit the environment, so
-`CONTRASTIVE_PATHS_CONFIG` reaches them without a flag of its own.
-
-A resume compares every immutable setting with the run's `config.json`, except
-where this host keeps its data (`data_root` and the paths derived from it), which
-may differ: series are matched by `<study>/<series>`, so moving the mount does not
-change the data.
-
-### Private and local artifacts
-
-Restore the artifacts listed with SHA-256 hashes in
-[the artifact inventory](configs/contrastive/full-multilingual-v1-artifacts.json):
-
-- The cohort manifest and its `.meta.json` belong in `data/processed/`.
-- DICOM series live under `<data_root>/train_series`, with the series CSV at
-  `<data_root>/train_series.csv`, where `data_root` is whatever you assigned in
-  `paths.json` (see [Machine directories](#machine-directories); this project was
-  developed with `/mnt/d`). The manifest stores absolute series paths, so a cohort
-  built on one mount must be rebuilt if that mount moves.
-- Copy the two pinned Hugging Face snapshots, including referenced blob contents,
-  into the training host's Hugging Face cache. Revisions are pinned in the matrix,
-  and compact checkpoints require those exact frozen backbones at reload time.
-- `data/translation/gold_translated.csv` is an external input recorded in the inventory.
-
-Building a new cohort instead of restoring one:
-
-```bash
-.venv/bin/python scripts/data/build_contrastive_manifest.py \
-  --output data/processed/contrastive-cohort.jsonl \
-  --text-policy multilingual_raw \
-  --validate-pixels
-```
-
-The reports CSV and the series paths come from `paths.json`; pass `--reports-csv`,
-`--series-csv`, or `--series-root` to override any of them for one build.
-
-A new cohort has a new checksum, so it is a new experiment version: update the
-matrix's `manifest_sha256` rather than reusing an existing one.
-
----
-
-## Deploy a single training run
-
-**1. Confirm the environment and inputs.** This indexes the cohort, prints its
-summary, and stops before building a model:
-
-```bash
-.venv-cuda/bin/python -c 'import torch; assert torch.cuda.is_available(); print(torch.cuda.get_device_name(0))'
-.venv-cuda/bin/python scripts/training/train_contrastive.py \
-  --cohort-manifest data/processed/contrastive-cohort.jsonl --prepare-only
-```
-
-**2. Train.** A run refuses to write into an existing `--output-dir`, so each run
-gets its own:
-
-```bash
-.venv-cuda/bin/python scripts/training/train_contrastive.py \
-  --cohort-manifest data/processed/contrastive-cohort.jsonl \
-  --text-model multilingual-e5 --text-pooling mean --text-prefix 'query: ' \
-  --text-model-revision d128750597153bb5987e10b1c3493a34e5a4502a \
-  --image-model facebook/dinov2-small \
-  --image-model-revision ed25f3a31f01632728cabb09d1542f84ab7b0056 \
-  --max-text-length 512 --image-unfreeze-last 0 --text-unfreeze-last 0 \
-  --epochs 20 --batch-size 32 --num-workers 4 \
-  --image-cache-dir checkpoints/contrastive/image-cache \
-  --image-memory-cache-size 16 --trainable-checkpoints --local-files-only \
-  --output-dir checkpoints/contrastive/my-run
-```
-
-Add `--local-files-only` whenever the host should not reach the network. Prefix with
-`scripts/training/run_measured_training.py --telemetry PATH --` to also record runtime and
-peak CUDA memory.
-
-**3. Read the output directory.** A completed run contains:
-
-| File | Contents |
-| --- | --- |
-| `config.json` | The resolved configuration, exactly as the run used it |
-| `run_manifest.json` | Run id, Git revision, source-tree hash, input hashes, dependency versions, resolved backbone revisions, resume events |
-| `metrics.jsonl` | One line per epoch: training loss and gradient norm, per-group learning rates, retrieval metrics, embedding diagnostics |
-| `last.pt` | The most recent epoch, fully resumable |
-| `best.pt` | The epoch selected by highest `mean_r@1`, then lower validation loss, then earlier epoch |
-
-**4. Resume an interrupted run.** Keep every flag identical except the epoch target,
-and point at the run's own `last.pt`:
-
-```bash
-.venv-cuda/bin/python scripts/training/train_contrastive.py <the same flags> --epochs 20 \
-  --resume checkpoints/contrastive/my-run/last.pt
-```
-
-Resume restores the optimizer, schedule, loss scaler, loader shuffle, and random
-states, and refuses to continue if the saved configuration differs on any field
-other than the epoch target, if the metrics history does not end at the checkpoint's
-epoch, or if `best.pt` disagrees with that history. Runs saved under a superseded
-selection rule must be audited separately, not silently finalized under the new one.
-
----
-
-## Deploy the full experiment grid
-
-A grid is one JSON matrix — [`full-multilingual-matrix.json`](configs/contrastive/full-multilingual-matrix.json) —
-that fixes the cohort by checksum, the shared arguments, the per-experiment
-overrides, the output root, and the selection policy before anything runs. The
-current grid is eight experiments comparing text truncation, pooling, report view,
-and which final blocks are unfrozen.
-
-**1. Validate the grid without running it.** This performs every check — cohort
-checksum, selection policy, experiment names — and prints the exact command for each
-experiment. It works on a CPU-only host:
-
-```bash
-.venv/bin/python scripts/training/run_contrastive_matrix.py --dry-run
-```
-
-**2. GPU smoke and resume check.** Same pinned models and preprocessing, a separate
-output directory, at most 64 cohort rows, two epochs total. It never touches the
-test split:
-
-```bash
-.venv-cuda/bin/python - <<'PY'
-import json, subprocess, sys
-from pathlib import Path
-import torch
-assert torch.cuda.is_available()
-m = json.loads(Path('configs/contrastive/full-multilingual-matrix.json').read_text())
-out = 'checkpoints/contrastive/full-multilingual-v1-gpu-smoke'
-command = [sys.executable, 'scripts/training/train_contrastive.py', *m['base_args'],
-           '--output-dir', out, '--max-studies', '64', '--batch-size', '32',
-           '--num-workers', '0', '--local-files-only']
-subprocess.run([*command, '--epochs', '1'], check=True)
-subprocess.run([*command, '--epochs', '2', '--resume', out + '/last.pt'], check=True)
-subprocess.run([sys.executable, 'scripts/evaluation/evaluate_contrastive.py', out + '/best.pt',
-                '--split', 'validation', '--output', out + '/reload-validation.json'], check=True)
-PY
-```
-
-**3. Run the first experiment and inspect its cost.** Record runtime, peak GPU
-memory, and the validation diagnostics before committing to the rest of the grid:
-
-```bash
-.venv-cuda/bin/python scripts/training/run_contrastive_matrix.py --experiment 00-projection-full-mean-512
-```
-
-**4. Run the remaining experiments.** Omit `--experiment` to run the whole matrix in
-order; each experiment trains in a fresh process, so GPU memory is released between
-them. Repeat `--experiment` to select a subset:
-
-```bash
-.venv-cuda/bin/python scripts/training/run_contrastive_matrix.py
-```
-
-If one experiment is interrupted, resume it with the exact command printed by
-`--dry-run` plus `--resume <that experiment's output dir>/last.pt`, keeping the
-original 20-epoch target.
-
-**5. Select on validation.** This verifies every run's `best.pt` against its own
-history and writes `validation-selection.json` under the matrix output root:
-
-```bash
-.venv-cuda/bin/python scripts/evaluation/finalize_contrastive_matrix.py
-```
-
-The selection file is immutable: re-running with different results is an error, not
-an overwrite. Add `--allow-incomplete` only to inspect a partially finished grid.
-
-**6. The locked test split — once.** Only after the selection above exists, and only
-when the experiment is genuinely finished:
-
-```bash
-.venv-cuda/bin/python scripts/evaluation/finalize_contrastive_matrix.py --evaluate-locked-test
-```
-
-Do not invoke `--evaluate-locked-test` during baseline development. Selection reads
-validation only, which is what `locked_test_was_used_for_selection: false` in the
-selection file records.
-
----
-
-## Evaluating and reporting
-
-Score a saved checkpoint on any split:
-
-```bash
-.venv-cuda/bin/python scripts/evaluation/evaluate_contrastive.py \
-  checkpoints/contrastive/my-run/best.pt --split validation \
-  --image-cache-dir checkpoints/contrastive/image-cache
-```
-
-The checkpoint's own saved configuration defines the model and cohort, so a report
-cannot describe a different setup than the one trained. It writes
-`evaluation-<split>-<checkpoint>.json` and `rankings-<split>-<checkpoint>.jsonl`
-beside the checkpoint, containing recall at 1/5/10 in both directions, mean and
-median rank, expected credit for tied candidates, embedding diagnostics, per-query
-rankings, bootstrap 95% intervals, the random-ranking baseline for the split size,
-and any difference from the metrics stored at training time. Existing reports are
-never replaced without `--overwrite`.
-
-Re-score every saved checkpoint after a metric definition changes:
-
-```bash
-.venv/bin/python scripts/evaluation/rescore_contrastive_checkpoints.py \
-  --checkpoint-root checkpoints/contrastive --summary digest/contrastive-checkpoint-rescore.json
-```
-
-Rebuild the browsable project snapshot:
-
-```bash
-.venv/bin/python scripts/digests/build_project_digest.py
-```
-
----
-
-## Reproducibility rules
-
-- **A cohort's checksum is its identity.** The manifest reader rejects missing or
-  mismatched checksums. Never recompute a checksum to accept changed data; changed
-  data means a new experiment version. The full manifest's checksum was added by an
-  audited migration recorded in [digest/full-manifest-migration.json](digest/full-manifest-migration.json).
-- **Selection is one-way.** Validation selection is written before any test
-  evaluation and cannot be rewritten with different content.
-- **Runs record their own source.** Runs are routinely launched from an uncommitted
-  working tree, so `run_manifest.json` stores both the Git revision and a hash of the
-  actual source tree and configuration files.
-- **Frozen protocols are historical records.** Files under `configs/` and `digest/`
-  that pin `source_sha256` describe the code as it was when a completed experiment
-  ran. Later refactors do not invalidate those results, and those hashes are not
-  updated to match current code.
-- **Compact checkpoints need their backbones.** `--trainable-checkpoints` stores only
-  trained weights and therefore requires pinned image and text model revisions, which
-  must be present in the Hugging Face cache at reload time.
+- [Training configs](configs/finetune/): A30, u9-b1 and CLIP-init variants.
+- [Training script](scripts/finetune_supervised.py) and [bundle exporter](scripts/export_finetune_bundle.py).
+- [Inference notebook](notebooks/kaggle_submission.ipynb): offline Kaggle predictions.
+- [DICOM codecs](kaggle/codecs/README.md): bundled decoders and startup checks.
+- [Pipeline guide](src/contrastive_learning/README.md) and [known limitations](KNOWN_LIMITATIONS.md).
