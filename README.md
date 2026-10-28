@@ -103,7 +103,14 @@ Ideas with a CI crossing zero, a worse score, or a Gold-58 veto:
 
 ### Setup
 
-Run commands from the repository root. Training needs Python 3.13 and a CUDA GPU:
+Run commands from the repository root. Use Python 3.13. Tests run in a CPU environment, `.venv`:
+
+```bash
+python3.13 -m venv .venv
+.venv/bin/python -m pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-lock.txt
+```
+
+Training needs a CUDA GPU and its own environment, `.venv-cuda`:
 
 ```bash
 python3.13 -m venv .venv-cuda
