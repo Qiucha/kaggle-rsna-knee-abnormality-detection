@@ -282,8 +282,15 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
 <ol>
   <li><b>Fine-tuning was much stronger.</b> Fine-tuning DINOv2-S on the LM labels gave +0.036 LM-test, +0.045 private and +0.038 public over the frozen CLIP model.</li>
   <li><b>Frozen heads fell behind on Gold-58.</b> On OmniRad-base, a frozen CLIP-adapted encoder with an MLP head matched full fine-tuning on LM-test (+0.0072 [−0.0047, +0.0191]), but was lower on Gold-58 by −0.0433 [−0.0778, −0.0115].</li>
-  <li><b>CLIP init added nothing once fine-tuning was strong:</b> +0.0026 [−0.0089, +0.0142] LM-test with 3 trained blocks; −0.0052 [−0.0144, +0.0046] with 9.</li>
+  <li><b>CLIP init added nothing once fine-tuning was strong:</b> +0.0026 [−0.0089, +0.0142] LM-test with 3 trained blocks; −0.0052 [−0.0144, +0.0046] with 9. The CLIP start gave a head start that faded: training loss began lower (0.475 vs 0.502 at epoch 1), but the gap was 0.001 by epoch 30 (chart below).</li>
 </ol>
+<div class="fig">
+  <p class="fig-title">A head start that fades: A30 vs A30-CLIP during label fine-tuning</p>
+  <p class="fig-sub">Same recipe and seed; only the starting weights differ. The CLIP start begins with lower training loss, but the gap closes by the end. Validation AUROC stays a little higher, yet the test scores are no better.</p>
+  <div class="legend"><span><i class="sw" style="background:var(--ink2)"></i>A30 (OmniRad start)</span><span><i class="sw" style="background:var(--c-lm)"></i>A30-CLIP (CLIP start)</span></div>
+  <div class="scroll"><div class="chart" id="clipcurve" style="min-width:560px"></div></div>
+  <details><summary>Show table</summary><div id="t-clipcurve"></div></details>
+</div>
 <p><b>Translated vs original reports.</b> 2,671 of the 4,407 reports are not in English. We translated them with Claude (Opus), fixed a few by hand, and kept the 1,736 English reports as they were. We then retrained the contrastive model with the same text encoder (multilingual E5), seed and settings, so only the report text changed. The score is image–report retrieval Recall@1 on 441 validation studies, averaged over both directions, with a paired bootstrap 95% CI:</p>
 <table>
 <tr><th>Reports</th><th class="n">Studies</th><th class="n">Original text</th><th class="n">Translated text</th><th class="n">Δ Recall@1, pp [95% CI]</th></tr>
@@ -293,7 +300,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
 
 </table>
 <p>Translation did not help overall. Retrieval went up on reports that were already in English and down on the translated ones. The English text is identical in both runs, so that gain comes from training on an all-English corpus. The drop suggests some detail was lost in translation. Every interval crosses zero and this is one seed, so treat it as a trend, not a result.</p>
-<p><b>Our own LM labels.</b> We also labelled the translated reports with several language models and scored each one against the Gold-58 human labels. The submitted models train on <b>@pilkwang</b>'s labels.</p>
+<p><b>Our own LM labels.</b> We also labelled the translated reports with several language models and scored each one against the Gold-58 human labels. The submitted models train on <b>@pilkwang</b>'s labels. For this labelling, the models read Claude's rewrite of every report, the English ones included. That rewrite put the reports into standard phrasing and sometimes spelled out abbreviations (for example, “ACL” became “anterior cruciate ligament”). The translation experiment above kept the original English reports.</p>
 
 
 <h2 id="nulls">What Did Not Work</h2>
@@ -339,6 +346,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
   <li><b>Gold-58 is small and was reused many times.</b> Single-model CIs are about ±0.02–0.03.</li>
   <li><b>No patient-level split.</b> The data has no usable patient ID, so splits are by study.</li>
   <li><b>One setting per null result.</b> Each negative result tried only one strength or setting.</li>
+  <li><b>Small dataset for CLIP-style training.</b> Contrastive image–report training is usually done with hundreds of thousands to millions of pairs. We had about 3,500 training studies, compared 32 at a time. That is probably too few for the report text to teach the image encoder much beyond what label fine-tuning already does, which fits the small, short-lived benefit of CLIP pretraining we saw.</li>
 </ol>
 
 <h2>Code</h2>
@@ -692,6 +700,44 @@ onResize(progEl, W => {
       () => { cross.style.opacity = 0; dots.forEach(d => d[i].setAttribute('r', 4)); });
   });
 });
+
+/* ---------- A30 vs A30-CLIP training curves ---------- */
+const CURVE = {
+  a30: { tr: [.5021,.4734,.4567,.4432,.4301,.4124,.4002,.3880,.3780,.3707,.3623,.3556,.3486,.3429,.3375,.3334,.3299,.3262,.3235,.3220,.3199,.3188,.3177,.3171,.3164,.3158,.3156,.3152,.3151,.3149],
+         va: [.7813,.8274,.8378,.8538,.8577,.8499,.8588,.8585,.8605,.8657,.8509,.8572,.8677,.8649,.8625,.8629,.8681,.8698,.8659,.8702,.8690,.8706,.8686,.8697,.8708,.8682,.8693,.8686,.8690,.8691] },
+  clip: { tr: [.4747,.4448,.4411,.4298,.4138,.4001,.3869,.3761,.3675,.3613,.3521,.3459,.3406,.3350,.3312,.3274,.3245,.3221,.3203,.3190,.3178,.3168,.3160,.3157,.3151,.3145,.3143,.3140,.3138,.3138],
+          va: [.8499,.8571,.8621,.8681,.8683,.8631,.8760,.8731,.8782,.8829,.8782,.8797,.8736,.8809,.8803,.8852,.8832,.8825,.8789,.8850,.8821,.8818,.8831,.8852,.8827,.8853,.8848,.8849,.8853,.8854] },
+};
+const ccEl = document.getElementById('clipcurve');
+onResize(ccEl, W => {
+  const H = 240, gap = 36, pw = (W - gap) / 2, svg = svgIn(ccEl, W, H), m = { l: 44, r: 10, t: 24, b: 34 };
+  const panels = [['tr', 'Training loss (BCE on soft targets)', .30, .51, 3], ['va', 'Validation macro AUROC', .77, .89, 3]];
+  const series = [['a30', 'var(--ink2)', 'A30'], ['clip', 'var(--c-lm)', 'A30-CLIP']];
+  panels.forEach(([k, title, lo, hi, dp], j) => {
+    const ox = j * (pw + gap), x = lin(1, 30, ox + m.l, ox + pw - m.r), y = lin(lo, hi, H - m.b, m.t);
+    S('text', { x: ox + m.l, y: 12, class: 't-strong', style: 'font-size:12px', text: title }, svg);
+    niceTicks(lo, hi, 4).forEach(v => {
+      S('line', { x1: ox + m.l, x2: ox + pw - m.r, y1: y(v), y2: y(v), class: 'grid' }, svg);
+      S('text', { x: ox + m.l - 6, y: y(v) + 4, 'text-anchor': 'end', class: 't-muted', text: v.toFixed(2) }, svg);
+    });
+    [1, 10, 20, 30].forEach(e => S('text', { x: x(e), y: H - m.b + 15, 'text-anchor': 'middle', class: 't-muted', text: e }, svg));
+    S('text', { x: ox + pw - m.r, y: H - 4, 'text-anchor': 'end', class: 't-muted', text: 'epoch' }, svg);
+    series.forEach(([s, c]) => S('path', { d: CURVE[s][k].map((v, i) => `${i ? 'L' : 'M'}${x(i + 1)},${y(v)}`).join(''), style: `fill:none;stroke:${c};stroke-width:2;stroke-linejoin:round` }, svg));
+    // label the gap at the first and last epoch
+    [0, 29].forEach(i => {
+      const d = CURVE.clip[k][i] - CURVE.a30[k][i];
+      // epoch-1 AUROC gap: the space above is crowded, so label it beside the low A30 point
+      const low = k === 'va' && !i;
+      S('text', { x: x(i + 1) + (i ? -2 : low ? 9 : 4), y: low ? y(CURVE.a30[k][0]) + 4 : y(Math.max(CURVE.clip[k][i], CURVE.a30[k][i])) - 7, 'text-anchor': i ? 'end' : 'start', class: 't-ink', style: 'font-size:11px', text: `gap ${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(3)}${i ? '' : ' at epoch 1'}` }, svg);
+    });
+    for (let i = 0; i < 30; i++) {
+      const hit = S('rect', { x: x(i + 1) - (pw - m.l - m.r) / 58, y: m.t, width: (pw - m.l - m.r) / 29, height: H - m.t - m.b, class: 'rowhit' }, svg);
+      hover(hit, `<b>Epoch ${i + 1}</b> · ${title}` + series.map(([s, c, lab]) => trow(lab, CURVE[s][k][i].toFixed(4), c)).join(''));
+    }
+  });
+});
+table(document.getElementById('t-clipcurve'), ['Epoch', 'Training loss A30', 'Training loss A30-CLIP', 'Validation AUROC A30', 'Validation AUROC A30-CLIP'],
+  [1, 5, 10, 15, 20, 25, 30].map(e => [String(e), CURVE.a30.tr[e - 1].toFixed(3), CURVE.clip.tr[e - 1].toFixed(3), CURVE.a30.va[e - 1].toFixed(3), CURVE.clip.va[e - 1].toFixed(3)]));
 
 /* ---------- generic forest plot (small multiples) ---------- */
 function forest(el, rows, panels, opts = {}) {

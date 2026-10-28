@@ -179,6 +179,17 @@ We stopped this line of work for three reasons:
    * +0.0026 [−0.0089, +0.0142] with 3 trained blocks;
    * −0.0052 [−0.0144, +0.0046] with 9 trained blocks.
 
+   The CLIP start gave a head start that faded. We compared A30 with A30-CLIP, which uses the same recipe and seed and differs only in its starting weights:
+
+   | Epoch | 1 | 5 | 10 | 20 | 30 |
+   |---|---:|---:|---:|---:|---:|
+   | Training loss, A30 | 0.502 | 0.430 | 0.371 | 0.322 | 0.315 |
+   | Training loss, A30-CLIP | 0.475 | 0.414 | 0.361 | 0.319 | 0.314 |
+   | Validation AUROC, A30 | 0.781 | 0.858 | 0.866 | 0.870 | 0.869 |
+   | Validation AUROC, A30-CLIP | 0.850 | 0.868 | 0.883 | 0.885 | 0.885 |
+
+   Training loss started lower with the CLIP start, but the gap closed by epoch 30. Validation AUROC stayed a little higher, yet A30-CLIP was no better on the test sets: LM-test −0.0052 [−0.0144, +0.0046], Gold-58 −0.0046 [−0.0240, +0.0147].
+
 **Translated vs original reports.** 2,671 of the 4,407 reports are not in English. We translated them with Claude (Opus), fixed a few by hand, and kept the 1,736 English reports as they were. We then retrained the contrastive model with the same text encoder (multilingual E5), seed and settings, so only the report text changed. The score is image–report retrieval Recall@1 on 441 validation studies, averaged over both directions, with a paired bootstrap 95% CI:
 
 | Reports | Studies | Original text | Translated text | Δ Recall@1, pp [95% CI] |
@@ -189,7 +200,7 @@ We stopped this line of work for three reasons:
 
 Translation did not help overall. Retrieval went up on reports that were already in English and down on the translated ones. The English text is identical in both runs, so that gain comes from training on an all-English corpus. The drop suggests some detail was lost in translation. Every interval crosses zero and this is one seed, so treat it as a trend, not a result.
 
-**Our own LM labels.** We also labelled the translated reports with several language models and scored each one against the Gold-58 human labels. The submitted models train on **@pilkwang**'s labels.
+**Our own LM labels.** We also labelled the translated reports with several language models and scored each one against the Gold-58 human labels. The submitted models train on **@pilkwang**'s labels. For this labelling, the models read Claude's rewrite of every report, the English ones included. That rewrite put the reports into standard phrasing and sometimes spelled out abbreviations (for example, "ACL" became "anterior cruciate ligament"). The translation experiment above kept the original English reports.
 
 ---
 
@@ -282,6 +293,7 @@ All of these are null.
 5. **Gold-58 is small and was reused many times.** Single-model CIs are about ±0.02–0.03.
 6. **No patient-level split.** The data has no usable patient ID, so splits are by study.
 7. **One setting per null result.** Each negative result tried only one strength or setting.
+8. **Small dataset for CLIP-style training.** Contrastive image–report training is usually done with hundreds of thousands to millions of pairs. We had about 3,500 training studies, compared 32 at a time. That is probably too few for the report text to teach the image encoder much beyond what label fine-tuning already does, which fits the small, short-lived benefit of CLIP pretraining we saw.
 
 ---
 
