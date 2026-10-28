@@ -188,7 +188,14 @@ We stopped this line of work for three reasons:
    | Validation AUROC, A30 | 0.781 | 0.858 | 0.866 | 0.870 | 0.869 |
    | Validation AUROC, A30-CLIP | 0.850 | 0.868 | 0.883 | 0.885 | 0.885 |
 
-   Training loss started lower with the CLIP start, but the gap closed by epoch 30. Validation AUROC stayed a little higher, yet A30-CLIP was no better on the test sets: LM-test −0.0052 [−0.0144, +0.0046], Gold-58 −0.0046 [−0.0240, +0.0147].
+   Training loss started lower with the CLIP start, but the gap closed by epoch 30. Validation AUROC stayed a little higher, yet on the test sets the two models score almost the same:
+
+   | Test set | A30 | A30-CLIP | Δ A30-CLIP − A30 [95% CI] |
+   |---|---:|---:|---|
+   | LM-test (432 studies) | 0.8917 | 0.8865 | −0.0052 [−0.0144, +0.0046] |
+   | Gold-58 (58 studies) | 0.8814 | 0.8768 | −0.0046 [−0.0240, +0.0147] |
+
+   Both intervals cross zero.
 
 **Translated vs original reports.** 2,671 of the 4,407 reports are not in English. We translated them with Claude (Opus), fixed a few by hand, and kept the 1,736 English reports as they were. We then retrained the contrastive model with the same text encoder (multilingual E5), seed and settings, so only the report text changed. The score is image–report retrieval Recall@1 on 441 validation studies, averaged over both directions, with a paired bootstrap 95% CI:
 

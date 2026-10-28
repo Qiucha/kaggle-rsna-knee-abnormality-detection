@@ -291,6 +291,12 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
   <div class="scroll"><div class="chart" id="clipcurve" style="min-width:560px"></div></div>
   <details><summary>Show table</summary><div id="t-clipcurve"></div></details>
 </div>
+<div class="fig">
+  <p class="fig-title">On the test sets, the two models score almost the same</p>
+  <p class="fig-sub">Macro AUROC of the selected checkpoints (A30 epoch 22, A30-CLIP epoch 20). Above each pair: A30-CLIP minus A30, with the paired bootstrap 95% CI. Both intervals cross zero.</p>
+  <div class="legend"><span><i class="sw bar" style="background:var(--ink2)"></i>A30 (OmniRad start)</span><span><i class="sw bar" style="background:var(--c-lm)"></i>A30-CLIP (CLIP start)</span></div>
+  <div class="chart" id="cliptest"></div>
+</div>
 <p><b>Translated vs original reports.</b> 2,671 of the 4,407 reports are not in English. We translated them with Claude (Opus), fixed a few by hand, and kept the 1,736 English reports as they were. We then retrained the contrastive model with the same text encoder (multilingual E5), seed and settings, so only the report text changed. The score is image–report retrieval Recall@1 on 441 validation studies, averaged over both directions, with a paired bootstrap 95% CI:</p>
 <table>
 <tr><th>Reports</th><th class="n">Studies</th><th class="n">Original text</th><th class="n">Translated text</th><th class="n">Δ Recall@1, pp [95% CI]</th></tr>
@@ -738,6 +744,32 @@ onResize(ccEl, W => {
 });
 table(document.getElementById('t-clipcurve'), ['Epoch', 'Training loss A30', 'Training loss A30-CLIP', 'Validation AUROC A30', 'Validation AUROC A30-CLIP'],
   [1, 5, 10, 15, 20, 25, 30].map(e => [String(e), CURVE.a30.tr[e - 1].toFixed(3), CURVE.clip.tr[e - 1].toFixed(3), CURVE.a30.va[e - 1].toFixed(3), CURVE.clip.va[e - 1].toFixed(3)]));
+
+/* ---------- A30 vs A30-CLIP test scores ---------- */
+const CLIPTEST = [
+  { k: 'LM-test (432 studies)', a30: .8917, clip: .8865, d: [-.0052, -.0144, .0046] },
+  { k: 'Gold-58 (58 studies)', a30: .8814, clip: .8768, d: [-.0046, -.0240, .0147] },
+];
+const ctEl = document.getElementById('cliptest');
+onResize(ctEl, W => {
+  const H = 250, m = { l: 40, r: 10, t: 46, b: 30 }, svg = svgIn(ctEl, W, H), y = lin(0, 1, H - m.b, m.t);
+  const gw = (W - m.l - m.r) / CLIPTEST.length, bw = Math.min(70, gw * 0.26);
+  [0, .25, .5, .75, 1].forEach(v => {
+    S('line', { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: v ? 'grid' : 'axis' }, svg);
+    S('text', { x: m.l - 6, y: y(v) + 4, 'text-anchor': 'end', class: 't-muted', text: v.toFixed(2) }, svg);
+  });
+  CLIPTEST.forEach((g, i) => {
+    const cx = m.l + gw * (i + 0.5);
+    [['a30', 'var(--ink2)', 'A30', -1], ['clip', 'var(--c-lm)', 'A30-CLIP', 1]].forEach(([k, c, lab, side]) => {
+      const x0 = cx + (side < 0 ? -bw - 3 : 3);
+      const r = S('rect', { x: x0, y: y(g[k]), width: bw, height: y(0) - y(g[k]), rx: 3, style: `fill:${c}` }, svg);
+      S('text', { x: x0 + bw / 2, y: y(g[k]) - 6, 'text-anchor': 'middle', class: 't-ink', style: 'font-size:11.5px;font-variant-numeric:tabular-nums', text: g[k].toFixed(4) }, svg);
+      hover(r, `<b>${lab}</b> · ${g.k}` + trow('Macro AUROC', g[k].toFixed(4), c) + trow('A30-CLIP − A30', ci(g.d)));
+    });
+    S('text', { x: cx, y: m.t - 26, 'text-anchor': 'middle', class: 't-strong', style: 'font-size:12px', text: `Δ ${ci(g.d)}` }, svg);
+    S('text', { x: cx, y: H - m.b + 18, 'text-anchor': 'middle', class: 't-ink', text: g.k }, svg);
+  });
+});
 
 /* ---------- generic forest plot (small multiples) ---------- */
 function forest(el, rows, panels, opts = {}) {
