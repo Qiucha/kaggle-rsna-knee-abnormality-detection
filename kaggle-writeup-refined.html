@@ -340,7 +340,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
 <ol>
   <li><b>Test precision first.</b> We trained every model with mixed precision (FP16) but never measured its effect. A quick early comparison of FP16, BF16 and FP32 would have shown the best trade-off between speed and score.</li>
   <li><b>More data for CLIP-style training.</b> Image–report training is weak supervision and usually needs much more data than we had. We would add other image–report data and use stronger augmentation in this stage.</li>
-  <li><b>Explore architecture changes with a clear reason,</b> like the 3D RoPE idea from the <a href="https://www.kaggle.com/competitions/rsna-knee-abnormality-detection/writeups/33rd-place-silver-solution-no-external-data">32nd-place team</a>, which tells the model where each image sits in 3D. Some potential ideas in our head are expert systems:
+  <li><b>Explore architecture changes with a clear reason,</b> like the 3D RoPE idea from the <a href="https://www.kaggle.com/competitions/rsna-knee-abnormality-detection/writeups/33rd-place-silver-solution-no-external-data">32nd-place team</a>, which tells the model where each image sits in 3D. One idea we would try:
     <ul>
       <li><b>Slot-specific experts:</b> one expert network per slot (plane × scan setting), possibly with attention between the experts. This mimics a radiologist comparing MRI scans taken with different settings.</li>
     </ul>

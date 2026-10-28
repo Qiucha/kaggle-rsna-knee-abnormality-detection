@@ -287,7 +287,7 @@ All of these are null.
 
 1. **Test precision first.** We trained every model with mixed precision (FP16) but never measured its effect. A quick early comparison of FP16, BF16 and FP32 would have shown the best trade-off between speed and score.
 2. **More data for CLIP-style training.** Image–report training is weak supervision and usually needs much more data than we had. We would add other image–report data and use stronger augmentation in this stage.
-3. **Explore architecture changes with a clear reason,** like the 3D RoPE idea from the [32nd-place team](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection/writeups/33rd-place-silver-solution-no-external-data), which tells the model where each image sits in 3D. Some potential ideas in our head are expert systems:
+3. **Explore architecture changes with a clear reason,** like the 3D RoPE idea from the [32nd-place team](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection/writeups/33rd-place-silver-solution-no-external-data), which tells the model where each image sits in 3D. One idea we would try:
    * **Slot-specific experts:** one expert network per slot (plane × scan setting), possibly with attention between the experts. This mimics a radiologist comparing MRI scans taken with different settings.
 4. **Download only the cache.** We downloaded the full dataset (500+ GB). Building the preprocessed cache on Kaggle and downloading only that would have saved disk space and time.
 
