@@ -80,7 +80,7 @@ Keep the supervised `seed` and every other supervised key. The pipeline rejects 
 recipe (`comparison_baseline`/config.json) apart from `name` and host settings. It also fixes the pre-training recipe:
 batch 32, last 6 blocks, K8 uniform pooling and gradient replay.
 
-**Prerequisites not in git** (see the README's "Not in git" list):
+**Prerequisites not in git** (see "Files not in git" under Setup in the README):
 
 - `paths.json`:
   - `data_root`: the DICOM mount, needed for cohort reads.
