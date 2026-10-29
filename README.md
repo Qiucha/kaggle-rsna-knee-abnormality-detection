@@ -73,7 +73,7 @@ We predict 12 knee MRI findings by fine-tuning OmniRad-base on labels that a lan
 Ideas with a CI crossing zero, a worse score, or a Gold-58 veto:
 
 * **Training:** image–report matching loss, DeCLIP, RAD-DINO, RadioDino and CoAtNet backbones.
-* **Data and inputs:** image augmentation, 384 px, a wider slice band, the non-fat-suppressed series, 16 windows per plane.
+* **Data and inputs:** image augmentation, 384 px, a wider slice band, the non-fat-suppressed series, 16 windows per plane (a small gain, not kept).
 * **Architecture and loss:** double weight on lateral findings, learned window weights, split knee pooling, training on `UNK` labels, 0/1 labels.
 * **After training:** weight averaging, test-time shifts and picking the best model per finding.
 
@@ -126,8 +126,8 @@ Then:
    * `data/processed/contrastive-cohort-gold-holdout-v1.jsonl`: the fixed split. Every config pins its SHA-256.
 3. **Pinned weights:**
    ```bash
-   huggingface-cli download Snarcy/OmniRad-base --revision 3e42381bcf0e6981a8b438e335c807c70b857e9a
-   huggingface-cli download facebook/dinov2-base --revision f9e44c814b77203eaa57a6bdbbd535f21ede1415
+   .venv-cuda/bin/huggingface-cli download Snarcy/OmniRad-base --revision 3e42381bcf0e6981a8b438e335c807c70b857e9a
+   .venv-cuda/bin/huggingface-cli download facebook/dinov2-base --revision f9e44c814b77203eaa57a6bdbbd535f21ede1415
    ```
 4. **Check:** `.venv/bin/python -m pytest -q` (CPU, about 10 s).
 
