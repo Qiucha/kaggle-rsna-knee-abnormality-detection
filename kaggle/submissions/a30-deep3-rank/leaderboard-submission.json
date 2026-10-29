@@ -27,6 +27,6 @@
   "submission_ref": 57296356,
   "kernel_version": 2,
   "public_score": 0.902,
-  "private_score": null,
+  "private_score": 0.889,
   "outcome": "+0.003 over the swap (0.899) and +0.008 over ens4 (0.894): new best public score. LM-test leaned the other way (-0.003 vs the swap); gold-58 (+0.004 vs the swap, +0.017 vs ens4) called the direction, the second time in a row. Single submission; public-split noise not estimated."
 }

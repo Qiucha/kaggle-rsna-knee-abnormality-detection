@@ -101,7 +101,7 @@ run to its `RUNS` registry and the comparison to `PAIRS`, then run:
 python scripts/analysis/compare_lateral_rebalance.py --output digest/<study>-v1.json
 ```
 
-Decision rule (see the README's "How candidates are judged"):
+Decision rule (see [Labels and Validation](README.md#labels-and-validation) in the README):
 
 - **Adopt** only if the LM-test interval against the base excludes zero.
 - **Gold-58 is a veto only**: −0.024 or worse rejects. It never selects on its own.
