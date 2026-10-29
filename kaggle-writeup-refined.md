@@ -129,7 +129,7 @@ Each row is one Kaggle submission. Δ is measured against the row above unless n
 | 2 | Swap in A30-CLIP | Replace the 3-block CLIP-start model with **A30-CLIP** (vs 4-model ensemble) | −0.0001 [−0.0031, +0.0029] | +0.0135 [+0.0042, +0.0230] | 0.887 | 0.899 |
 | 2 | **Deep Three** | Drop DINOv2-S too: A30 + u9 + A30-CLIP (vs 4-model ensemble) | −0.0031 [−0.0084, +0.0019] | +0.0173 [+0.0051, +0.0301] | **0.889** | **0.902** |
 
-**Stage 1** trained a CLIP-style image–report model and put small heads on its frozen features. **Stage 2** fine-tuned the image encoder directly on the LM labels, then ensembled the best models. Stage-1 rows have no LM-test score. A third stage-1 submission, with the smaller E5-small text encoder, scored 0.745 private / 0.774 public. The deltas for Fine-tune DINOv2-S and OmniRad backbone come from the submission records, which store no CI.
+**Stage 1** trained a CLIP-style image–report model and put small heads on its frozen features. **Stage 2** fine-tuned the image encoder directly on the LM labels, then ensembled the best models. The table shows no LM-test change for the stage-1 rows. A third stage-1 submission, with the smaller E5-small text encoder, scored 0.745 private / 0.774 public. The deltas for Fine-tune DINOv2-S (against CLIP + LM heads) and OmniRad backbone come from the submission records, which store no CI.
 
 ### Takeaways
 

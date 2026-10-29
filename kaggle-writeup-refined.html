@@ -242,7 +242,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
   <p class="fig-sub"><b>Stage 1</b> trained a CLIP-style image–report model and put small heads on its frozen features. <b>Stage 2</b> fine-tuned the image encoder directly on the LM labels, then ensembled the best models.</p>
   <div class="legend"><span><i class="sw" style="background:var(--c-pub)"></i>Public</span><span><i class="sw" style="background:var(--c-priv)"></i>Private</span></div>
   <div class="chart" id="progress"></div>
-  <p class="note">Not shown: a third stage-1 submission with the smaller E5-small text encoder (0.745 private / 0.774 public), and a stage-2 side branch with soft targets on DINOv2-S (0.813 private / 0.834 public). <b>u9</b> (9 trained blocks), <b>A30</b> (u9 + lateral oversampling, 30 epochs) and <b>A30-CLIP</b> (the A30 recipe started from the CLIP-trained weights) are the three models in the final ensemble. The other steps are named by what they changed.</p>
+  <p class="note">Not shown: a third stage-1 submission with the smaller E5-small text encoder (0.745 private / 0.774 public), and a stage-2 side branch with soft targets on DINOv2-S (0.813 private / 0.834 public). <b>u9</b> (9 trained blocks), <b>A30</b> (u9 + lateral oversampling, 30 epochs) and <b>A30-CLIP</b> (the A30 recipe started from the CLIP-trained weights) are the three models in the final ensemble. The other steps are named by what they changed. The table shows no LM-test change for the stage-1 rows. The deltas for Fine-tune DINOv2-S (against CLIP + LM heads) and OmniRad backbone come from the submission records, which store no CI.</p>
 </div>
 
 <div class="fig">
