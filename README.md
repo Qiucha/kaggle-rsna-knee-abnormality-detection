@@ -126,8 +126,8 @@ Then:
    * `data/processed/contrastive-cohort-gold-holdout-v1.jsonl`: the fixed split. Every config pins its SHA-256.
 3. **Pinned weights:**
    ```bash
-   .venv-cuda/bin/huggingface-cli download Snarcy/OmniRad-base --revision 3e42381bcf0e6981a8b438e335c807c70b857e9a
-   .venv-cuda/bin/huggingface-cli download facebook/dinov2-base --revision f9e44c814b77203eaa57a6bdbbd535f21ede1415
+   .venv-cuda/bin/hf download Snarcy/OmniRad-base --revision 3e42381bcf0e6981a8b438e335c807c70b857e9a
+   .venv-cuda/bin/hf download facebook/dinov2-base --revision f9e44c814b77203eaa57a6bdbbd535f21ede1415
    ```
 4. **Check:** `.venv/bin/python -m pytest -q` (CPU, about 10 s).
 
