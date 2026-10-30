@@ -57,7 +57,7 @@ One fixed split of 4,354 studies:
 | Split | Studies | Used for |
 |---|---:|---|
 | Train | 3,438 | training |
-| Validation | 426 | picking the checkpoint (lowest validation loss) |
+| Validation | 426 | picking the checkpoint (lowest validation BCE on hard 0/1 LM verdicts) |
 | LM-test | 432 | comparing models: macro AUROC against the LM labels |
 | Gold-58 | 58 | sanity check against the human labels |
 
@@ -95,7 +95,7 @@ Missing or unreadable planes are filled with zeros and masked, so they don't aff
   → MLP: 1536 → 256 → ReLU → Dropout(0.2) → 12 logits
 ```
 
-**Loss:** binary cross-entropy on the soft targets. `UNK` cells are ignored, and each label counts equally.
+**Loss:** binary cross-entropy on the soft targets during training; checkpoint selection uses validation BCE on the hard 0/1 LM verdicts. `UNK` cells are ignored, and each label counts equally.
 
 **Training (A30):**
 * Backbone LR 2e-5, head LR 1e-3, weight decay 0.02.

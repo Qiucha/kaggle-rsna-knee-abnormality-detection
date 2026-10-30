@@ -221,7 +221,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
   <div class="legend"><span><i class="sw bar" style="background:var(--c-frozen)"></i>Frozen block</span><span><i class="sw bar" style="background:var(--c-train)"></i>Trained block</span><span><i class="sw bar" style="border:1px dashed var(--muted);background:transparent"></i>Missing image (masked)</span><span class="screen-only">Hover a box for details.</span></div>
   <div class="scroll"><div class="chart" id="model" style="min-width:640px"></div></div>
 </div>
-<p><b>Loss:</b> binary cross-entropy on the soft targets. <code>UNK</code> cells are ignored, and each label counts equally.</p>
+<p><b>Loss:</b> binary cross-entropy on the soft targets during training; checkpoint selection uses validation BCE on the hard 0/1 LM verdicts. <code>UNK</code> cells are ignored, and each label counts equally.</p>
 <p><b>Training (A30):</b> backbone LR 2e-5, head LR 1e-3, weight decay 0.02; 10% warmup, then cosine decay over 30 epochs; batch size 1 with 16 gradient accumulation steps; seed 2026; we kept epoch 22. About 26 min per epoch.</p>
 
 <div class="fig">
@@ -452,7 +452,7 @@ function trow(label, val, color) { return `<div class="row"><i>${color ? `<span 
 /* ---------- splits: stacked bar ---------- */
 const SPLITS = [
   { k: 'Train', n: 3438, c: 'var(--c-frozen)', use: 'training' },
-  { k: 'Validation', n: 426, c: 'var(--muted)', use: 'picking the checkpoint (lowest validation loss)' },
+  { k: 'Validation', n: 426, c: 'var(--muted)', use: 'picking the checkpoint (lowest validation BCE on hard 0/1 LM verdicts)' },
   { k: 'LM-test', n: 432, c: 'var(--c-lm)', use: 'comparing models: macro AUROC against the LM labels' },
   { k: 'Gold-58', n: 58, c: 'var(--c-gold)', use: 'sanity check against the 58 human labels' },
 ];
