@@ -15,7 +15,7 @@ We predict 12 knee MRI findings by fine-tuning OmniRad-base on labels that a lan
 | Deep Three ensemble | **0.889** | **0.902** | 0.9017 | 0.8897 |
 | A30 single model | 0.878 | 0.890 | 0.8917 | 0.8814 |
 
-* **No external images.** We trained only on the competition DICOMs and the LM labels from **@pilkwang**'s CC0 dataset [`rsna-knee-llm-labels`](https://www.kaggle.com/datasets/pilkwang/rsna-knee-llm-labels). The only external asset is the pretrained backbone `Snarcy/OmniRad-base`.
+* **No external images.** We trained only on the competition DICOMs and the LM labels from **@pilkwang**'s CC0 dataset [`rsna-knee-llm-labels`](https://www.kaggle.com/datasets/pilkwang/rsna-knee-llm-labels). External pretrained weights are `Snarcy/OmniRad-base` (loaded with the `facebook/dinov2-base` architecture config) and, for A30-CLIP's CLIP init ([`configs/contrastive/omnirad-clip-run5-v1.json`](configs/contrastive/omnirad-clip-run5-v1.json)), the text encoder `intfloat/multilingual-e5-base`.
 * **What helped:** fine-tuning instead of frozen features, soft LM targets, 336 px input, training 9 of 12 blocks, lateral oversampling (A30) and a rank ensemble of three deep models.
 * **What did not help:** image–report matching losses, image augmentation, learned window weights, weight averaging and test-time shifts.
 

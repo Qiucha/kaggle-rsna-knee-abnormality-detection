@@ -158,7 +158,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
 
 <h2>Summary</h2>
 <ul>
-  <li><b>No external images.</b> We trained only on the competition DICOMs plus the labels that a language model (LM) extracted from the radiology reports. The only external asset is the pretrained backbone <code>Snarcy/OmniRad-base</code> (ViT-B/14, DINOv2 pretrained on RadImageNet).</li>
+  <li><b>No external images.</b> We trained only on the competition DICOMs plus the labels that a language model (LM) extracted from the radiology reports. External pretrained weights are the image backbone <code>Snarcy/OmniRad-base</code> (ViT-B/14, DINOv2 pretrained on RadImageNet, loaded with the <code>facebook/dinov2-base</code> architecture config) and, for A30-CLIP's CLIP init (<code>configs/contrastive/omnirad-clip-run5-v1.json</code>), the text encoder <code>intfloat/multilingual-e5-base</code>.</li>
   <li><b>Recipe:</b>
     <ol>
       <li><b>Backbone:</b> OmniRad-base, with the last 9 of 12 transformer blocks trained.</li>

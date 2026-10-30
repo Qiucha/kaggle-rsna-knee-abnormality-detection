@@ -14,7 +14,7 @@ Thanks to RSNA, the annotators and Kaggle for hosting this competition, and to e
 
 ## Summary
 
-* **No external images.** We trained only on the competition DICOMs plus the labels that a language model (LM) extracted from the radiology reports. The only external asset is the pretrained backbone `Snarcy/OmniRad-base` (ViT-B/14, DINOv2 pretrained on RadImageNet).
+* **No external images.** We trained only on the competition DICOMs plus the labels that a language model (LM) extracted from the radiology reports. External pretrained weights are the image backbone `Snarcy/OmniRad-base` (ViT-B/14, DINOv2 pretrained on RadImageNet, loaded with the `facebook/dinov2-base` architecture config) and, for A30-CLIP's CLIP init (`configs/contrastive/omnirad-clip-run5-v1.json`), the text encoder `intfloat/multilingual-e5-base`.
 * **Scores:**
 
   | Model | Private | Public | LM-test | Gold-58 |
