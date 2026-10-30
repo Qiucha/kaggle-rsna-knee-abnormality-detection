@@ -24,8 +24,10 @@ base, `r4a-k8-omnirad-base-soft-336-u9-b1.json` (public 0.888).
 2. **Inputs not in git** (ask the team):
    - `data/lm_label/lm_labels_kaggle.csv`: third-party LM labels. **Never commit it**,
      or any per-study excerpt of it.
-   - `data/processed/contrastive-cohort-gold-holdout-v1.jsonl`: the frozen cohort
-     manifest. Every config pins its SHA-256 (`manifest_sha256`).
+   - `data/processed/contrastive-cohort-gold-holdout-v1.jsonl` (and `.meta.json` for
+     CLIP pretraining): the frozen cohort manifest. Every config pins its SHA-256
+     (`manifest_sha256`). `scripts/data/build_contrastive_manifest.py` builds new
+     manifests, not this gold-holdout file, so get the frozen file from the team.
 3. **Pinned model weights.** Each config names `image_model` / `image_model_base`
    with a `*_revision`, and loading is offline. Download those exact revisions once:
    ```bash
@@ -64,7 +66,7 @@ cp configs/finetune/r4a-k8-omnirad-base-soft-336-u9-b1-lat-os-noise-ep30.json \
 | Image augmentation | `image_augmentation` | Object with `rotation_degrees`, `zoom`, `shift`, `intensity`; `{}` takes the defaults. A null result on A30 (`digest/finetune-image-augmentation-v1.md`). |
 | Targets | `targets` (`soft` / `verdict`), `unk_weight` | |
 | Backbone | `image_model`, `image_model_revision`, `image_model_format`, `image_model_base*` | Copy these together from a config that already uses the backbone. |
-| Warm start | `init_checkpoint`, or `resume_from` + `save_last` on the parent | `resume_from` continues a parent run from its `last.pt`. The parent must have `save_last: true`. |
+| Warm start | `init_checkpoint`, or `resume_from` + `save_last` on the parent | `resume_from` continues a parent run from its `last.pt`. The parent must have `save_last: true`. For A30-CLIP's `init_checkpoint`, see [Reproducing the Results](README.md#reproducing-the-results) and [`digest/omnirad-clip-run5-v1.md`](digest/omnirad-clip-run5-v1.md#reproduce). |
 
 `validate_config` in `src/contrastive_learning/finetune.py` rejects unknown values
 before any training starts. Commit the new config: it is the record of the variant.

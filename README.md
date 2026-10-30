@@ -123,7 +123,7 @@ Then:
 1. **Paths:** set `data_root` in `paths.json` to the competition data directory. Optionally set `train_series_mirror` to a copy on a fast disk.
 2. **Files not in git** (ask the team):
    * `data/lm_label/lm_labels_kaggle.csv`: the third-party LM labels. Never commit it.
-   * `data/processed/contrastive-cohort-gold-holdout-v1.jsonl`: the fixed split. Every config pins its SHA-256.
+   * `data/processed/contrastive-cohort-gold-holdout-v1.jsonl` (and `.meta.json` for CLIP pretraining): the fixed split. Every config pins its SHA-256 (`d1043376...`). `scripts/data/build_contrastive_manifest.py` builds new manifests, not this held-out file, so you must get it from the team.
 3. **Pinned weights:**
    ```bash
    .venv-cuda/bin/hf download Snarcy/OmniRad-base --revision 3e42381bcf0e6981a8b438e335c807c70b857e9a
@@ -165,7 +165,15 @@ Each model is one config in `configs/finetune/`:
 
 Each run writes `report.json` with the LM-test and Gold-58 macro AUROC, plus `best.pt` and `predictions.npz`.
 
-A30-CLIP starts from a CLIP checkpoint (its `init_checkpoint`), which is not in git. It was trained with the settings in [`configs/contrastive/omnirad-clip-run5-v1.json`](configs/contrastive/omnirad-clip-run5-v1.json). Ask the team for it, or retrain it first.
+A30-CLIP starts from a CLIP checkpoint (its `init_checkpoint`), which is not in git. Ask the team for it, or pretrain it from [`configs/contrastive/omnirad-clip-run5-v1.json`](configs/contrastive/omnirad-clip-run5-v1.json) first:
+
+```bash
+PYTHONPATH=src .venv-cuda/bin/python -c "from pathlib import Path; from contrastive_learning.artifacts import read_json; from contrastive_learning.clip_pipeline import pretraining_config; from contrastive_learning.training import run_training; run_training(pretraining_config(read_json(Path('configs/contrastive/omnirad-clip-run5-v1.json'))))"
+```
+
+This path skips the pipeline's manifest check: first confirm `sha256sum data/processed/contrastive-cohort-gold-holdout-v1.jsonl` matches the config's `manifest_sha256`.
+
+`scripts/training/run_clip_then_finetune.py` on `configs/finetune/r4a-k8-omnirad-base-soft-336-from-clip.json` also runs this stage when `reuse_completed_contrastive_checkpoint` is set to `false` (and `reuse_checkpoint_sha256` is removed), but `validate_pipeline` requires the Run 5 baseline (`checkpoints/finetune/r4a-k8-omnirad-base-soft-336`) to be trained first; see [`digest/omnirad-clip-run5-v1.md`](digest/omnirad-clip-run5-v1.md#reproduce).
 
 **2. Export the Deep Three bundle.** Pass the runs in this order:
 
