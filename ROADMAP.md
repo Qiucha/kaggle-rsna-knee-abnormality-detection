@@ -8,7 +8,7 @@ Last reviewed: 2026-09-11 (Asia/Taipei)
 > - **Track 2, report-based representation learning,** tests whether contrastive
 >   image–report training adds to Track 1 when the two are combined.
 >
-> See [Step-by-Step Progress](kaggle-writeup-refined.md#step-by-step-progress) in the report. The milestones below predate
+> Final results: A30 single model (private 0.878 / public 0.890) and the Deep Three ensemble (private 0.889 / public 0.902); see [README.md](README.md) and [Step-by-Step Progress](kaggle-writeup-refined.md#step-by-step-progress). The milestones below predate
 > this split, and they describe the contrastive pipeline only.
 
 ## Working goal
