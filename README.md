@@ -45,7 +45,7 @@ We predict 12 knee MRI findings by fine-tuning OmniRad-base on labels that a lan
 ## Model
 
 * **Backbone:** OmniRad-base (ViT-B/14), with blocks 4–12 trained.
-* **Head:** CLS token and mean patch token per image, averaged over valid images, then a 256-unit MLP to 12 logits.
+* **Head:** CLS token and mean patch token per image; average the valid windows in each view, then average the present views, followed by a 256-unit MLP to 12 logits.
 * **Loss:** binary cross-entropy on the soft targets during training; checkpoint selection uses validation BCE on the hard 0/1 LM verdicts.
 * **A30:** studies positive for Lateral Meniscus, Lateral OA or Synovitis are seen twice per epoch, the lateral targets get small noise, and training runs 30 epochs.
 

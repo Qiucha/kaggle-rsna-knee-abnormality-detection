@@ -91,7 +91,7 @@ Missing or unreadable planes are filled with zeros and masked, so they don't aff
 24 images (336 × 336)
   → OmniRad-base ViT-B/14 (blocks 1–3 frozen, blocks 4–12 trained)
   → per image: [CLS token, mean of patch tokens] concatenated (1536-d)
-  → average over the valid images
+  → average the valid windows in each view, then average the present views
   → MLP: 1536 → 256 → ReLU → Dropout(0.2) → 12 logits
 ```
 

@@ -525,12 +525,12 @@ onResize(modelEl, W => {
   const cols = 6, gap = 22, cw = (W - gap * (cols - 1)) / cols;
   const cx = i => i * (cw + gap);
   const titles = ['24 images', 'OmniRad-base', 'Per image', 'Average', 'MLP head', 'Output'];
-  const subs = ['3 planes × 8', 'ViT-B/14, 12 blocks', 'CLS ‖ mean patch', 'over valid images', '1536 → 256 → 12', '12 probabilities'];
+  const subs = ['3 planes × 8', 'ViT-B/14, 12 blocks', 'CLS ‖ mean patch', 'per view, then views', '1536 → 256 → 12', '12 probabilities'];
   const tips = [
     '<b>24 images per study</b><br><span class="m">3 planes × 8 windows. Each window = 3 adjacent slices as RGB, 336 × 336 px.</span>',
     '<b>OmniRad-base (ViT-B/14, 86M)</b><br><span class="m">DINOv2 pretrained on RadImageNet. Blocks 1–3 frozen, blocks 4–12 trained (u9). Patch 14 px → 24 × 24 patches, ≈5.4 mm each.</span>',
     '<b>Per-image feature</b><br><span class="m">CLS token (768) concatenated with the mean of the patch tokens (768) → 1536-d.</span>',
-    '<b>Masked average</b><br><span class="m">Average the 1536-d features over the images that exist. Missing planes are masked, so they don\'t pull the average toward zero.</span>',
+    '<b>Masked average</b><br><span class="m">Average the valid windows in each view, then average the present views. Missing planes are masked, so they don\'t pull the average toward zero.</span>',
     '<b>MLP head</b><br><span class="m">1536 → 256 → ReLU → Dropout 0.2 → 12 logits.</span>',
     '<b>12 outputs</b><br><span class="m">One sigmoid probability per finding.</span>',
   ];
