@@ -113,7 +113,7 @@ same exposure. See [gold-holdout-v1](gold-holdout-v1.md).
 [config-translation-review.md](config-translation-review.md) ·
 [claude-translated-baseline.md](claude-translated-baseline.md) ·
 [contrastive-learning-implementation-status.md](contrastive-learning-implementation-status.md) ·
-[english-medical-text-error-review-packet.md](english-medical-text-error-review-packet.md)
+english-medical-text-error-review-packet.md (not public: contains report text)
 
 ---
 

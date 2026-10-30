@@ -4,7 +4,7 @@ Qualitative review of the two completed frozen-text-encoder screens against the
 multilingual-E5 baseline, on the quarantined Claude-translated full-report cohort
 (`dfd07db`), seed 2026, frozen DINOv2 image tower. It closes the review item left
 open by [the results](english-medical-text-results.md) and
-[the error-review packet](english-medical-text-error-review-packet.md).
+the error-review packet (not public: contains report text).
 
 All forty pairs in the packet — twenty per candidate — were read in full. Ranks,
 provenance, token counts and group labels quoted here are taken from the packet's

@@ -3,7 +3,7 @@
 A gate on the selection metric, and an amendment to the false-negative audit.
 
 **Read-only. No training was run, nothing was launched, the test split was not loaded.**
-Evidence: [`digest/duplicate-confusion-audit.json`](duplicate-confusion-audit.json), produced by
+Evidence: `digest/duplicate-confusion-audit.json` (not public: contains report text), produced by
 [`digest/handoff/analyze_duplicate_confusion.py`](handoff/analyze_duplicate_confusion.py).
 
 ## The question, and why it is not the one already answered
