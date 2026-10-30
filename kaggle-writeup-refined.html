@@ -256,7 +256,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
 <h3>Takeaways</h3>
 <ol>
   <li><b>Fine-tuning gave the largest gain.</b> Going from frozen CLIP features (stage 1) to fine-tuning on the LM labels (stage 2) added +0.036 on LM-test, +0.045 on private and +0.038 on public.</li>
-  <li><b>Most single-model steps were within noise on LM-test.</b> For the OmniRad backbone, Soft + 336 px, u9 and A30, the LM-test CI crosses zero. We adopted them on the point estimate plus Gold-58, and public went up each time.</li>
+  <li><b>Most single-model steps were within noise on LM-test.</b> For the OmniRad backbone, Soft + 336 px, u9 and A30, the LM-test CI crosses zero. We adopted them on the point estimate plus Gold-58, and public went up each time. A later same-seed rerun of A30 scored 0.8853 on LM-test vs 0.8917 recorded (−0.0064 [−0.0140, +0.0011]), so A30 and u9 are a tie.</li>
   <li><b>Gold-58 was a useful but imperfect tiebreaker.</b> It agreed with public on the last two ensemble steps. It disagreed twice: from A30 to the 4-model ensemble, Gold-58 fell while public rose; and Gold-58 preferred DINOv2-S + soft over the OmniRad backbone (0.8223 vs 0.8137), but public preferred the OmniRad backbone (0.839 vs 0.834).</li>
   <li><b>Training more blocks helped Gold-58 most</b> (below).</li>
 </ol>
@@ -350,7 +350,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
 
 <h2>Limitations</h2>
 <ol>
-  <li><b>Single seed.</b> Every model was trained once. Retraining the Soft + 336 px model with a new seed changed LM-test by −0.0029 and Gold-58 by +0.0066. Several adopted steps are about that size.</li>
+  <li><b>Single seed.</b> Every model was trained with one seed. Retraining the Soft + 336 px model with a new seed changed LM-test by −0.0029 and Gold-58 by +0.0066, and a same-seed rerun of A30 scored 0.8853 on LM-test vs 0.8917 recorded (−0.0064 [−0.0140, +0.0011]). Several adopted steps are about that size, and A30 vs u9 is a tie.</li>
   <li><b>A30 is confounded.</b> It saw about 2.5× more training samples than u9 (30 × 4,946 vs 17 × 3,438). We never ran the control with the same number of samples.</li>
   <li><b>LM-test is optimistic.</b> We picked models and ensembles on the same 432 studies. A split-half check puts the bias at about 0.004 for the ensemble picks.</li>
   <li><b>LM-test uses the training labeller.</b> It measures agreement with the same LM that made the training labels.</li>

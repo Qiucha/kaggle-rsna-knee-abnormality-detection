@@ -16,7 +16,7 @@ We predict 12 knee MRI findings by fine-tuning OmniRad-base on labels that a lan
 | A30 single model | 0.878 | 0.890 | 0.8917 | 0.8814 |
 
 * **No external images.** We trained only on the competition DICOMs and the LM labels from **@pilkwang**'s CC0 dataset [`rsna-knee-llm-labels`](https://www.kaggle.com/datasets/pilkwang/rsna-knee-llm-labels). External pretrained weights are `Snarcy/OmniRad-base` (loaded with the `facebook/dinov2-base` architecture config) and, for A30-CLIP's CLIP init ([`configs/contrastive/omnirad-clip-run5-v1.json`](configs/contrastive/omnirad-clip-run5-v1.json)), the text encoder `intfloat/multilingual-e5-base`.
-* **What helped:** fine-tuning instead of frozen features, soft LM targets, 336 px input, training 9 of 12 blocks, lateral oversampling (A30) and a rank ensemble of three deep models.
+* **What helped:** fine-tuning instead of frozen features, soft LM targets, 336 px input, training 9 of 12 blocks and a rank ensemble of three deep models.
 * **What did not help:** image–report matching losses, image augmentation, learned window weights, weight averaging and test-time shifts.
 
 [Final submission records](kaggle/submissions/README.md) hold the configs, bundle hashes and kernel versions.
@@ -52,8 +52,8 @@ We predict 12 knee MRI findings by fine-tuning OmniRad-base on labels that a lan
 ## Step-by-Step Progress
 
 * **Stage 1** trained a CLIP-style image–report model and put small heads on its frozen features: 0.788 public at best.
-* **Stage 2** fine-tuned the image encoder on the LM labels. Each step added a little: OmniRad backbone, soft targets + 336 px, 9 trained blocks (u9), then A30 at 0.890 public.
-* **Fine-tuning gave the largest gain.** Most later single-model steps were within noise on LM-test. We adopted them on the point estimate plus Gold-58.
+* **Stage 2** fine-tuned the image encoder on the LM labels: OmniRad backbone, soft targets + 336 px, 9 trained blocks (u9, 0.888 public), and A30 (0.890 public).
+* **Fine-tuning gave the largest gain.** Most later single-model steps were within noise on LM-test. We adopted them on the point estimate plus Gold-58. A same-seed rerun of A30 scored 0.8853 vs 0.8917 recorded (−0.0064 [−0.0140, +0.0011]), so A30 and u9 are a tie.
 
 ## Ensembling
 
@@ -92,7 +92,7 @@ Ideas with a CI crossing zero, a worse score, or a Gold-58 veto:
 
 ## Limitations
 
-* Every model was trained with one seed. Several adopted steps are within seed noise.
+* Every model was trained with one seed. Several adopted steps are within run-to-run noise; a same-seed rerun of A30 tied with u9 on LM-test.
 * A30 saw about 2.5× more training samples than u9, and we never ran that control.
 * LM-test was reused for model selection and shares the training labeller. Gold-58 is small.
 * Splits are by study, as the data has no usable patient ID.
@@ -180,7 +180,7 @@ The export checks each model against its saved predictions and scores the bundle
 
 **3. Submit on Kaggle.** Upload only the `bundle/` folder as a private dataset, push the notebook pinned to the Python 3.12 image, and submit its output. The [record files](kaggle/submissions/README.md) hold the exact dataset and kernel metadata we used.
 
-**Expect small differences.** CUDA training is not deterministic here. Retraining one model with a new seed moved LM-test by 0.003 and Gold-58 by 0.007.
+**Expect small differences.** CUDA training is not deterministic here. Retraining the Soft + 336 px model with a new seed moved LM-test by 0.003 and Gold-58 by 0.007; a same-seed rerun of A30 ([`digest/a30-reproduction-20261022.md`](digest/a30-reproduction-20261022.md)) scored 0.8853 on LM-test vs 0.8917 recorded (−0.0064 [−0.0140, +0.0011]).
 
 [Train and submit](TRAIN_AND_SUBMIT.md) has the full commands, config keys and troubleshooting.
 
