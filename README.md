@@ -128,6 +128,8 @@ Then:
    ```bash
    .venv-cuda/bin/hf download Snarcy/OmniRad-base --revision 3e42381bcf0e6981a8b438e335c807c70b857e9a
    .venv-cuda/bin/hf download facebook/dinov2-base --revision f9e44c814b77203eaa57a6bdbbd535f21ede1415
+   # Needed only to retrain A30-CLIP's CLIP init:
+   .venv-cuda/bin/hf download intfloat/multilingual-e5-base --revision d128750597153bb5987e10b1c3493a34e5a4502a
    ```
 4. **Check:** `.venv/bin/python -m pytest -q` (CPU, about 10 s).
 
