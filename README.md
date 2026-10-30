@@ -121,9 +121,8 @@ cp configs/paths.template.json paths.json
 Then:
 
 1. **Paths:** set `data_root` in `paths.json` to the competition data directory. Optionally set `train_series_mirror` to a copy on a fast disk.
-2. **Files not in git** (ask the team):
-   * `data/lm_label/lm_labels_kaggle.csv`: the third-party LM labels. Never commit it.
-   * `data/processed/contrastive-cohort-gold-holdout-v1.jsonl` (and `.meta.json` for CLIP pretraining): the fixed split. Every config pins its SHA-256 (`d1043376...`). `scripts/data/build_contrastive_manifest.py` builds new manifests, not this held-out file, so you must get it from the team.
+2. **Files not in git:** the competition CSVs and the LM labels; [`data/README.md`](data/README.md) says where each comes from.
+   * `data/processed/contrastive-cohort-gold-holdout-v1.jsonl` (and `.meta.json` for CLIP pretraining): the fixed split. It is not public. Every config pins its SHA-256 (`d1043376...`). `scripts/data/build_contrastive_manifest.py` builds new manifests, not this held-out file, so you must get it from the team.
 3. **Pinned weights:**
    ```bash
    .venv-cuda/bin/hf download Snarcy/OmniRad-base --revision 3e42381bcf0e6981a8b438e335c807c70b857e9a

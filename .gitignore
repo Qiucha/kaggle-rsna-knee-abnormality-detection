@@ -10,10 +10,9 @@ docs
 .scratch
 research
 
-# Actual Dataset Related Folders
-!data/sample/
-!data/license.txt
-!data/sample/jpg/*.jpg
+# Competition data: the rules forbid redistributing it (see data/README.md)
+data/*
+!data/README.md
 
 # Data
 *.dcm

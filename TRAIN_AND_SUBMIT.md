@@ -21,9 +21,9 @@ base, `r4a-k8-omnirad-base-soft-336-u9-b1.json` (public 0.888).
      `train_series/`. Fine-tuning re-decodes DICOMs every epoch, so put it on a fast
      disk if `data_root` is a network or `/mnt` mount.
    `paths.json` is git-ignored. Configs never contain host paths.
-2. **Inputs not in git** (ask the team):
-   - `data/lm_label/lm_labels_kaggle.csv`: third-party LM labels. **Never commit it**,
-     or any per-study excerpt of it.
+2. **Inputs not in git:** see [`data/README.md`](data/README.md) for the competition CSVs
+   and `data/lm_label/lm_labels_kaggle.csv` (third-party LM labels). **Never commit them**,
+   or any per-study excerpt of them. Not public:
    - `data/processed/contrastive-cohort-gold-holdout-v1.jsonl` (and `.meta.json` for
      CLIP pretraining): the frozen cohort manifest. Every config pins its SHA-256
      (`manifest_sha256`). `scripts/data/build_contrastive_manifest.py` builds new
