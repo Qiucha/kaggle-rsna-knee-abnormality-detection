@@ -204,3 +204,5 @@ The export checks each model against its saved predictions and scores the bundle
 Yun-Hsuan Ku, Yeshwanth Patil, Zihan Zhou, Raymond Chou and Bowen Liu. See the [full report](kaggle-writeup-refined.md#team-and-contributions) for each person's contributions.
 
 Thanks to **Alex Benjamin** for guidance, to **@pilkwang** for the LM labels, and to RSNA, the annotators and Kaggle for hosting the competition.
+
+Licensing: see [NOTICE](NOTICE). The MIT license covers code and docs only; competition data is not included and third-party wheels keep their own licenses.
