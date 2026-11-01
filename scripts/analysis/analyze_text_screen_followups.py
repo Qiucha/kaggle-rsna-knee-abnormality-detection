@@ -34,6 +34,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "src"))
 
+from contrastive_learning.manifest import study_pseudonym  # noqa: E402
 from experiment_tools.text_hubs import RUNS, load_rankings, monte_carlo_null  # noqa: E402
 
 MANIFEST = REPO / "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl"
@@ -58,9 +59,9 @@ CLEAN_APOSTROPHE = bytes([0xE2, 0x80, 0x99])
 
 PAIR6_UID = "study-3bd56a7b1951d10f"
 
-# Studies the review names as hubs. It abbreviates some UIDs by their leading digits
-# and some by their trailing digits, so these are matched as substrings.
-REVIEW_HUB_FRAGMENTS = ["REDACTED", "REDACTED", "REDACTED"]
+# The hub studies the review names (Study J, E and K on
+# digest/english-medical-text-error-review.md) are not committed: their identifiers
+# are competition data. Pass their study-<16 hex> pseudonyms with --review-hub.
 
 
 def load_manifest() -> dict[str, dict]:
@@ -105,11 +106,11 @@ def report_mojibake() -> None:
     print(f"  report == source_report in {identical}/{len(hits)} of them")
     print("  distinct sequences: ", [(repr(s), n) for s, n in sequences.most_common()])
 
-    record = records[PAIR6_UID]
+    record = next(r for uid, r in records.items() if study_pseudonym(uid) == PAIR6_UID)
     text = record["report"]
     digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
     repaired = MOJIBAKE.sub("–", text)
-    print(f"\nPair-6 study {PAIR6_UID[-8:]}:")
+    print(f"\nPair-6 study {PAIR6_UID}:")
     print(f"  stored report_sha256:       {record['report_sha256']}")
     print(f"  sha256 of the stored text:  {digest}  (match: {digest == record['report_sha256']})")
     print(f"  sha256 if the text were repaired: "
@@ -124,7 +125,7 @@ def report_mojibake() -> None:
     print("  -> the packet renderer reproduces the stored text faithfully; it is not the cause.")
 
 
-def report_hubs() -> None:
+def report_hubs(review_hubs: list[str]) -> None:
     print("=" * 78)
     print("RETRIEVAL-HUB GENERALITY")
     print("=" * 78)
@@ -146,10 +147,10 @@ def report_hubs() -> None:
     print(f"All runs share an identical {len(pool)}-study candidate pool.\n")
 
     resolved = {}
-    for fragment in REVIEW_HUB_FRAGMENTS:
-        matches = [uid for uid in sorted(pool) if fragment in uid]
+    for fragment in review_hubs:
+        matches = [uid for uid in sorted(pool) if study_pseudonym(uid) == fragment]
         if len(matches) != 1:
-            sys.exit(f"review fragment {fragment} matches {len(matches)} studies")
+            sys.exit(f"review hub {fragment} matches {len(matches)} studies")
         resolved[fragment] = matches[0]
 
     records = load_manifest()
@@ -172,7 +173,7 @@ def report_hubs() -> None:
             print(f"  distinct rank-1 targets: {len(counts)}")
             print(f"  biggest hub absorbs {biggest} queries ({100 * biggest / len(subset):.1f}%); "
                   f"top two absorb {top_two} ({100 * top_two / len(subset):.1f}%)")
-            print("  top five: " + ", ".join(f"...{u[-8:]} x{n}" for u, n in common[:5]))
+            print("  top five: " + ", ".join(f"{study_pseudonym(u)} x{n}" for u, n in common[:5]))
             for fragment, uid in resolved.items():
                 order = [u for u, _ in common]
                 place = order.index(uid) + 1 if uid in order else None
@@ -222,7 +223,7 @@ def report_hubs() -> None:
         for uid, n in counts.most_common(3):
             record = records[uid]
             text = (record.get("report") or "").strip()
-            print(f"  ...{uid[-8:]} x{n}  provenance={record.get('report_provenance')} "
+            print(f"  {study_pseudonym(uid)} x{n}  provenance={record.get('report_provenance')} "
                   f"chars={len(text)} laterality={record.get('laterality')}")
             print(f"     {text[:120]!r}")
 
@@ -231,13 +232,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("check", choices=["mojibake", "hubs", "all"], nargs="?", default="all")
+    parser.add_argument("--review-hub", action="append", default=[], metavar="PSEUDONYM",
+                        help="study-<16 hex> pseudonym of a hub the review names; repeatable")
     args = parser.parse_args()
 
     if args.check in ("mojibake", "all"):
         report_mojibake()
         print()
     if args.check in ("hubs", "all"):
-        report_hubs()
+        report_hubs(args.review_hub)
 
 
 if __name__ == "__main__":

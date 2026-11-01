@@ -120,6 +120,15 @@ class ManifestSummary:
 # --------------------------------------------------------------------------- #
 
 
+def study_pseudonym(uid: str) -> str:
+    """Public, unsalted pseudonym for a StudyInstanceUID, used in committed results.
+
+    ``"study-" + sha256(uid)[:16]``: anyone holding the competition data can map it
+    back; nobody else learns the UID.
+    """
+    return f"study-{sha256_text(uid)[:16]}"
+
+
 def _pseudonym(value: str) -> str:
     return f"patient-{sha256_text(f'{_PSEUDONYM_SALT}\0{value}')[:20]}"
 

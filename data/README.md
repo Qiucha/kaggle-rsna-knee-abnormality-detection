@@ -24,3 +24,9 @@ gold.assign(**{c: None for c in gold.columns[2:]}).to_csv('data/gold_unlabeled.c
 ```
 
 The DICOMs go wherever `data_root` in `paths.json` points.
+
+Committed result files (under `digest/`, in notebooks and in scripts) never contain real study
+UIDs. They refer to studies by a pseudonym, `study-<16 hex>`: the first 16 hex characters of the
+SHA-256 of the `StudyInstanceUID`. If you hold the data, map them back with
+`pd.read_csv('data/train.csv').assign(pseudonym=lambda d: d.StudyInstanceUID.map(lambda u: 'study-' + hashlib.sha256(u.encode()).hexdigest()[:16]))`,
+or call `contrastive_learning.manifest.study_pseudonym`.
