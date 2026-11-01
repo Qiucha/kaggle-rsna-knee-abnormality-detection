@@ -50,7 +50,8 @@ checkpoints/
 digest/handoff/*
 !digest/handoff/README.md
 
-# Third-party LM label table: licensed for our use, not for redistribution
+# Third-party LM label table (pilkwang/rsna-knee-llm-labels): CC0, but keyed by competition
+# study UIDs and derived from the competition reports, so we link to it instead of copying it
 data/lm_label/lm_labels_kaggle.csv
 
 # Run logs, agent tooling, and the locally served digest site (rebuilt by

@@ -44,7 +44,7 @@ from pathlib import Path
 import pydicom
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
-from contrastive_learning.manifest import read_manifest_rows
+from contrastive_learning.manifest import read_manifest_rows, study_pseudonym
 
 ROOT = Path(__file__).resolve().parents[2]
 COHORT = ROOT / "data/processed/contrastive-cohort-claude-dfd07db-q2-v1.jsonl"
@@ -152,8 +152,9 @@ def main() -> None:
         index[fingerprint].append(uid)
     candidates = {fp: sorted(uids) for fp, uids in index.items() if len(uids) > 1}
 
+    known_uids = [next((u for u in stage1 if study_pseudonym(u) == p), None) for p in KNOWN_PAIR]
     control_stage1 = (
-        stage1.get(KNOWN_PAIR[0]) is not None and stage1.get(KNOWN_PAIR[0]) == stage1.get(KNOWN_PAIR[1])
+        stage1.get(known_uids[0]) is not None and stage1.get(known_uids[0]) == stage1.get(known_uids[1])
     )
 
     started = time.time()
@@ -184,7 +185,7 @@ def main() -> None:
                         "splits": splits,
                         "crosses_splits": len(splits) > 1,
                         "involves_test": "test" in splits,
-                        "study_uids": sorted(members),
+                        "study_uids": sorted(study_pseudonym(u) for u in members),
                     }
                 )
     stage2_seconds = time.time() - started
@@ -203,7 +204,7 @@ def main() -> None:
         "stage2_tags": GEOMETRY_TAGS,
         "studies_fingerprinted": len(stage1),
         "studies_incomplete": len(incomplete),
-        "incomplete_examples": incomplete[:10],
+        "incomplete_examples": [study_pseudonym(u) for u in incomplete[:10]],
         "stage1_seconds": round(stage1_seconds, 1),
         "stage2_seconds": round(stage2_seconds, 1),
         "positive_control": {
