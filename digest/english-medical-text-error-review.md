@@ -10,6 +10,10 @@ All forty pairs in the packet — twenty per candidate — were read in full. Ra
 provenance, token counts and group labels quoted here are taken from the packet's
 own pair headings; the composition counts below were recomputed from them.
 
+Studies are named by page-local letters (Study A, B, …). The original UID suffixes
+and verbatim report quotes were removed because they identify or reproduce
+competition data; findings are paraphrased.
+
 No test data, no downstream fitting, no clinical adjudication of image pixels, and
 no change to the cohort, the single-positive objective, the selection rule or the
 locked test. In `text_to_image` rows the comparison text is the retrieved *image's*
