@@ -1,0 +1,26 @@
+NOTICE
+
+The MIT LICENSE in this repository covers this repository's code and
+documentation only.
+
+Competition data is not included and not licensed here. The images,
+radiology reports, labels and study identifiers of the Kaggle competition
+"RSNA Knee Abnormality Detection" belong to RSNA. They are governed by the
+Kaggle competition rules and the RSNA MIRA research-use license. Get the
+data from Kaggle yourself under those terms. Committed result files refer to
+studies only by pseudonyms (study-<16 hex>), never by real study UIDs.
+
+Third-party wheels. kaggle/codecs/wheels vendors these wheels, each under
+its own license (not the MIT LICENSE of this repository):
+
+  pylibjpeg-2.1.0                 MIT
+  pylibjpeg_libjpeg-2.4.0         GPLv3 (metadata also lists an
+                                  "Other/Proprietary License" classifier)
+  pylibjpeg_openjpeg-2.6.0        MIT (the bundled OpenJPEG library
+                                  is under the BSD 2-Clause License)
+  pylibjpeg_rle-2.2.0             MIT
+
+No license files sit next to the wheels in this repository. Each wheel
+ships its license file inside its own *.dist-info directory (for example
+pylibjpeg_libjpeg-2.4.0.dist-info/LICENSE); read it with
+`unzip -p <wheel> '*.dist-info/*LICEN*'`.

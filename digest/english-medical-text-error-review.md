@@ -160,9 +160,9 @@ often the template's *other* extreme.
 
 ### Hub / attractor images in text_to_image
 
-PubMedBERT's t2i tail repeatedly lands on a small number of the same images. Study
-Study J is retrieved for two different queries (pairs 15, 17) and study Study E
-for two more (pairs 18, 19) — 4 of its 13 t2i pairs land on just two studies. Study
+PubMedBERT's t2i tail repeatedly lands on a small number of the same images.
+Study J is retrieved for two different queries (pairs 15, 17) and Study E
+for two more (pairs 18, 19) — 4 of its 13 t2i pairs land on just two studies.
 Study E is simultaneously a *query* in PubMedBERT pair 16 (rank 92) and in e5 pair
 16 (rank 130). e5 shows a milder version: Study K is retrieved for two different
 queries (pairs 12, 15).
@@ -195,7 +195,7 @@ whose conflicting left/right reports are excluded from this cohort.
 
 ### Truncation, in the one place it is visible
 
-Query study Study A is the only study in either tail whose truncation status
+Query Study A is the only study in either tail whose truncation status
 differs between candidates, and it is instructive precisely because both candidates
 saw the same report.
 
@@ -344,7 +344,7 @@ over-representing hubs, but at n=20, uncorrected, that is not a settled effect.
 
 Two corrections to the hub section above:
 
-- The e5 case is not "a milder version". Study Study K is e5's single biggest hub
+- The e5 case is not "a milder version". Study K is e5's single biggest hub
   in the run — rank-1 for **26 of 441** t2i queries, more than either PubMedBERT study.
   Only two of those 26 fell inside the worst twenty, which is all that section could see.
 - PubMedBERT's Study J and Study E are genuine hubs but not its largest: 6
