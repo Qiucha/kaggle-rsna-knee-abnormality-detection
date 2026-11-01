@@ -59,22 +59,9 @@ CLEAN_APOSTROPHE = bytes([0xE2, 0x80, 0x99])
 
 PAIR6_UID = "study-3bd56a7b1951d10f"
 
-# Studies the review names as hubs (digest/english-medical-text-error-review.md labels
-# them Study J, E and K). Each is identified by an 8-digit run of its UID; only a
-# SHA-256 prefix of that run is committed so no part of a competition UID is published.
-REVIEW_HUB_FRAGMENT_HASHES = {
-    "Study J": "REDACTED",
-    "Study E": "REDACTED",
-    "Study K": "REDACTED",
-}
-
-
-def _matches_fragment(uid: str, fragment_hash: str) -> bool:
-    digits = uid.replace(".", "")
-    return any(
-        hashlib.sha256(digits[i:i + 8].encode()).hexdigest()[:16] == fragment_hash
-        for i in range(len(digits) - 7)
-    )
+# The hub studies the review names (Study J, E and K on
+# digest/english-medical-text-error-review.md) are not committed: their identifiers
+# are competition data. Pass their study-<16 hex> pseudonyms with --review-hub.
 
 
 def load_manifest() -> dict[str, dict]:
@@ -138,7 +125,7 @@ def report_mojibake() -> None:
     print("  -> the packet renderer reproduces the stored text faithfully; it is not the cause.")
 
 
-def report_hubs() -> None:
+def report_hubs(review_hubs: list[str]) -> None:
     print("=" * 78)
     print("RETRIEVAL-HUB GENERALITY")
     print("=" * 78)
@@ -160,10 +147,10 @@ def report_hubs() -> None:
     print(f"All runs share an identical {len(pool)}-study candidate pool.\n")
 
     resolved = {}
-    for fragment, fragment_hash in REVIEW_HUB_FRAGMENT_HASHES.items():
-        matches = [uid for uid in sorted(pool) if _matches_fragment(uid, fragment_hash)]
+    for fragment in review_hubs:
+        matches = [uid for uid in sorted(pool) if study_pseudonym(uid) == fragment]
         if len(matches) != 1:
-            sys.exit(f"review fragment {fragment} matches {len(matches)} studies")
+            sys.exit(f"review hub {fragment} matches {len(matches)} studies")
         resolved[fragment] = matches[0]
 
     records = load_manifest()
@@ -245,13 +232,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("check", choices=["mojibake", "hubs", "all"], nargs="?", default="all")
+    parser.add_argument("--review-hub", action="append", default=[], metavar="PSEUDONYM",
+                        help="study-<16 hex> pseudonym of a hub the review names; repeatable")
     args = parser.parse_args()
 
     if args.check in ("mojibake", "all"):
         report_mojibake()
         print()
     if args.check in ("hubs", "all"):
-        report_hubs()
+        report_hubs(args.review_hub)
 
 
 if __name__ == "__main__":
