@@ -5,7 +5,7 @@
 
 > **Team:** Ouch! My Knee Hurts!
 > **Authors:** Yun-Hsuan Ku, Yeshwanth Patil, Zihan Zhou, Raymond Chou, Bowen Liu
-> **Code:** [github.com/Qiucha/novo-project](https://github.com/Qiucha/novo-project)
+> **Code:** [github.com/Qiucha/kaggle-rsna-knee-abnormality-detection](https://github.com/Qiucha/kaggle-rsna-knee-abnormality-detection)
 > **Submission kernels:** `a30-deep3-rank` (v2), `r4a-k8-omb-soft-336-u9-a30` (v1)
 
 Thanks to RSNA, the annotators and Kaggle for hosting this competition, and to everyone who shared notebooks and ideas. Special thanks to **@pilkwang** for the CC0 dataset [`rsna-knee-llm-labels`](https://www.kaggle.com/datasets/pilkwang/rsna-knee-llm-labels). All our supervised models train on those labels.
@@ -308,7 +308,7 @@ All of these are null.
 
 ## Code
 
-Repository: [github.com/Qiucha/novo-project](https://github.com/Qiucha/novo-project)
+Repository: [github.com/Qiucha/kaggle-rsna-knee-abnormality-detection](https://github.com/Qiucha/kaggle-rsna-knee-abnormality-detection)
 
 
 * **Training:** `scripts/training/finetune_supervised.py --config configs/finetune/<run>.json`
