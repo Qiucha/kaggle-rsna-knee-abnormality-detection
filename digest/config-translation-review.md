@@ -28,7 +28,7 @@ new text-policy experiment, not a requirement for making the existing pipeline r
 
 ## What the branch actually does
 
-[Notebook at the reviewed commit](https://github.com/Qiucha/novo-project/blob/8e3bd6899d7a7c9e56a8d27110a57f0b711a0a59/notebooks/translation.ipynb):
+[Notebook at the reviewed commit](https://github.com/Qiucha/kaggle-rsna-knee-abnormality-detection/blob/05ff27e8bfcb3688c97e8b24934b9af22941d6ba/notebooks/translation.ipynb):
 
 - Cell 18 uses Google Cloud Translation **v3** `TranslationServiceClient`,
   `global`, `mime_type="text/plain"`, target `en`, and automatic source detection.
