@@ -164,7 +164,7 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
       <li><b>Backbone:</b> OmniRad-base, with the last 9 of 12 transformer blocks trained.</li>
       <li><b>Input:</b> 8 windows per plane. Each window is 3 adjacent slices stacked as an RGB image at 336 px, giving 24 images per study.</li>
       <li><b>Targets:</b> the LM soft values (<code>YES</code> = 0.68 / 0.82 / 0.94, <code>NO</code> = 0.08) instead of 0/1 labels.</li>
-      <li><b>A30 only:</b> studies positive for Lateral Meniscus, Lateral OA or Synovitis are sampled twice per epoch, small noise is added to the lateral targets, and training runs 30 epochs.</li>
+      <li><b>A30 single model:</b> studies positive for Lateral Meniscus, Lateral OA or Synovitis are sampled twice per epoch, small noise is added to the lateral targets, and training runs 30 epochs.</li>
       <li><b>Ensemble:</b> per-label rank average of three models, all with 9 trained blocks.</li>
     </ol>
   </li>

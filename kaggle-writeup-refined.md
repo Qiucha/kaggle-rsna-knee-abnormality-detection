@@ -26,7 +26,7 @@ Thanks to RSNA, the annotators and Kaggle for hosting this competition, and to e
   1. **Backbone:** OmniRad-base, with the last 9 of 12 transformer blocks trained.
   2. **Input:** 8 windows per plane. Each window is 3 adjacent slices stacked as an RGB image at 336 px. That gives 24 images per study.
   3. **Targets:** the LM soft values (`YES` = 0.68 / 0.82 / 0.94, `NO` = 0.08) instead of 0/1 labels.
-  4. **A30 only:** studies positive for Lateral Meniscus, Lateral OA or Synovitis are sampled twice per epoch, small noise is added to the lateral targets, and training runs 30 epochs.
+  4. **A30 single model:** studies positive for Lateral Meniscus, Lateral OA or Synovitis are sampled twice per epoch, small noise is added to the lateral targets, and training runs 30 epochs.
   5. **Ensemble:** per-label rank average of three models, all with 9 trained blocks.
 * **Did not help:** image–report matching losses, image augmentation, learned window weights, weight averaging, test-time shifts. See [What Did Not Work](#what-did-not-work).
 
