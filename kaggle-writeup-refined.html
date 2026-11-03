@@ -140,6 +140,39 @@ svg .rowhit:hover, svg .rowhit.on { fill: var(--wash); }
   details > div { display: block; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* ---------- responsive (screen only) ---------- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+@media screen {
+  .doc { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
+  .doc code { overflow-wrap: anywhere; }
+  .doc a { overflow-wrap: anywhere; }
+  .scroll { -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+}
+@media screen and (max-width: 640px) {
+  .doc { font-size: 15.5px; line-height: 1.6; padding-top: 4px; padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
+  h1 { font-size: 21px; }
+  h2 { font-size: 18px; margin-top: 32px; }
+  ul, ol { padding-left: 20px; }
+  /* tables: let numbers wrap, and scroll sideways if still too wide */
+  table { display: block; width: auto; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 12.5px; }
+  th, td { padding: 5px 6px; min-width: 6.5em; }
+  td:first-child, th:first-child { min-width: 9em; }
+  td.n, th.n { white-space: normal; min-width: 5em; }
+  /* charts whose labels collide when squeezed: keep a minimum width and scroll */
+  .fig:has(> #progress), .fig:has(> #cliptest) { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  #progress { min-width: 600px; }
+  #cliptest { min-width: 540px; }
+  /* wide diagrams: scroll edge-to-edge so more of them is visible */
+  .scroll { margin-left: calc(-1 * max(14px, env(safe-area-inset-left))); margin-right: calc(-1 * max(14px, env(safe-area-inset-right)));
+            padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
+  .tiles { grid-template-columns: 1fr; }
+  .tile .v { font-size: 24px; }
+  .toggle { display: flex; width: 100%; border-radius: 12px; }
+  .toggle button { flex: 1; padding: 6px 8px; }
+  .toolbar { margin-bottom: 0; }
+  .tip { max-width: min(300px, calc(100vw - 16px)); }
+}
 </style>
 </head>
 <body>
